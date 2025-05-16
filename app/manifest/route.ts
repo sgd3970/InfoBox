@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export async function GET() {
-  return NextResponse.json({
+  const manifest = {
     name: "InfoBox",
     short_name: "InfoBox",
     description: "MDX 기반의 블로그 플랫폼",
@@ -21,9 +21,10 @@ export async function GET() {
         type: "image/png"
       }
     ]
-  }, {
+  };
+  return new Response(JSON.stringify(manifest), {
     headers: {
-      'Content-Type': 'application/manifest+json',
-    },
+      "Content-Type": "application/manifest+json"
+    }
   });
 } 
