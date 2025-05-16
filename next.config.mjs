@@ -19,6 +19,10 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  output: 'standalone',
+  experimental: {
+    optimizeCss: true,
+  },
   // 빌드 시 특정 파일 무시
   webpack: (config) => {
     config.module.rules.push({

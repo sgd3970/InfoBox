@@ -17,7 +17,7 @@ export async function optimizeIndexes() {
           description: 5,
           content: 1,
         },
-        default_language: "ko",
+        default_language: "none",
       },
     )
 
