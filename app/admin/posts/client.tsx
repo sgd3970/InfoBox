@@ -1,0 +1,133 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import Link from "next/link"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Plus, Search, Edit, Eye, Trash, Loader2 } from "lucide-react"
+import type { Post } from "@/lib/models"
+
+export default function AdminPostsClient() {
+  const [searchTerm, setSearchTerm] = useState("")
+  const [posts, setPosts] = useState<Post[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function fetchPosts() {
+      try {
+        setLoading(true)
+        const res = await fetch("/api/posts")
+        if (!res.ok) throw new Error("포스트를 가져오는데 실패했습니다")
+        const data = await res.json()
+        setPosts(data.posts)
+      } catch (error) {
+        console.error("포스트 가져오기 오류:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchPosts()
+  }, [])
+
+  // 검색 필터링
+  const filteredPosts = posts.filter((post) => {
+    const searchContent =
+      `${post.title} ${post.description} ${post.category} ${post.tags?.join(" ") || ""}`.toLowerCase()
+    return searchContent.includes(searchTerm.toLowerCase())
+  })
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold">포스트 관리</h2>
+        <Button asChild>
+          <Link href="/admin/posts/new">
+            <Plus className="h-4 w-4 mr-2" />새 포스트
+          </Link>
+        </Button>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-4 w-4" />
+          <Input
+            placeholder="포스트 검색..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-10"
+          />
+        </div>
+      </div>
+
+      <div className="border rounded-md">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>제목</TableHead>
+              <TableHead>카테고리</TableHead>
+              <TableHead>작성일</TableHead>
+              <TableHead>작성자</TableHead>
+              <TableHead>조회수</TableHead>
+              <TableHead className="text-right">작업</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {filteredPosts.map((post) => (
+              <TableRow key={post._id}>
+                <TableCell className="font-medium">{post.title}</TableCell>
+                <TableCell>{post.category}</TableCell>
+                <TableCell>
+                  {new Date(post.date).toLocaleDateString("ko-KR", {
+                    year: "numeric",
+                    month: "long",
+                    day: "numeric",
+                  })}
+                </TableCell>
+                <TableCell>{post.author || "관리자"}</TableCell>
+                <TableCell>{post.views.toLocaleString()}</TableCell>
+                <TableCell className="text-right">
+                  <div className="flex justify-end gap-2">
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link
+                        href={`/blog/${post.category.toLowerCase()}/${post.slug}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" asChild>
+                      <Link href={`/admin/posts/edit/${post.slug}`}>
+                        <Edit className="h-4 w-4" />
+                      </Link>
+                    </Button>
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ))}
+            {filteredPosts.length === 0 && (
+              <TableRow>
+                <TableCell colSpan={6} className="text-center py-4">
+                  검색 결과가 없습니다.
+                </TableCell>
+              </TableRow>
+            )}
+          </TableBody>
+        </Table>
+      </div>
+    </div>
+  )
+}

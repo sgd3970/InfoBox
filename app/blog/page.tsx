@@ -1,0 +1,111 @@
+import Link from "next/link"
+import Image from "next/image"
+import type { Post } from "@/lib/models"
+
+export const metadata = {
+  title: "블로그 | InfoBox",
+  description: "최신 기술 트렌드와 유용한 정보를 제공하는 블로그입니다.",
+}
+
+async function getPosts() {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts?limit=7`, { next: { revalidate: 3600 } })
+    if (!res.ok) throw new Error("포스트를 가져오는데 실패했습니다")
+    const data = await res.json()
+    return data.posts as Post[]
+  } catch (error) {
+    console.error("포스트 가져오기 오류:", error)
+    return []
+  }
+}
+
+export default async function BlogPage() {
+  const posts = await getPosts()
+  const featuredPost = posts.find((post) => post.featured) || posts[0]
+  const recentPosts = posts.filter((post) => post !== featuredPost).slice(0, 6)
+
+  return (
+    <div className="container py-10">
+      <h1 className="text-4xl font-bold mb-8">블로그</h1>
+
+      {/* 주요 게시물 */}
+      {featuredPost && (
+        <div className="mb-12">
+          <h2 className="text-2xl font-semibold mb-6">주요 게시물</h2>
+          <Link href={`/blog/${featuredPost.category.toLowerCase()}/${featuredPost.slug}`} className="group">
+            <div className="grid md:grid-cols-2 gap-6 items-center">
+              <div className="relative aspect-video overflow-hidden rounded-lg">
+                <Image
+                  src={featuredPost.image || "/placeholder.svg?height=400&width=800"}
+                  alt={featuredPost.title}
+                  width={800}
+                  height={400}
+                  className="object-cover transition-transform group-hover:scale-105"
+                  priority
+                />
+              </div>
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    {featuredPost.category}
+                  </span>
+                  <h3 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                    {featuredPost.title}
+                  </h3>
+                </div>
+                <p className="text-muted-foreground line-clamp-3">{featuredPost.description}</p>
+                <div className="flex items-center text-sm text-muted-foreground">
+                  <time dateTime={featuredPost.date}>
+                    {new Date(featuredPost.date).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
+              </div>
+            </div>
+          </Link>
+        </div>
+      )}
+
+      {/* 최근 게시물 */}
+      <div>
+        <h2 className="text-2xl font-semibold mb-6">최근 게시물</h2>
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {recentPosts.map((post) => (
+            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
+              <div className="space-y-4">
+                <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <Image
+                    src={post.image || "/placeholder.svg?height=200&width=400"}
+                    alt={post.title}
+                    width={400}
+                    height={200}
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    {post.category}
+                  </span>
+                  <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                </div>
+                <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <time dateTime={post.date}>
+                    {new Date(post.date).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
