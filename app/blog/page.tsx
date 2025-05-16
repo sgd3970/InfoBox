@@ -1,18 +1,26 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
+import clientPromise from "@/lib/mongodb"
 
 export const metadata = {
   title: "블로그 | InfoBox",
   description: "최신 기술 트렌드와 유용한 정보를 제공하는 블로그입니다.",
 }
 
+export const dynamic = "force-dynamic"
+
 async function getPosts() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts?limit=7`, { next: { revalidate: 3600 } })
-    if (!res.ok) throw new Error("포스트를 가져오는데 실패했습니다")
-    const data = await res.json()
-    return data.posts as Post[]
+    const client = await clientPromise
+    const db = client.db()
+    const posts = await db.collection("posts").find().sort({ date: -1 }).limit(7).toArray()
+    return posts.map(post => ({
+      ...post,
+      _id: post._id.toString(),
+      createdAt: post.createdAt?.toISOString(),
+      updatedAt: post.updatedAt?.toISOString(),
+    })) as Post[]
   } catch (error) {
     console.error("포스트 가져오기 오류:", error)
     return []
