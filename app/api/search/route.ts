@@ -1,5 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { advancedSearch, type SearchOptions } from "@/lib/search"
+import clientPromise from "@/lib/mongodb"
+
+export const dynamic = "force-dynamic"
 
 export async function GET(request: NextRequest) {
   try {
