@@ -21,7 +21,7 @@ const nextConfig = {
   },
   output: 'standalone',
   experimental: {
-    optimizeCss: false,
+    optimizeCss: true,
   },
   // 빌드 시 특정 파일 무시
   webpack: (config) => {
