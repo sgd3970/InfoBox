@@ -23,14 +23,21 @@ const notoSansKr = Noto_Sans_KR({
 })
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || 'https://info-5w85xeawr-trendscanners-projects.vercel.app'),
   title: {
-    default: "InfoBox - 정보 공유 플랫폼",
+    default: "InfoBox",
     template: "%s | InfoBox",
   },
-  description: "최신 기술 트렌드와 유용한 정보를 제공하는 블로그 플랫폼입니다.",
-  keywords: ["블로그", "정보", "기술", "트렌드", "개발", "디자인"],
+  description: "최신 기술 트렌드와 유용한 정보를 제공하는 블로그입니다.",
+  keywords: ["블로그", "기술", "트렌드", "정보"],
   authors: [{ name: "InfoBox Team" }],
   creator: "InfoBox",
+  publisher: "InfoBox",
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "ko_KR",
