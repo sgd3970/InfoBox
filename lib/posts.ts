@@ -13,6 +13,29 @@ export interface Post {
   }
 }
 
+export interface Category {
+  slug: string;
+  name: string;
+  postCount: number;
+}
+
+export async function getCategories(): Promise<Category[]> {
+  try {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, {
+      next: { revalidate: 3600 }
+    });
+    
+    if (!res.ok) {
+      throw new Error('카테고리를 가져오는데 실패했습니다');
+    }
+    
+    return await res.json();
+  } catch (error) {
+    console.error('카테고리 가져오기 오류:', error);
+    return [];
+  }
+}
+
 // contentlayer/generated에서 가져오는 allPosts 대신 사용할 모의 데이터
 export const allPosts: Post[] = [
   {
