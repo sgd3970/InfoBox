@@ -49,8 +49,8 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
-  manifest: "/manifest.json",
-    generator: 'v0.dev'
+  manifest: "/manifest",
+  generator: 'v0.dev'
 }
 
 export default function RootLayout({
