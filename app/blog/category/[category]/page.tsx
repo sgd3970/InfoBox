@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import clientPromise from "@/lib/mongodb"
 import type { Post } from "@/lib/models"
 
 interface CategoryPageProps {
@@ -12,15 +11,14 @@ interface CategoryPageProps {
 
 async function getCategoryPosts(category: string): Promise<Post[]> {
   try {
-    const client = await clientPromise
-    const db = client.db()
-    const posts = await db
-      .collection("posts")
-      .find({ category: { $regex: new RegExp(`^${category}$`, "i") } })
-      .sort({ date: -1 })
-      .toArray()
-
-    return posts as Post[]
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?category=${encodeURIComponent(category)}&limit=1000`); // 충분히 큰 limit 설정
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      return searchData.posts || [];
+    } else {
+      console.error("카테고리별 포스트 목록 가져오기 실패", searchRes.status);
+      return [];
+    }
   } catch (error) {
     console.error("카테고리 포스트 가져오기 오류:", error)
     return []
