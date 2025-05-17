@@ -49,9 +49,19 @@ self.addEventListener("fetch", (event) => {
   // HTML 페이지 요청 처리
   if (event.request.mode === "navigate") {
     event.respondWith(
-      fetch(event.request).catch(() => {
-        return caches.match("/offline")
-      }),
+      fetch(event.request)
+        .then((response) => response)
+        .catch(async () => {
+          const offlinePage = await caches.match("/offline")
+          if (!offlinePage) {
+            return new Response("오프라인 페이지를 찾을 수 없습니다.", {
+              status: 404,
+              statusText: "Not Found",
+              headers: new Headers({ "Content-Type": "text/plain" }),
+            })
+          }
+          return offlinePage
+        }),
     )
     return
   }
@@ -60,24 +70,32 @@ self.addEventListener("fetch", (event) => {
   if (event.request.destination === "image") {
     event.respondWith(
       caches.match(event.request).then((cachedResponse) => {
-        return (
-          cachedResponse ||
-          fetch(event.request)
-            .then((networkResponse) => {
-              // 성공적으로 가져온 응답을 캐시에 저장
-              if (networkResponse && networkResponse.ok) {
-                const cacheCopy = networkResponse.clone()
-                caches.open(CACHE_NAME).then((cache) => {
-                  cache.put(event.request, cacheCopy)
-                })
-              }
-              return networkResponse
-            })
-            .catch(() => {
-              // 이미지를 가져올 수 없는 경우 기본 이미지 제공
-              return caches.match("/placeholder.svg")
-            })
-        )
+        if (cachedResponse) {
+          return cachedResponse
+        }
+        return fetch(event.request)
+          .then((networkResponse) => {
+            // 성공적으로 가져온 응답을 캐시에 저장
+            if (networkResponse && networkResponse.ok) {
+              const cacheCopy = networkResponse.clone()
+              caches.open(CACHE_NAME).then((cache) => {
+                cache.put(event.request, cacheCopy)
+              })
+            }
+            return networkResponse
+          })
+          .catch(async () => {
+            // 이미지를 가져올 수 없는 경우 기본 이미지 제공
+            const placeholder = await caches.match("/placeholder.svg")
+            if (!placeholder) {
+              return new Response("이미지를 찾을 수 없습니다.", {
+                status: 404,
+                statusText: "Not Found",
+                headers: new Headers({ "Content-Type": "text/plain" }),
+              })
+            }
+            return placeholder
+          })
       }),
     )
     return
@@ -86,19 +104,19 @@ self.addEventListener("fetch", (event) => {
   // 기타 요청 처리 (스타일, 스크립트 등)
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
-      return (
-        cachedResponse ||
-        fetch(event.request).then((networkResponse) => {
-          // 성공적으로 가져온 응답을 캐시에 저장
-          if (networkResponse && networkResponse.ok) {
-            const cacheCopy = networkResponse.clone()
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, cacheCopy)
-            })
-          }
-          return networkResponse
-        })
-      )
+      if (cachedResponse) {
+        return cachedResponse
+      }
+      return fetch(event.request).then((networkResponse) => {
+        // 성공적으로 가져온 응답을 캐시에 저장
+        if (networkResponse && networkResponse.ok) {
+          const cacheCopy = networkResponse.clone()
+          caches.open(CACHE_NAME).then((cache) => {
+            cache.put(event.request, cacheCopy)
+          })
+        }
+        return networkResponse
+      })
     }),
   )
 })
