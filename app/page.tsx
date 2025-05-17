@@ -5,14 +5,6 @@ import clientPromise from "@/lib/mongodb"
 import type { Post, Category } from "@/lib/models"
 import { getCategories } from "@/lib/posts"
 
-export const metadata = {
-  other: {
-    "google-adsense-account": "ca-pub-8478624096187058",
-    "naver-site-verification": "00b7bed801bffcea59569b4b40cfe20f2227fd44",
-    "google-site-verification": "MWziquIMM3rKz13WfDcm08INXd5085FqqebR2TZ572g",
-  },
-};
-
 async function getPosts(): Promise<Post[]> {
   try {
     const client = await clientPromise
