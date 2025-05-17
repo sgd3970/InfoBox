@@ -1,20 +1,20 @@
 import type { Post } from "@/lib/models"
 import clientPromise from "@/lib/mongodb"
 
-export interface Post {
-  title: string
-  description: string
-  date: string
-  category: string
-  slug: string
-  tags?: string[]
-  image?: string
-  author?: string
-  featured?: boolean
-  body: {
-    code: string
-  }
-}
+// export interface Post {
+//   title: string
+//   description: string
+//   date: string
+//   category: string
+//   slug: string
+//   tags?: string[]
+//   image?: string
+//   author?: string
+//   featured?: boolean
+//   body: {
+//     code: string
+//   }
+// }
 
 export interface Category {
   slug: string;
