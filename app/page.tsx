@@ -11,7 +11,8 @@ async function getPosts(): Promise<Post[]> {
     const db = client.db()
     const posts = await db.collection("posts").find().sort({ date: -1 }).limit(6).toArray()
 
-    return posts as Post[]
+    // MongoDB 문서를 unknown으로 먼저 변환한 후 Post[]로 타입 단언
+    return (posts as unknown) as Post[]
   } catch (error) {
     console.error("포스트 가져오기 오류:", error)
     return []
@@ -70,7 +71,7 @@ export default async function HomePage() {
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner size="leaderboard" showCloseButton />
+        <AdBanner position="top" dismissible={true} />
       </div>
 
       {/* 최신 포스트 섹션 */}
@@ -141,7 +142,7 @@ export default async function HomePage() {
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner size="leaderboard" showCloseButton />
+        <AdBanner position="bottom" dismissible={true} />
       </div>
     </div>
   )
