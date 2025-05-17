@@ -137,7 +137,7 @@ export function AdminDatabaseClient() {
                               <td className="py-2 px-4">
                                 {Object.entries(index.key).map(([field, direction]) => (
                                   <div key={field}>
-                                    {field}: {direction}
+                                    {field}: {direction as React.ReactNode}
                                   </div>
                                 ))}
                               </td>

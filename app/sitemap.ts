@@ -1,7 +1,24 @@
-import { allPosts } from "@/lib/posts"
-import type { MetadataRoute } from "next"
+import { MetadataRoute } from 'next'
+import type { Post } from '@/lib/models'; // Post 타입 임포트
 
-export default function sitemap(): MetadataRoute.Sitemap {
+// 모든 포스트를 가져오는 함수 (sitemap 생성용)
+async function getAllPostsForSitemap(): Promise<Post[]> {
+  try {
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/search?limit=9999`); // 모든 포스트를 가져오도록 큰 limit 설정
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      return searchData.posts || [];
+    } else {
+      console.error("Sitemap 포스트 목록 가져오기 실패", searchRes.status);
+      return [];
+    }
+  } catch (error) {
+    console.error("Sitemap 포스트 목록 가져오는 중 오류 발생:", error);
+    return [];
+  }
+}
+
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://example.com"
 
   // 정적 페이지
@@ -45,30 +62,30 @@ export default function sitemap(): MetadataRoute.Sitemap {
   ] as MetadataRoute.Sitemap
 
   // 블로그 포스트 페이지
-  const postPages = allPosts.map((post) => ({
-    url: `${baseUrl}/blog/${post.category.toLowerCase()}/${post.slug}`,
-    lastModified: new Date(post.date),
-    changeFrequency: "monthly",
-    priority: 0.8,
-  })) as MetadataRoute.Sitemap
+  const posts = await getAllPostsForSitemap();
+
+  const postEntries = posts.map((post) => ({
+    url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/blog/${post.category.toLowerCase()}/${post.slug}`,
+    lastModified: new Date(post.date).toISOString(), // ISO 8601 형식으로 변환
+  }))
 
   // 카테고리 페이지
-  const categories = [...new Set(allPosts.map((post) => post.category.toLowerCase()))]
+  const categories = [...new Set(posts.map((post) => post.category.toLowerCase()))]
   const categoryPages = categories.map((category) => ({
     url: `${baseUrl}/blog/category/${category}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.7,
-  })) as MetadataRoute.Sitemap
+  }))
 
   // 태그 페이지
-  const tags = [...new Set(allPosts.flatMap((post) => post.tags || []).map((tag) => tag.toLowerCase()))]
+  const tags = [...new Set(posts.flatMap((post) => post.tags || []).map((tag) => tag.toLowerCase()))]
   const tagPages = tags.map((tag) => ({
     url: `${baseUrl}/blog/tag/${tag}`,
     lastModified: new Date(),
     changeFrequency: "weekly",
     priority: 0.6,
-  })) as MetadataRoute.Sitemap
+  }))
 
-  return [...staticPages, ...postPages, ...categoryPages, ...tagPages]
+  return [...staticPages, ...postEntries, ...categoryPages, ...tagPages]
 }
