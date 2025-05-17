@@ -1,3 +1,19 @@
+// Google Analytics gtag 타입 정의
+declare global {
+  interface Window {
+    gtag: (
+      command: "config" | "event" | "consent" | "set",
+      targetId: string,
+      config?: {
+        page_path?: string
+        page_title?: string
+        page_location?: string
+        [key: string]: any
+      }
+    ) => void
+  }
+}
+
 "use client"
 
 import { useEffect } from "react"
