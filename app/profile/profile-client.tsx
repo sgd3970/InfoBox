@@ -12,21 +12,21 @@ import { Label } from "@/components/ui/label"
 
 export function ProfileClient() {
   const router = useRouter()
-  const { user, logout } = useAuth()
+  const { auth, logout } = useAuth()
   const [name, setName] = useState("")
   const [email, setEmail] = useState("")
   const [isLoading, setIsLoading] = useState(false)
   const [message, setMessage] = useState("")
 
   useEffect(() => {
-    if (!user) {
+    if (!auth.user) {
       router.push("/login")
       return
     }
 
-    setName(user.name || "")
-    setEmail(user.email || "")
-  }, [user, router])
+    setName(auth.user.name || "")
+    setEmail(auth.user.email || "")
+  }, [auth.user, router])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -49,7 +49,7 @@ export function ProfileClient() {
     router.push("/")
   }
 
-  if (!user) {
+  if (!auth.user) {
     return null
   }
 
@@ -92,7 +92,7 @@ export function ProfileClient() {
         <CardContent className="space-y-4">
           <div>
             <p className="text-sm font-medium">계정 유형</p>
-            <p className="text-sm text-muted-foreground">{user.role === "admin" ? "관리자" : "일반 사용자"}</p>
+            <p className="text-sm text-muted-foreground">{auth.user.role === "admin" ? "관리자" : "일반 사용자"}</p>
           </div>
           <div>
             <p className="text-sm font-medium">가입일</p>
