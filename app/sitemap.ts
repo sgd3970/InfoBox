@@ -26,47 +26,49 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     {
       url: baseUrl,
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "daily" as const,
       priority: 1.0,
     },
     {
       url: `${baseUrl}/blog`,
       lastModified: new Date(),
-      changeFrequency: "daily",
+      changeFrequency: "daily" as const,
       priority: 0.9,
     },
     {
       url: `${baseUrl}/about`,
       lastModified: new Date(),
-      changeFrequency: "monthly",
+      changeFrequency: "monthly" as const,
       priority: 0.8,
     },
     {
       url: `${baseUrl}/blog/categories`,
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "weekly" as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/blog/tags`,
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "weekly" as const,
       priority: 0.7,
     },
     {
       url: `${baseUrl}/search`,
       lastModified: new Date(),
-      changeFrequency: "weekly",
+      changeFrequency: "weekly" as const,
       priority: 0.6,
     },
-  ] as MetadataRoute.Sitemap
+  ] as const
 
   // 블로그 포스트 페이지
   const posts = await getAllPostsForSitemap();
 
   const postEntries = posts.map((post) => ({
     url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/blog/${post.category.toLowerCase()}/${post.slug}`,
-    lastModified: new Date(post.date).toISOString(), // ISO 8601 형식으로 변환
+    lastModified: new Date(post.date).toISOString(),
+    changeFrequency: "weekly" as const,
+    priority: 0.8,
   }))
 
   // 카테고리 페이지
@@ -74,7 +76,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const categoryPages = categories.map((category) => ({
     url: `${baseUrl}/blog/category/${category}`,
     lastModified: new Date(),
-    changeFrequency: "weekly",
+    changeFrequency: "weekly" as const,
     priority: 0.7,
   }))
 
@@ -83,7 +85,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const tagPages = tags.map((tag) => ({
     url: `${baseUrl}/blog/tag/${tag}`,
     lastModified: new Date(),
-    changeFrequency: "weekly",
+    changeFrequency: "weekly" as const,
     priority: 0.6,
   }))
 
