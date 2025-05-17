@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 import clientPromise from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 
@@ -6,6 +8,12 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || session.user?.role !== "admin") {
+      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
+    }
+
     const client = await clientPromise
     const db = client.db()
     
@@ -27,8 +35,9 @@ export async function GET() {
         {
           $project: {
             _id: 1,
+            nickname: 1,
             content: 1,
-            author: 1,
+            isPrivate: 1,
             createdAt: 1,
             postSlug: "$post.slug",
             postTitle: "$post.title",
@@ -52,6 +61,12 @@ export async function GET() {
 
 export async function DELETE(request: Request) {
   try {
+    const session = await getServerSession(authOptions)
+
+    if (!session || session.user?.role !== "admin") {
+      return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
+    }
+
     const { searchParams } = new URL(request.url)
     const id = searchParams.get("id")
 

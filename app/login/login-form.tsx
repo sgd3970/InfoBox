@@ -74,39 +74,27 @@ export function LoginForm() {
           id="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="your@email.com"
+          onChange={(e) => setEmail(e.target.value)}          
           required
         />
       </div>
 
       <div className="space-y-2">
         <div className="flex items-center justify-between">
-          <Label htmlFor="password">비밀번호</Label>
-          <Link href="/forgot-password" className="text-sm text-primary hover:underline">
-            비밀번호 찾기
-          </Link>
+          <Label htmlFor="password">비밀번호</Label>          
         </div>
         <Input
           id="password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="••••••••"
+          onChange={(e) => setPassword(e.target.value)}          
           required
         />
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? "로그인 중..." : "로그인"}
-      </Button>
-
-      <div className="text-center text-sm">
-        계정이 없으신가요?{" "}
-        <Link href="/register" className="text-primary hover:underline">
-          회원가입
-        </Link>
-      </div>     
+      </Button>      
     </form>
   )
 }

@@ -47,9 +47,10 @@ export interface Comment {
   _id?: string
   postId: string
   postSlug: string
-  author: string
-  authorId?: string
+  nickname: string
+  password: string
   content: string
+  isPrivate: boolean
   createdAt: Date
   updatedAt: Date
 }

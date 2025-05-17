@@ -13,20 +13,22 @@ import { Separator } from "@/components/ui/separator"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
+import { Checkbox } from "@/components/ui/checkbox"
 
 const commentFormSchema = z.object({
-  name: z.string().min(2, { message: "이름은 2자 이상이어야 합니다." }),
-  email: z.string().email({ message: "유효한 이메일 주소를 입력해주세요." }),
+  nickname: z.string().min(2, { message: "닉네임은 2자 이상이어야 합니다." }),
+  password: z.string().length(4, { message: "비밀번호는 4자리 숫자여야 합니다." }).regex(/^\d+$/, { message: "비밀번호는 숫자만 입력 가능합니다." }),
   content: z.string().min(5, { message: "댓글은 5자 이상이어야 합니다." }),
+  isPrivate: z.boolean(),
 })
 
 type CommentFormValues = z.infer<typeof commentFormSchema>
 
 interface Comment {
   _id: string
-  name: string
-  email: string
+  nickname: string
   content: string
+  isPrivate: boolean
   createdAt: string
   postSlug: string
 }
@@ -40,14 +42,17 @@ export function Comments({ postSlug, category }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isPrivate, setIsPrivate] = useState(false)
 
   const form = useForm<CommentFormValues>({
     resolver: zodResolver(commentFormSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      nickname: "",
+      password: "",
       content: "",
+      isPrivate: false,
     },
+    mode: "onChange",
   })
 
   useEffect(() => {
@@ -108,12 +113,12 @@ export function Comments({ postSlug, category }: CommentsProps) {
               <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="nickname"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>이름</FormLabel>
+                      <FormLabel>닉네임</FormLabel>
                       <FormControl>
-                        <Input placeholder="홍길동" {...field} />
+                        <Input placeholder="닉네임을 입력하세요" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -121,18 +126,47 @@ export function Comments({ postSlug, category }: CommentsProps) {
                 />
                 <FormField
                   control={form.control}
-                  name="email"
+                  name="password"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>이메일</FormLabel>
+                      <FormLabel>비밀번호 (4자리 숫자)</FormLabel>
                       <FormControl>
-                        <Input placeholder="example@example.com" {...field} />
+                        <Input 
+                          type="password" 
+                          placeholder="1234" 
+                          maxLength={4}
+                          {...field}
+                          disabled={!isPrivate}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+              <FormField
+                control={form.control}
+                name="isPrivate"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
+                    <FormControl>
+                      <Checkbox
+                        checked={field.value}
+                        onCheckedChange={(checked) => {
+                          field.onChange(checked)
+                          setIsPrivate(checked as boolean)
+                          if (!checked) {
+                            form.setValue("password", "")
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      비밀글
+                    </FormLabel>
+                  </FormItem>
+                )}
+              />
               <FormField
                 control={form.control}
                 name="content"
@@ -166,11 +200,16 @@ export function Comments({ postSlug, category }: CommentsProps) {
             <div key={comment._id} className="space-y-4">
               <div className="flex items-start gap-4">
                 <Avatar>
-                  <AvatarFallback>{comment.name ? comment.name.substring(0, 2).toUpperCase() : '?'}</AvatarFallback>
+                  <AvatarFallback>{comment.nickname ? comment.nickname.substring(0, 2).toUpperCase() : '?'}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">{comment.name || '익명 사용자'}</h4>
+                    <div className="flex items-center gap-2">
+                      <h4 className="font-semibold">{comment.nickname || '익명 사용자'}</h4>
+                      {comment.isPrivate && (
+                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">비밀글</span>
+                      )}
+                    </div>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.createdAt), {
                         addSuffix: true,

@@ -48,8 +48,8 @@ export default function PrivacyPage() {
 
       <h2>7. 개인정보 보호책임자</h2>
       <ul>
-        <li>이름: 홍길동</li>
-        <li>이메일: info@infobox.com</li>
+        <li>이름: 손규동</li>
+        <li>이메일: zbehddl@gmail.com</li>
       </ul>
 
       <p><strong>이 방침은 2025년 5월 17일부터 적용됩니다.</strong></p>

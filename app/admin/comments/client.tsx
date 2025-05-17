@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Search, Eye, Trash, Loader2 } from "lucide-react"
+import { Search, Eye, Trash, Loader2, Lock } from "lucide-react"
 import type { Comment } from "@/lib/models"
 
 export default function AdminCommentsClient() {
@@ -33,7 +33,7 @@ export default function AdminCommentsClient() {
 
   // 검색 필터링
   const filteredComments = comments.filter((comment) => {
-    const searchContent = `${comment.content} ${comment.author}`.toLowerCase()
+    const searchContent = `${comment.content} ${comment.nickname}`.toLowerCase()
     return searchContent.includes(searchTerm.toLowerCase())
   })
 
@@ -62,7 +62,7 @@ export default function AdminCommentsClient() {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>작성자</TableHead>
+              <TableHead>닉네임</TableHead>
               <TableHead>내용</TableHead>
               <TableHead>포스트</TableHead>
               <TableHead>작성일</TableHead>
@@ -72,7 +72,14 @@ export default function AdminCommentsClient() {
           <TableBody>
             {filteredComments.map((comment) => (
               <TableRow key={comment._id}>
-                <TableCell className="font-medium">{comment.author}</TableCell>
+                <TableCell className="font-medium">
+                  <div className="flex items-center gap-2">
+                    {comment.nickname}
+                    {comment.isPrivate && (
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    )}
+                  </div>
+                </TableCell>
                 <TableCell className="max-w-md truncate">{comment.content}</TableCell>
                 <TableCell>
                   <Link
@@ -102,7 +109,25 @@ export default function AdminCommentsClient() {
                         <Eye className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+                    <Button 
+                      variant="ghost" 
+                      size="icon" 
+                      className="text-red-500 hover:text-red-700"
+                      onClick={async () => {
+                        if (window.confirm("이 댓글을 삭제하시겠습니까?")) {
+                          try {
+                            const res = await fetch(`/api/comments/admin?id=${comment._id}`, {
+                              method: "DELETE",
+                            })
+                            if (!res.ok) throw new Error("댓글 삭제에 실패했습니다")
+                            setComments(comments.filter((c) => c._id !== comment._id))
+                          } catch (error) {
+                            console.error("댓글 삭제 오류:", error)
+                            alert("댓글 삭제에 실패했습니다")
+                          }
+                        }
+                      }}
+                    >
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>

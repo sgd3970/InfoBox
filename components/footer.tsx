@@ -61,8 +61,10 @@ export function Footer() {
               <Link 
                 href="/privacy" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent default link behavior
+                  window.open('/privacy', '_blank', 'width=800,height=600');
+                }}
               >
                 개인정보처리방침
               </Link>
@@ -71,8 +73,10 @@ export function Footer() {
               <Link 
                 href="/terms" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent default link behavior
+                  window.open('/terms', '_blank', 'width=800,height=600');
+                }}
               >
                 이용약관
               </Link>
@@ -81,20 +85,17 @@ export function Footer() {
               <Link 
                 href="/sitemap.xml" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
-                target="_blank"
-                rel="noopener noreferrer"
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent default link behavior
+                  window.open('/sitemap.xml', '_blank', 'width=800,height=600');
+                }}
               >
                 사이트맵
               </Link>
             </li>
           </ul>
         </div>
-      </div>
-
-      <div className="container mt-8 pt-8 border-t">
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        </div>
-      </div>
+      </div>      
     </footer>
   )
 }
