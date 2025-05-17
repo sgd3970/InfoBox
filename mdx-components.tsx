@@ -3,7 +3,7 @@ import Image from "next/image"
 import { cn } from "@/lib/utils"
 import { Callout } from "@/components/ui/callout"
 import { CodeBlock } from "@/components/ui/code-block"
-import { TOC } from "@/components/toc"
+import { TableOfContents as TOC } from "@/components/toc"
 
 // Custom components for MDX
 export function useMDXComponents(components: MDXComponents): MDXComponents {
