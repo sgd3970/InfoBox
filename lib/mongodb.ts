@@ -11,7 +11,7 @@ const options: MongoClientOptions = {
   maxIdleTimeMS: 30000, // 최대 유휴 시간 (30초)
   connectTimeoutMS: 10000, // 연결 제한 시간 (10초)
   socketTimeoutMS: 45000, // 소켓 제한 시간 (45초)
-  serverSelectionTimeoutMS: 15000, // 서버 선택 제한 시간 (15초로 증가)
+  serverSelectionTimeoutMS: 5000, // 서버 선택 제한 시간 (5초)
   heartbeatFrequencyMS: 10000, // 하트비트 빈도 (10초)
   retryWrites: true, // 쓰기 재시도
   w: "majority", // 쓰기 확인

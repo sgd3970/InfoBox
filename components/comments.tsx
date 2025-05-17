@@ -18,7 +18,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 const commentFormSchema = z.object({
   nickname: z.string().min(2, { message: "닉네임은 2자 이상이어야 합니다." }),
   password: z.string().length(4, { message: "비밀번호는 4자리 숫자여야 합니다." }).regex(/^\d+$/, { message: "비밀번호는 숫자만 입력 가능합니다." }),
-  content: z.string().min(5, { message: "댓글은 5자 이상이어야 합니다." }),
+  content: z.string(),
   isPrivate: z.boolean(),
 })
 
@@ -133,7 +133,7 @@ export function Comments({ postSlug, category }: CommentsProps) {
                       <FormControl>
                         <Input 
                           type="password" 
-                          placeholder="1234" 
+                          placeholder="****" 
                           maxLength={4}
                           {...field}
                           disabled={!isPrivate}
