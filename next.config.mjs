@@ -11,7 +11,7 @@ const nextConfig = {
   reactStrictMode: true,
   images: {
     domains: ['images.unsplash.com', 'source.unsplash.com'],
-    unoptimized: true,
+    unoptimized: true, 
   },
   eslint: {
     ignoreDuringBuilds: true,
