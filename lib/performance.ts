@@ -11,11 +11,11 @@ export async function getDatabaseStats() {
 
     // 컬렉션별 통계 가져오기
     const collections = ["posts", "comments", "users", "categories", "tags", "pageviews", "referrers", "devicestats"]
-    const collectionStats = {}
+    const collectionStats: { [key: string]: any } = {}
 
-    for (const collection of collections) {
-      const stats = await db.collection(collection).stats()
-      collectionStats[collection] = {
+    for (const collectionName of collections) {
+      const stats = await db.command({ collStats: collectionName });
+      collectionStats[collectionName] = {
         count: stats.count,
         size: stats.size,
         avgObjSize: stats.avgObjSize,
@@ -46,7 +46,7 @@ export async function analyzeQueryPerformance(
   collection: string,
   query: object,
   projection: object = {},
-  sort: object = {},
+  sort: any = {},
 ) {
   try {
     const client = await clientPromise
