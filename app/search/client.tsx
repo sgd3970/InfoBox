@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useSearchParams } from "next/navigation"
@@ -9,28 +9,46 @@ import { Pagination } from "@/components/ui/pagination"
 import { Loader2 } from "lucide-react"
 import { AdvancedSearch } from "@/components/advanced-search"
 import type { Post } from "@/lib/models"
+import { useRouter } from "next/navigation"
 
 export function SearchClient() {
   const searchParams = useSearchParams()
-  const query = searchParams?.get("q") || ""
-  const category = searchParams?.get("category") || ""
-  const tags = searchParams?.get("tags")?.split(",") || []
-  const dateFrom = searchParams?.get("dateFrom") || ""
-  const dateTo = searchParams?.get("dateTo") || ""
-  const sortBy = searchParams?.get("sortBy") || "relevance"
-  const sortOrder = searchParams?.get("sortOrder") || "desc"
-  const page = Number(searchParams?.get("page") || "1")
-  const limit = Number(searchParams?.get("limit") || "10")
+  const router = useRouter()
+
+  // Initialize states from search params
+  const [query, setQuery] = useState(searchParams?.get("q") || "")
+  const [category, setCategory] = useState(searchParams?.get("category") || "")
+  const tags = useMemo(() => searchParams?.get("tags")?.split(",") || [], [searchParams])
+  const [dateFrom, setDateFrom] = useState(searchParams?.get("dateFrom") || "")
+  const [dateTo, setDateTo] = useState(searchParams?.get("dateTo") || "")
+  const [sortBy, setSortBy] = useState(searchParams?.get("sortBy") || "relevance")
+  const [sortOrder, setSortOrder] = useState(searchParams?.get("sortOrder") || "desc")
+  const [page, setPage] = useState(Number(searchParams?.get("page") || "1"))
+  const [limit, setLimit] = useState(Number(searchParams?.get("limit") || "10"))
 
   const [searchResults, setSearchResults] = useState<Post[]>([])
   const [total, setTotal] = useState(0)
   const [pages, setPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
+  const [categories, setCategories] = useState<string[]>([])
+
+  // Effect to update state when search params change
+  useEffect(() => {
+    setQuery(searchParams?.get("q") || "")
+    setCategory(searchParams?.get("category") || "")
+    setDateFrom(searchParams?.get("dateFrom") || "")
+    setDateTo(searchParams?.get("dateTo") || "")
+    setSortBy(searchParams?.get("sortBy") || "relevance")
+    setSortOrder(searchParams?.get("sortOrder") || "desc")
+    setPage(Number(searchParams?.get("page") || "1"))
+    setLimit(Number(searchParams?.get("limit") || "10"))
+  }, [searchParams])
 
   // 검색 실행
   useEffect(() => {
     const fetchSearchResults = async () => {
+      console.log("Fetching search results...", { query, category, tags, dateFrom, dateTo, sortBy, sortOrder, page, limit })
       setLoading(true)
 
       try {
@@ -55,13 +73,22 @@ export function SearchClient() {
         }
 
         const data = await res.json()
+        console.log("Search results fetched successfully:", data)
+        console.log("Current searchResults state before update:", searchResults)
 
         setSearchResults(data.posts)
         setTotal(data.total)
         setPages(data.pages)
+
+        // Calculate and set categories here
+        const uniqueCategories = Array.from(new Set((data.posts as Post[]).map((post) => post.category.toLowerCase())));
+        setCategories(uniqueCategories);
+
       } catch (error) {
         console.error("검색 오류:", error)
       } finally {
+        console.log("Finished fetching search results.")
+        console.log("Current searchResults state after update:", searchResults)
         setLoading(false)
       }
     }
@@ -76,9 +103,6 @@ export function SearchClient() {
     }
     return searchResults.filter((post) => post.category.toLowerCase() === categorySlug.toLowerCase())
   }
-
-  // 고유 카테고리 목록 가져오기
-  const categories = Array.from(new Set(searchResults.map((post) => post.category.toLowerCase())))
 
   // 검색어 하이라이트 함수
   const highlightText = (text: string) => {
@@ -171,7 +195,52 @@ export function SearchClient() {
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
                     {searchResults.map((post) => (
-                      <SearchResultCard key={post._id} post={post} highlightText={highlightText} />
+                      <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                        <div className="relative aspect-video overflow-hidden">
+                          <Image
+                            src={post.image || "/placeholder.svg?height=150&width=300"}
+                            alt={post.title}
+                            width={300}
+                            height={150}
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                              {post.category}
+                            </span>
+                            {post.tags && post.tags.length > 0 && (
+                              <div className="flex gap-1 flex-wrap">
+                                {post.tags.slice(0, 3).map((tag) => (
+                                  <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                                    {tag}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                          <h3
+                            className="text-xl font-bold group-hover:text-primary transition-colors"
+                            dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                          />
+                          <p
+                            className="text-muted-foreground line-clamp-2"
+                            dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                          />
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <time dateTime={post.date}>
+                              {new Date(post.date).toLocaleDateString("ko-KR", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </time>
+                            <span className="mx-2">•</span>
+                            <span>{post.views.toLocaleString()} 조회</span>
+                          </div>
+                        </div>
+                      </Link>
                     ))}
                   </div>
                 </TabsContent>
@@ -180,7 +249,52 @@ export function SearchClient() {
                   <TabsContent key={cat} value={cat} className="mt-6">
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
-                        <SearchResultCard key={post._id} post={post} highlightText={highlightText} />
+                        <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                          <div className="relative aspect-video overflow-hidden">
+                            <Image
+                              src={post.image || "/placeholder.svg?height=150&width=300"}
+                              alt={post.title}
+                              width={300}
+                              height={150}
+                              className="object-cover transition-transform group-hover:scale-105"
+                            />
+                          </div>
+                          <div className="space-y-2 p-4">
+                            <div className="flex items-center gap-2">
+                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                                {post.category}
+                              </span>
+                              {post.tags && post.tags.length > 0 && (
+                                <div className="flex gap-1 flex-wrap">
+                                  {post.tags.slice(0, 3).map((tag) => (
+                                    <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                                      {tag}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                            <h3
+                              className="text-xl font-bold group-hover:text-primary transition-colors"
+                              dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                            />
+                            <p
+                              className="text-muted-foreground line-clamp-2"
+                              dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                            />
+                            <div className="flex items-center text-xs text-muted-foreground">
+                              <time dateTime={post.date}>
+                                {new Date(post.date).toLocaleDateString("ko-KR", {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                })}
+                              </time>
+                              <span className="mx-2">•</span>
+                              <span>{post.views?.toLocaleString() || 0} 조회</span>
+                            </div>
+                          </div>
+                        </Link>
                       ))}
                     </div>
                   </TabsContent>
@@ -191,36 +305,8 @@ export function SearchClient() {
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
                 {searchResults.map((post) => (
-                  <SearchResultCard key={post._id} post={post} highlightText={highlightText} />
-                ))}
-              </div>
-            )}
-
-            {/* 페이지네이션 */}
-            {pages > 1 && (
-              <Pagination
-                currentPage={page}
-                totalPages={pages}
-                onPageChange={(newPage) => {
-                  // 페이지 변경 시 URL 업데이트
-                  const params = new URLSearchParams(searchParams?.toString())
-                  params.set("page", newPage.toString())
-                  window.location.href = `/search?${params.toString()}`
-                }}
-              />
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function SearchResultCard({ post, highlightText }: { post: Post; highlightText: (text: string) => string }) {
-  return (
-    <Link href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
-      <div className="grid md:grid-cols-[200px_1fr] gap-4 p-4 rounded-lg hover:bg-muted/50 transition-colors">
-        <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                    <div className="relative aspect-video overflow-hidden">
           <Image
             src={post.image || "/placeholder.svg?height=150&width=300"}
             alt={post.title}
@@ -264,7 +350,28 @@ function SearchResultCard({ post, highlightText }: { post: Post; highlightText: 
             <span>{post.views.toLocaleString()} 조회</span>
           </div>
         </div>
+                  </Link>
+                ))}
+              </div>
+            )}
+
+            {/* 페이지네이션 */}
+            {pages > 1 && (
+              <Pagination
+                currentPage={page}
+                totalPages={pages}
+                onPageChange={(newPage) => {
+                  // 페이지 변경 시 URL 업데이트 및 page 상태 업데이트
+                  const params = new URLSearchParams(searchParams?.toString())
+                  params.set("page", newPage.toString())
+                  router.push(`/search?${params.toString()}`)
+                  setPage(newPage)
+                }}
+              />
+            )}
+          </div>
+        )}
       </div>
-    </Link>
+    </div>
   )
 }

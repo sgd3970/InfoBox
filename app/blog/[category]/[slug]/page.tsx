@@ -21,7 +21,7 @@ async function getPost(slug: string): Promise<Post | null> {
   try {
     const client = await clientPromise
     const db = client.db()
-    const post = await db.collection("posts").findOne({ slug })
+    const post = await db.collection("posts").findOne({ slug }) as any as Post;
 
     if (!post) return null
 
@@ -43,7 +43,7 @@ async function getRelatedPosts(currentSlug: string, category: string, limit = 3)
       .collection("posts")
       .find({ slug: { $ne: currentSlug }, category })
       .limit(limit)
-      .toArray()
+      .toArray() as any as Post[];
 
     return posts as Post[]
   } catch (error) {
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       images: [post.image || ogUrl.toString()],
     },
     alternates: {
-      amphtml: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/amp/${params.category}/${params.slug}`,
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/blog/${params.category}/${params.slug}`,
     },
   }
 }
@@ -106,22 +106,38 @@ export default async function PostPage({ params }: PostPageProps) {
 
   return (
     <>
-      <SEOSchema type="blogPosting" post={post} url={postUrl} />
+      <SEOSchema
+        type="article"
+        title={post.title}
+        description={post.description}
+        url={postUrl}
+        imageUrl={post.image}
+        publishedTime={post.date}
+        authorName={post.author}
+        keywords={post.tags || []}
+      />
 
       <div className="container py-10">
         <article className="max-w-3xl mx-auto">
           <div className="space-y-4 mb-8">
             <div className="space-y-2">
               <div className="flex items-center gap-2">
-                <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                <Link
+                  href={`/blog/category/${encodeURIComponent(post.category.toLowerCase())}`}
+                  className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
+                >
                   {post.category}
-                </span>
+                </Link>
                 {post.tags && post.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap">
                     {post.tags.map((tag) => (
-                      <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                      <Link
+                        key={tag}
+                        href={`/blog/tag/${encodeURIComponent(tag)}`}
+                        className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
+                      >
                         {tag}
-                      </span>
+                      </Link>
                     ))}
                   </div>
                 )}
@@ -182,7 +198,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
 
           {/* AI 콘텐츠 요약 */}
-          <AIContentSummary content={post.description} title={post.title} />
+          <AIContentSummary content={post.description} />
 
           <div className="prose prose-lg dark:prose-invert max-w-none mt-8">
             {post.content.split("\n").map((paragraph, index) => {
@@ -212,11 +228,11 @@ export default async function PostPage({ params }: PostPageProps) {
           <AIContentRecommendations
             currentPostSlug={post.slug}
             currentPostCategory={post.category}
-            currentPostTags={post.tags}
+            currentPostTags={post.tags || []}
           />
 
           {/* 댓글 시스템 */}
-          <Comments category={params.category} slug={params.slug} />
+          <Comments category={params.category} postSlug={params.slug} />
         </article>
 
         {/* 관련 포스트 */}

@@ -8,7 +8,11 @@ import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
 import { Search } from "lucide-react"
 
-export function SearchAutocomplete() {
+interface SearchAutocompleteProps {
+  setSearchDialogOpen: (open: boolean) => void;
+}
+
+export function SearchAutocomplete({ setSearchDialogOpen }: SearchAutocompleteProps) {
   const [query, setQuery] = useState("")
   const [suggestions, setSuggestions] = useState<string[]>([])
   const [showSuggestions, setShowSuggestions] = useState(false)
@@ -58,6 +62,8 @@ export function SearchAutocomplete() {
     if (query.trim()) {
       router.push(`/search?q=${encodeURIComponent(query.trim())}`)
       setShowSuggestions(false)
+      // Close the dialog after search
+      setSearchDialogOpen(false);
     }
   }
 
@@ -66,6 +72,8 @@ export function SearchAutocomplete() {
     setQuery(suggestion)
     router.push(`/search?q=${encodeURIComponent(suggestion)}`)
     setShowSuggestions(false)
+    // Close the dialog after suggestion click
+    setSearchDialogOpen(false);
   }
 
   // 외부 클릭 시 제안 닫기

@@ -40,32 +40,16 @@ if (process.env.NODE_ENV === "development") {
 // 연결 상태 모니터링
 clientPromise
   .then((client) => {
-    console.log("MongoDB에 성공적으로 연결되었습니다.")
+    //console.log("MongoDB에 성공적으로 연결되었습니다.")
 
     // 연결 이벤트 리스너
-    client.on("serverHeartbeatSucceeded", () => {
-      console.log("MongoDB 서버 하트비트 성공")
-    })
-
     client.on("serverHeartbeatFailed", (event) => {
       console.error("MongoDB 서버 하트비트 실패:", event)
     })
 
-    client.on("connectionPoolCreated", (event) => {
-      console.log("MongoDB 연결 풀 생성됨:", event)
-    })
-
-    client.on("connectionPoolClosed", (event) => {
-      console.log("MongoDB 연결 풀 닫힘:", event)
-    })
-
-    client.on("connectionCreated", (event) => {
-      console.log("MongoDB 연결 생성됨:", event)
-    })
-
-    client.on("connectionClosed", (event) => {
-      console.log("MongoDB 연결 닫힘:", event)
-    })
+    // client.on("serverHeartbeatSucceeded", () => {
+    //   console.log("MongoDB 서버 하트비트 성공")
+    // })
 
     client.on("error", (error) => {
       console.error("MongoDB 연결 오류:", error)

@@ -106,13 +106,7 @@ export function LoginForm() {
         <Link href="/register" className="text-primary hover:underline">
           회원가입
         </Link>
-      </div>
-
-      <div className="text-center text-xs text-muted-foreground">
-        <p>테스트 계정:</p>
-        <p>관리자: admin@example.com / password</p>
-        <p>사용자: user@example.com / password</p>
-      </div>
+      </div>     
     </form>
   )
 }

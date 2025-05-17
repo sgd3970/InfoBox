@@ -43,46 +43,47 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
 
   const posts = await getCategoryPosts(formattedCategory)
 
-  if (posts.length === 0) {
-    notFound()
-  }
-
   return (
     <div className="container py-10">
       <div className="mb-8">
         <h1 className="text-4xl font-bold">{formattedCategory}</h1>
         <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
+        
       </div>
 
-      <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-        {posts.map((post) => (
-          <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
-            <div className="space-y-4">
-              <div className="relative aspect-video overflow-hidden rounded-lg">
-                <Image
-                  src={post.image || "/placeholder.svg?height=200&width=400"}
-                  alt={post.title}
-                  fill
-                  className="object-cover transition-transform group-hover:scale-105"
-                />
+      {posts.length > 0 ? (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          {posts.map((post) => (
+            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
+              <div className="space-y-4">
+                <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <Image
+                    src={post.image || "/placeholder.svg?height=200&width=400"}
+                    alt={post.title}
+                    fill
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                </div>
+                <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
+                <div className="flex items-center text-xs text-muted-foreground">
+                  <time dateTime={post.date}>
+                    {new Date(post.date).toLocaleDateString("ko-KR", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </time>
+                </div>
               </div>
-              <div className="space-y-2">
-                <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
-              </div>
-              <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
-              <div className="flex items-center text-xs text-muted-foreground">
-                <time dateTime={post.date}>
-                  {new Date(post.date).toLocaleDateString("ko-KR", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })}
-                </time>
-              </div>
-            </div>
-          </Link>
-        ))}
-      </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <p className="text-muted-foreground text-center">해당 카테고리는 현재 등록된 게시물이 없습니다.</p>
+      )}
     </div>
   )
 }

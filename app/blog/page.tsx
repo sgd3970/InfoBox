@@ -15,12 +15,21 @@ async function getPosts() {
     const client = await clientPromise
     const db = client.db()
     const posts = await db.collection("posts").find().sort({ date: -1 }).limit(7).toArray()
-    return posts.map(post => ({
+    return posts.map(post => {
+      // 날짜 필드를 Date 객체로 변환을 시도합니다.
+      const createdAt = post.createdAt ? new Date(post.createdAt) : null;
+      const updatedAt = post.updatedAt ? new Date(post.updatedAt) : null;
+      const date = post.date ? new Date(post.date) : null;
+
+      return {
       ...post,
       _id: post._id.toString(),
-      createdAt: post.createdAt?.toISOString(),
-      updatedAt: post.updatedAt?.toISOString(),
-    })) as Post[]
+        // 유효한 Date 객체인 경우에만 toISOString 호출 또는 직접 Date 객체 사용
+        createdAt: createdAt instanceof Date && !isNaN(createdAt.getTime()) ? createdAt.toISOString() : post.createdAt,
+        updatedAt: updatedAt instanceof Date && !isNaN(updatedAt.getTime()) ? updatedAt.toISOString() : post.updatedAt,
+        date: date instanceof Date && !isNaN(date.getTime()) ? date.toISOString() : post.date, // date 필드도 유사하게 처리
+      }
+    }) as Post[]
   } catch (error) {
     console.error("포스트 가져오기 오류:", error)
     return []
@@ -63,7 +72,7 @@ export default async function BlogPage() {
                 </div>
                 <p className="text-muted-foreground line-clamp-3">{featuredPost.description}</p>
                 <div className="flex items-center text-sm text-muted-foreground">
-                  <time dateTime={featuredPost.date}>
+                  <time dateTime={new Date(featuredPost.date).toISOString()}>
                     {new Date(featuredPost.date).toLocaleDateString("ko-KR", {
                       year: "numeric",
                       month: "long",
@@ -101,7 +110,7 @@ export default async function BlogPage() {
                 </div>
                 <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
                 <div className="flex items-center text-xs text-muted-foreground">
-                  <time dateTime={post.date}>
+                  <time dateTime={new Date(post.date).toISOString()}>
                     {new Date(post.date).toLocaleDateString("ko-KR", {
                       year: "numeric",
                       month: "long",

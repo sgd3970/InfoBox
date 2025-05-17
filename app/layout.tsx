@@ -3,7 +3,7 @@ import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Noto_Sans_KR } from "next/font/google"
 import "./globals.css"
-import { ThemeProvider } from "@/components/theme-provider"
+import { Providers } from "@/components/providers"
 import { Navbar } from "@/components/navbar"
 import { Footer } from "@/components/footer"
 import { CookieConsent } from "@/components/cookie-consent"
@@ -11,7 +11,6 @@ import { Analytics } from "@/components/analytics"
 import { PWARegister } from "@/components/pwa-register"
 import ServiceWorkerRegistration from "./sw"
 import { Suspense } from "react"
-import { AuthProvider } from "@/contexts/auth-context"
 import { WebVitals } from "@/components/web-vitals"
 import { ErrorMonitoring } from "@/components/error-monitoring"
 import { UserBehaviorTracking } from "@/components/user-behavior-tracking"
@@ -68,8 +67,7 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <body className={`${inter.className} ${notoSansKr.className}`}>
-        <AuthProvider>
-          <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+        <Providers>
             <div className="flex flex-col min-h-screen">
               <Navbar />
               <Suspense>
@@ -79,15 +77,16 @@ export default function RootLayout({
               <CookieConsent />
               <PWARegister />
             </div>
-          </ThemeProvider>
+          <Suspense>
           <Analytics />
+          </Suspense>
           <WebVitals />
           <ErrorMonitoring />
           <Suspense>
             <UserBehaviorTracking />
           </Suspense>
           <ServiceWorkerRegistration />
-        </AuthProvider>
+        </Providers>
       </body>
     </html>
   )

@@ -3,6 +3,7 @@ import Image from "next/image"
 import { AdBanner } from "@/components/ad-banner"
 import clientPromise from "@/lib/mongodb"
 import type { Post, Category } from "@/lib/models"
+import { getCategories } from "@/lib/posts"
 
 async function getPosts(): Promise<Post[]> {
   try {
@@ -13,19 +14,6 @@ async function getPosts(): Promise<Post[]> {
     return posts as Post[]
   } catch (error) {
     console.error("포스트 가져오기 오류:", error)
-    return []
-  }
-}
-
-async function getCategories(): Promise<Category[]> {
-  try {
-    const client = await clientPromise
-    const db = client.db()
-    const categories = await db.collection("categories").find().toArray()
-
-    return categories as Category[]
-  } catch (error) {
-    console.error("카테고리 가져오기 오류:", error)
     return []
   }
 }

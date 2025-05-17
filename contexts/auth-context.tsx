@@ -1,6 +1,7 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { signIn, signOut, useSession } from "next-auth/react"
 import type { AuthState, User } from "@/lib/auth-types"
 
 // 초기 상태
@@ -24,104 +25,54 @@ const AuthContext = createContext<{
 
 // 인증 제공자 컴포넌트
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const { data: session, status } = useSession()
   const [auth, setAuth] = useState<AuthState>(initialState)
 
-  // 세션 확인
+  // 세션 상태 동기화
   useEffect(() => {
-    const checkSession = async () => {
-      try {
-        // 실제 환경에서는 API 호출을 통해 세션을 확인합니다.
-        // 여기서는 로컬 스토리지를 사용하여 시뮬레이션합니다.
-        const storedUser = localStorage.getItem("user")
-
-        if (storedUser) {
-          const user = JSON.parse(storedUser) as User
+    if (status === "authenticated" && session?.user) {
           setAuth({
-            user,
+        user: {
+          id: session.user.id,
+          name: session.user.name || "",
+          email: session.user.email || "",
+          role: session.user.role as "user" | "admin",
+        },
             status: "authenticated",
           })
-        } else {
+    } else if (status === "unauthenticated") {
           setAuth({
             user: null,
             status: "unauthenticated",
           })
         }
-      } catch (error) {
-        console.error("세션 확인 중 오류 발생:", error)
-        setAuth({
-          user: null,
-          status: "unauthenticated",
-        })
-      }
-    }
+  }, [status, session])
 
-    checkSession()
-  }, [])
-
-  // 로그인 함수
+  // 로그인 함수 수정
   const login = async (email: string, password: string): Promise<boolean> => {
     try {
-      console.log("로그인 시도:", email, password)
-
-      // 관리자 계정 시뮬레이션
-      if (email === "admin@example.com" && password === "password") {
-        const user: User = {
-          id: "1",
-          name: "관리자",
-          email: "admin@example.com",
-          role: "admin",
-        }
-
-        localStorage.setItem("user", JSON.stringify(user))
-
-        setAuth({
-          user,
-          status: "authenticated",
+      const result = await signIn("credentials", {
+        email,
+        password,
+        redirect: false,
         })
 
-        console.log("관리자 로그인 성공")
-        return true
+      if (result?.error) {
+        console.error("로그인 실패:", result.error)
+        return false
       }
 
-      // 일반 사용자 계정 시뮬레이션
-      if (email === "user@example.com" && password === "password") {
-        const user: User = {
-          id: "2",
-          name: "사용자",
-          email: "user@example.com",
-          role: "user",
-        }
-
-        localStorage.setItem("user", JSON.stringify(user))
-
-        setAuth({
-          user,
-          status: "authenticated",
-        })
-
-        console.log("사용자 로그인 성공")
-        return true
-      }
-
-      console.log("로그인 실패: 일치하는 계정 없음")
-      return false
+      return result?.ok || false
     } catch (error) {
       console.error("로그인 중 오류 발생:", error)
       return false
     }
   }
 
-  // 로그아웃 함수
+  // 로그아웃 함수 수정
   const logout = async (): Promise<void> => {
     try {
-      // 실제 환경에서는 API 호출을 통해 로그아웃합니다.
-      // 여기서는 로컬 스토리지를 사용하여 시뮬레이션합니다.
-      localStorage.removeItem("user")
-
-      setAuth({
-        user: null,
-        status: "unauthenticated",
-      })
+      await signOut({ redirect: false })
     } catch (error) {
       console.error("로그아웃 중 오류 발생:", error)
     }

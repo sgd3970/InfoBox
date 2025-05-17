@@ -7,29 +7,58 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Search, Edit, Eye, Trash, Loader2 } from "lucide-react"
 import type { Post } from "@/lib/models"
+import { useRouter } from "next/navigation"
+import { toast } from "react-hot-toast"
 
 export default function AdminPostsClient() {
+  const router = useRouter()
   const [searchTerm, setSearchTerm] = useState("")
   const [posts, setPosts] = useState<Post[]>([])
   const [loading, setLoading] = useState(true)
 
-  useEffect(() => {
-    async function fetchPosts() {
+  const fetchPosts = async () => {
       try {
-        setLoading(true)
-        const res = await fetch("/api/posts")
-        if (!res.ok) throw new Error("포스트를 가져오는데 실패했습니다")
+      const res = await fetch("/api/posts", { credentials: "include" })
+      if (!res.ok) {
+        throw new Error("포스트를 가져오는데 실패했습니다.")
+      }
         const data = await res.json()
         setPosts(data.posts)
       } catch (error) {
         console.error("포스트 가져오기 오류:", error)
+      toast.error("포스트를 불러오는데 실패했습니다.")
       } finally {
         setLoading(false)
       }
     }
 
+  useEffect(() => {
     fetchPosts()
   }, [])
+
+  const handleDelete = async (slug: string) => {
+    if (!confirm("정말로 이 포스트를 삭제하시겠습니까?")) {
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/posts/${slug}`, {
+        method: "DELETE",
+        credentials: "include",
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "포스트 삭제에 실패했습니다.")
+      }
+
+      toast.success("포스트가 성공적으로 삭제되었습니다.")
+      fetchPosts() // 목록 새로고침
+    } catch (error: any) {
+      console.error("포스트 삭제 오류:", error)
+      toast.error(error.message || "포스트 삭제 중 오류가 발생했습니다.")
+    }
+  }
 
   // 검색 필터링
   const filteredPosts = posts.filter((post) => {
@@ -111,7 +140,7 @@ export default function AdminPostsClient() {
                         <Edit className="h-4 w-4" />
                       </Link>
                     </Button>
-                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
+                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700" onClick={() => handleDelete(post.slug)}>
                       <Trash className="h-4 w-4" />
                     </Button>
                   </div>

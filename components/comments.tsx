@@ -33,9 +33,10 @@ interface Comment {
 
 interface CommentsProps {
   postSlug: string
+  category: string
 }
 
-export function Comments({ postSlug }: CommentsProps) {
+export function Comments({ postSlug, category }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -165,11 +166,11 @@ export function Comments({ postSlug }: CommentsProps) {
             <div key={comment._id} className="space-y-4">
               <div className="flex items-start gap-4">
                 <Avatar>
-                  <AvatarFallback>{comment.name.substring(0, 2).toUpperCase()}</AvatarFallback>
+                  <AvatarFallback>{comment.name ? comment.name.substring(0, 2).toUpperCase() : '?'}</AvatarFallback>
                 </Avatar>
                 <div className="flex-1 space-y-1">
                   <div className="flex items-center justify-between">
-                    <h4 className="font-semibold">{comment.name}</h4>
+                    <h4 className="font-semibold">{comment.name || '익명 사용자'}</h4>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.createdAt), {
                         addSuffix: true,

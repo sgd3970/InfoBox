@@ -134,88 +134,86 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
           />
         </div>
 
-        {/* 고급 검색 옵션 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {/* 카테고리 선택 */}
-          <div className="space-y-2">
-            <Label htmlFor="category">카테고리</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger id="category">
-                <SelectValue placeholder="모든 카테고리" />
+        {/* 고급 검색 옵션 - 각 항목을 별도 줄에 배치 */}
+        {/* 카테고리 선택 */}
+        <div className="space-y-2">
+          <Label htmlFor="category">카테고리</Label>
+          <Select value={category} onValueChange={setCategory}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="모든 카테고리" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">모든 카테고리</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.slug} value={cat.slug}>
+                  {cat.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* 정렬 옵션 */}
+        <div className="space-y-2">
+          <Label htmlFor="sortBy">정렬</Label>
+          <div className="flex gap-2">
+            <Select value={sortBy} onValueChange={setSortBy}>
+              <SelectTrigger id="sortBy" className="flex-1">
+                <SelectValue placeholder="관련성" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">모든 카테고리</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat.slug} value={cat.slug}>
-                    {cat.name}
-                  </SelectItem>
-                ))}
+                <SelectItem value="relevance">관련성</SelectItem>
+                <SelectItem value="date">날짜</SelectItem>
+                <SelectItem value="views">조회수</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={sortOrder} onValueChange={setSortOrder}>
+              <SelectTrigger id="sortOrder" className="w-[100px]">
+                <SelectValue placeholder="내림차순" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="desc">내림차순</SelectItem>
+                <SelectItem value="asc">오름차순</SelectItem>
               </SelectContent>
             </Select>
           </div>
+        </div>
 
-          {/* 정렬 옵션 */}
-          <div className="space-y-2">
-            <Label htmlFor="sortBy">정렬</Label>
-            <div className="flex gap-2">
-              <Select value={sortBy} onValueChange={setSortBy}>
-                <SelectTrigger id="sortBy" className="flex-1">
-                  <SelectValue placeholder="관련성" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="relevance">관련성</SelectItem>
-                  <SelectItem value="date">날짜</SelectItem>
-                  <SelectItem value="views">조회수</SelectItem>
-                </SelectContent>
-              </Select>
+        {/* 날짜 범위 선택 */}
+        <div className="space-y-2">
+          <Label>날짜 범위</Label>
+          <div className="flex gap-2">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateFrom ? format(dateFrom, "PPP", { locale: ko }) : <span>시작일</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus />
+              </PopoverContent>
+            </Popover>
 
-              <Select value={sortOrder} onValueChange={setSortOrder}>
-                <SelectTrigger id="sortOrder" className="w-[100px]">
-                  <SelectValue placeholder="내림차순" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="desc">내림차순</SelectItem>
-                  <SelectItem value="asc">오름차순</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* 날짜 범위 선택 */}
-          <div className="space-y-2">
-            <Label>날짜 범위</Label>
-            <div className="flex gap-2">
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex-1 justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateFrom ? format(dateFrom, "PPP", { locale: ko }) : <span>시작일</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={dateFrom} onSelect={setDateFrom} initialFocus />
-                </PopoverContent>
-              </Popover>
-
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="flex-1 justify-start text-left font-normal">
-                    <CalendarIcon className="mr-2 h-4 w-4" />
-                    {dateTo ? format(dateTo, "PPP", { locale: ko }) : <span>종료일</span>}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0">
-                  <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus />
-                </PopoverContent>
-              </Popover>
-            </div>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="flex-1 justify-start text-left font-normal">
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {dateTo ? format(dateTo, "PPP", { locale: ko }) : <span>종료일</span>}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0">
+                <Calendar mode="single" selected={dateTo} onSelect={setDateTo} initialFocus />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
 
         {/* 태그 선택 */}
         <div className="space-y-2">
           <Label>태그</Label>
-          <div className="flex flex-wrap gap-2 max-h-32 overflow-y-auto p-2 border rounded-md">
+          <div className="flex flex-wrap gap-2 max-h-28 overflow-y-auto p-2 border rounded-md">
             {loading ? (
               <div className="text-sm text-muted-foreground">로딩 중...</div>
             ) : tags.length > 0 ? (

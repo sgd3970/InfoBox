@@ -1,6 +1,6 @@
 import { Suspense } from "react"
-import { allPosts } from "@/lib/posts"
 import TagsClient, { type TagData } from "./client"
+import type { Post } from "@/lib/models"
 
 export const dynamic = "force-dynamic"
 
@@ -9,13 +9,28 @@ export const metadata = {
   description: "InfoBox 블로그의 모든 태그를 확인하세요.",
 }
 
-export default function TagsPage() {
+export default async function TagsPage() {
+  // 모든 포스트 가져오기
+  let allPosts = [];
+  try {
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?limit=1000`); // 충분히 큰 limit 설정
+    if (searchRes.ok) {
+      const searchData = await searchRes.json();
+      allPosts = searchData.posts || [];
+    } else {
+      console.error("포스트 목록 가져오기 실패", searchRes.status);
+    }
+  } catch (error) {
+    console.error("포스트 목록 가져오는 중 오류 발생:", error);
+    allPosts = [];
+  }
+
   // 모든 태그 수집 및 카운트
   const tagCounts: Record<string, number> = {}
 
-  allPosts.forEach((post) => {
+  allPosts.forEach((post: Post) => {
     if (post.tags) {
-      post.tags.forEach((tag) => {
+      post.tags.forEach((tag: string) => {
         const normalizedTag = tag.toLowerCase()
         tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
       })

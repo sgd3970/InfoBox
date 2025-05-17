@@ -4,50 +4,28 @@ import clientPromise from "@/lib/mongodb"
 
 export const dynamic = "force-dynamic"
 
-interface CollectionStats {
-  documentCount: number
-  size: number
-}
-
-interface DatabaseStats {
-  collections: Record<string, CollectionStats>
-  totalDocuments: number
-  totalSize: number
-}
-
-async function getDatabaseStats(): Promise<DatabaseStats | null> {
+async function getDatabaseStats() {
   try {
     const client = await clientPromise
     const db = client.db()
     
-    // 컬렉션 목록 가져오기
+    // 데이터베이스 통계 가져오기
+    const dbStats = await db.command({ dbStats: 1 })
+    
+    // 컬렉션 통계 가져오기
     const collections = await db.listCollections().toArray()
-    const stats: DatabaseStats = {
-      collections: {},
-      totalDocuments: 0,
-      totalSize: 0,
-    }
-
-    // 각 컬렉션의 통계 수집
+    const collectionStats: Record<string, any> = {}
+    
     for (const collection of collections) {
       const name = collection.name
-      const count = await db.collection(name).countDocuments()
-      
-      // 샘플 문서로 크기 추정
-      const sampleDoc = await db.collection(name).findOne()
-      const avgDocSize = sampleDoc ? JSON.stringify(sampleDoc).length : 0
-      const estimatedSize = count * avgDocSize
-      
-      stats.collections[name] = {
-        documentCount: count,
-        size: estimatedSize,
-      }
-      
-      stats.totalDocuments += count
-      stats.totalSize += estimatedSize
+      const stats = await db.command({ collStats: name })
+      collectionStats[name] = stats
     }
 
-    return stats
+    return {
+      dbStats,
+      collectionStats
+    }
   } catch (error) {
     console.error("데이터베이스 통계 가져오기 오류:", error)
     return null

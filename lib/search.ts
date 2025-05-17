@@ -1,44 +1,63 @@
 import type { Post } from "./models"
+import clientPromise from "@/lib/mongodb";
+import { Collection, Document, WithId } from "mongodb";
 
 // contentlayer/generated에서 가져오는 allPosts 대신 사용할 모의 데이터
-const allPosts: Post[] = [
-  {
-    title: "Next.js와 MDX로 블로그 만들기",
-    description: "Next.js와 MDX를 활용하여 최신 블로그를 구축하는 방법을 알아봅니다.",
-    date: "2023-05-16",
-    category: "Development",
-    slug: "nextjs-mdx-blog",
-    tags: ["Next.js", "MDX", "React", "블로그"],
-    image: "/placeholder.svg?height=400&width=800",
-    author: "홍길동",
-    featured: true,
-    body: {
-      code: "export default function MDXContent() { return <div><h1>Next.js와 MDX로 블로그 만들기</h1><p>이 글에서는 Next.js와 MDX를 활용하여 블로그를 만드는 방법을 알아봅니다.</p></div> }",
-    },
-    views: 0,
-    createdAt: new Date(),
-    updatedAt: new Date(),
-  },
-  // 다른 모의 데이터는 생략...
-]
+// const allPosts: Post[] = [
+//   {
+//     title: "Next.js와 MDX로 블로그 만들기",
+//     description: "Next.js와 MDX를 활용하여 최신 블로그를 구축하는 방법을 알아봅니다.",
+//     date: "2023-05-16",
+//     category: "Development",
+//     slug: "nextjs-mdx-blog",
+//     tags: ["Next.js", "MDX", "React", "블로그"],
+//     image: "/placeholder.svg?height=400&width=800",
+//     author: "홍길동",
+//     featured: true,
+//     body: {
+//       code: "export default function MDXContent() { return <div><h1>Next.js와 MDX로 블로그 만들기</h1><p>이 글에서는 Next.js와 MDX를 활용하여 블로그를 만드는 방법을 알아봅니다.</p></div> }",
+//     },
+//     views: 0,
+//     createdAt: new Date(),
+//     updatedAt: new Date(),
+//   },\n//   // 다른 모의 데이터는 생략...
+// ]
 
-// 기본 검색 함수
-export const searchPosts = (searchTerm: string): Post[] => {
+// 기본 검색 함수 - Update searchPosts or remove if not used elsewhere
+export const searchPosts = async (searchTerm: string): Promise<Post[]> => {
+  try {
+    const client = await clientPromise;
+    const db = client.db();
+    const collection: Collection<Document> = db.collection("posts");
+
   if (!searchTerm) {
-    return allPosts
+      // If no search term, return recent posts (e.g., limit 10)
+      const posts = await collection.find().sort({ date: -1 }).limit(10).toArray();
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return posts as unknown as Post[]; // Explicitly cast via unknown
   }
 
-  const lowerSearchTerm = searchTerm.toLowerCase()
+    const lowerSearchTerm = searchTerm.toLowerCase();
 
-  return allPosts.filter((post) => {
-    const titleMatch = post.title.toLowerCase().includes(lowerSearchTerm)
-    const descriptionMatch = post.description.toLowerCase().includes(lowerSearchTerm)
-    const categoryMatch = post.category.toLowerCase().includes(lowerSearchTerm)
-    const tagsMatch = post.tags?.some((tag) => tag.toLowerCase().includes(lowerSearchTerm))
+    // Implement text search or regex search based on searchTerm
+    // This is a basic example using regex, consider full-text search for better results
+    const posts = await collection.find({
+      $or: [
+        { title: { $regex: lowerSearchTerm, $options: 'i' } },
+        { description: { $regex: lowerSearchTerm, $options: 'i' } },
+        { category: { $regex: lowerSearchTerm, $options: 'i' } },
+        { tags: { $elemMatch: { $regex: lowerSearchTerm, $options: 'i' } } },
+      ]
+    }).sort({ date: -1 }).toArray(); // Basic sort, relevance sorting is complex
 
-    return titleMatch || descriptionMatch || categoryMatch || tagsMatch
-  })
-}
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return posts as unknown as Post[]; // Explicitly cast via unknown
+
+  } catch (error) {
+    console.error("기본 검색 오류:", error);
+    return [];
+  }
+};
 
 // 고급 검색 옵션 타입
 export interface SearchOptions {
@@ -74,51 +93,59 @@ export async function advancedSearch(options: SearchOptions): Promise<{
       limit = 10,
     } = options
 
-    // MongoDB 연결이 설정되어 있지 않거나 오류가 발생할 경우 모의 데이터 사용
-    let filteredPosts = searchPosts(query)
+    // MongoDB 연결 및 컬렉션 가져오기
+    const client = await clientPromise;
+    const db = client.db();
+    const collection: Collection<Document> = db.collection("posts");
 
-    // 카테고리 필터링
+    // 쿼리 조건 구성
+    const filter: any = {};
+
+    if (query) {
+      // Add text search or regex conditions for the query
+       filter.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        // Consider adding category and tag to query search if needed
+      ];
+    }
+
     if (category && category !== "all") {
-      filteredPosts = filteredPosts.filter((post) => post.category.toLowerCase() === category.toLowerCase())
+      filter.category = { $regex: new RegExp(`^${category}$`, "i") };
     }
 
-    // 태그 필터링
     if (tags && tags.length > 0) {
-      filteredPosts = filteredPosts.filter((post) => post.tags?.some((tag) => tags.includes(tag)))
+      filter.tags = { $in: tags };
     }
 
-    // 날짜 범위 필터링
     if (dateFrom || dateTo) {
-      filteredPosts = filteredPosts.filter((post) => {
-        const postDate = new Date(post.date).getTime()
-        const fromDate = dateFrom ? new Date(dateFrom).getTime() : 0
-        const toDate = dateTo ? new Date(dateTo).getTime() : Number.POSITIVE_INFINITY
-
-        return postDate >= fromDate && postDate <= toDate
-      })
+       const dateFilter: any = {};
+       if (dateFrom) dateFilter.$gte = new Date(dateFrom);
+       if (dateTo) dateFilter.$lte = new Date(dateTo);
+       filter.date = dateFilter;
     }
 
-    // 정렬
-    filteredPosts.sort((a, b) => {
+    // 정렬 조건 구성
+    const sort: any = {};
       if (sortBy === "date") {
-        const dateA = new Date(a.date).getTime()
-        const dateB = new Date(b.date).getTime()
-        return sortOrder === "asc" ? dateA - dateB : dateB - dateA
+      sort.date = sortOrder === "asc" ? 1 : -1;
       } else if (sortBy === "views") {
-        return sortOrder === "asc" ? a.views - b.views : b.views - a.views
-      }
-      // 기본적으로 관련성(제목 알파벳순)으로 정렬
-      return sortOrder === "asc" ? a.title.localeCompare(b.title) : b.title.localeCompare(a.title)
-    })
+      sort.views = sortOrder === "asc" ? 1 : -1;
+    } else {
+      // Default or relevance sorting (basic example: date desc)
+       sort.date = -1;
+    }
 
-    // 페이지네이션
-    const total = filteredPosts.length
-    const startIndex = (page - 1) * limit
-    const endIndex = startIndex + limit
-    const paginatedPosts = filteredPosts.slice(startIndex, endIndex)
+    // 페이지네이션 계산
+    const skip = (page - 1) * limit;
+
+    // MongoDB 쿼리 실행
+    const posts = await collection.find(filter).sort(sort).skip(skip).limit(limit).toArray();
+    const total = await collection.countDocuments(filter);
 
     return {
-      posts: paginatedPosts,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      posts: posts as unknown as Post[], // Explicitly cast via unknown
       total,
       page,
       limit,
@@ -136,32 +163,81 @@ export async function advancedSearch(options: SearchOptions): Promise<{
   }
 }
 
-// 자동 완성 제안 가져오기
+// 자동 완성 제안 가져오기 - Update to use MongoDB
 export async function getSearchSuggestions(query: string, limit = 5): Promise<string[]> {
   try {
+    const client = await clientPromise;
+    const db = client.db();
+    const collection: Collection<Document> = db.collection("posts");
+
     if (!query || query.trim().length < 2) {
-      return []
+      return [];
     }
 
-    // 모의 데이터에서 제안 생성
-    const lowerQuery = query.toLowerCase()
+    const lowerQuery = query.toLowerCase();
 
-    // 제목에서 제안 추출
-    const titleSuggestions = allPosts
-      .filter((post) => post.title.toLowerCase().includes(lowerQuery))
-      .map((post) => post.title)
+    // Use aggregation for suggestions
+    const suggestions = await collection.aggregate<{
+        _id: string;
+        suggestions: string[];
+    }>([
+      { // Match documents that might contain the query in title, category, or tags
+        $match: {
+          $or: [
+            { title: { $regex: lowerQuery, $options: 'i' } },
+            { category: { $regex: lowerQuery, $options: 'i' } },
+            { tags: { $elemMatch: { $regex: lowerQuery, $options: 'i' } } },
+          ],
+        },
+      },
+      { // Project potential suggestion fields
+        $project: {
+          title: 1,
+          category: 1,
+          tags: 1,
+        },
+      },
+      { // Use $addFields to create an array of all potential suggestion strings
+        $addFields: {
+          allSuggestions: {
+            $filter: {
+              input: {
+                 $concatArrays: [
+                   ["$title"], // Include title
+                   ["$category"], // Include category
+                   "$tags", // Include tags
+                 ].filter(Boolean) // Filter out null/undefined if any field is missing
+              },
+              as: "suggestion",
+              cond: { // Filter for strings that contain the lowerQuery
+                 $regexMatch: { input: { $toLower: "$$suggestion" }, regex: lowerQuery },
+              },
+            },
+          },
+        },
+      },
+      { // Unwind the allSuggestions array
+        $unwind: "$allSuggestions",
+      },
+      { // Group to collect unique suggestions and limit
+        $group: {
+          _id: null,
+          uniqueSuggestions: { $addToSet: "$allSuggestions" },
+        },
+      },
+      { // Project just the unique suggestions array
+        $project: {
+          _id: 0,
+          suggestions: { $slice: ["$uniqueSuggestions", limit] }, // Limit the number of suggestions
+        },
+      },
+    ]).toArray();
 
-    // 태그에서 제안 추출
-    const tagSuggestions = allPosts
-      .flatMap((post) => post.tags || [])
-      .filter((tag) => tag.toLowerCase().includes(lowerQuery))
+    // Return the suggestions array from the result
+    return suggestions[0]?.suggestions || [];
 
-    // 중복 제거 및 제한
-    const suggestions = Array.from(new Set([...titleSuggestions, ...tagSuggestions])).slice(0, limit)
-
-    return suggestions
   } catch (error) {
-    console.error("검색 제안 가져오기 오류:", error)
-    return []
+    console.error("검색 제안 가져오기 오류:", error);
+    return [];
   }
-}
+};

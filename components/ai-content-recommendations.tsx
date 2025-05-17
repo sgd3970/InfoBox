@@ -4,7 +4,6 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
-import { allPosts } from "@/lib/posts"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 interface Recommendation {
@@ -35,7 +34,14 @@ export function AIContentRecommendations({
     try {
       // 실제 환경에서는 API 호출을 통해 AI 추천을 생성합니다.
       // 여기서는 시뮬레이션을 위해 setTimeout을 사용합니다.
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const searchRes = await fetch("/api/search?limit=50") // 임시로 최대 50개의 포스트를 가져옴
+
+      if (!searchRes.ok) {
+        throw new Error("포스트 목록을 가져오는데 실패했습니다.")
+      }
+
+      const searchData = await searchRes.json()
+      const allPosts: any[] = searchData.posts; // 가져온 포스트 목록 사용
 
       // 실제 API 호출 예시:
       // const response = await fetch('/api/ai/recommend', {
@@ -66,7 +72,7 @@ export function AIContentRecommendations({
         // 태그가 일치할 때마다 점수 추가
         const postTags = post.tags || []
         currentPostTags.forEach((tag) => {
-          if (postTags.some((t) => t.toLowerCase() === tag.toLowerCase())) {
+          if (postTags.some((t: string) => t.toLowerCase() === tag.toLowerCase())) {
             score += 2
           }
         })
