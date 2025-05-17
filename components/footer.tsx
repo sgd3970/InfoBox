@@ -18,7 +18,7 @@ export function Footer() {
 
         <div>
           <h3 className="font-medium mb-4">링크</h3>
-          <ul className="space-y-2 text-sm">
+          <ul className="flex flex-wrap gap-4 text-sm">
             <li>
               <Link href="/" className="text-muted-foreground hover:text-foreground transition-colors">
                 홈
@@ -51,40 +51,37 @@ export function Footer() {
             </li>
           </ul>
         </div>
-
         <div>
-          <h3 className="font-medium mb-4">카테고리</h3>
-          <ul className="space-y-2 text-sm">
+          <h3 className="font-medium mb-4">법적 고지</h3>
+          <ul className="flex flex-wrap gap-4 text-sm">
             <li>
-              <Link
-                href="/blog/category/development"
+              <Link 
+                href="/privacy" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                개발
+                개인정보처리방침
               </Link>
             </li>
             <li>
-              <Link
-                href="/blog/category/design"
+              <Link 
+                href="/terms" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                디자인
+                이용약관
               </Link>
             </li>
             <li>
-              <Link
-                href="/blog/category/technology"
+              <Link 
+                href="/sitemap.xml" 
                 className="text-muted-foreground hover:text-foreground transition-colors"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                기술
-              </Link>
-            </li>
-            <li>
-              <Link
-                href="/blog/category/business"
-                className="text-muted-foreground hover:text-foreground transition-colors"
-              >
-                비즈니스
+                사이트맵
               </Link>
             </li>
           </ul>
@@ -96,17 +93,6 @@ export function Footer() {
           <p className="text-xs text-muted-foreground">
             &copy; {new Date().getFullYear()} InfoBox. Designed for everyday life.
           </p>
-          <div className="flex gap-4">
-            <Link href="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              개인정보처리방침
-            </Link>
-            <Link href="/terms" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              이용약관
-            </Link>
-            <Link href="/sitemap.xml" className="text-xs text-muted-foreground hover:text-foreground transition-colors">
-              사이트맵
-            </Link>
-          </div>
         </div>
       </div>
     </footer>
