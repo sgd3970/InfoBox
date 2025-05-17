@@ -14,6 +14,9 @@ export function Footer() {
           <p className="text-sm text-muted-foreground">
             몰랐던 생활 정보, 쉽게 정리해드립니다.
           </p>
+          <p className="text-sm text-muted-foreground mt-4">
+            &copy; {new Date().getFullYear()} InfoBox. Designed for everyday life.
+          </p>
         </div>
 
         <div>
@@ -90,9 +93,6 @@ export function Footer() {
 
       <div className="container mt-8 pt-8 border-t">
         <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-          <p className="text-xs text-muted-foreground">
-            &copy; {new Date().getFullYear()} InfoBox. Designed for everyday life.
-          </p>
         </div>
       </div>
     </footer>
