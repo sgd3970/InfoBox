@@ -1,16 +1,24 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
+import { useTheme } from "next-themes"
 
 export function Footer() {
+  const { theme } = useTheme()
+
   return (
     <footer className="border-t py-12 bg-muted/30">
       <div className="container grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         <div className="space-y-4">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              IB
-            </div>
+            <Image
+              src={theme === 'dark' ? '/darkmode.png' : '/lightmode.png'}
+              alt="InfoBox 로고"
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+            />
             <span className="font-bold text-xl">InfoBox</span>
           </Link>
           <p className="text-sm text-muted-foreground">

@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname, useRouter } from "next/navigation"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -8,6 +9,7 @@ import { ThemeToggle } from "@/components/theme-toggle"
 import { Search, Menu, X, User, LogOut } from "lucide-react"
 import { useState } from "react"
 import { useAuth } from "@/contexts/auth-context"
+import { useTheme } from "next-themes"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +36,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [searchDialogOpen, setSearchDialogOpen] = useState(false)
   const { auth, logout } = useAuth()
+  const { theme } = useTheme()
 
   const handleLogout = async () => {
     await logout()
@@ -45,9 +48,13 @@ export function Navbar() {
       <div className="container flex h-16 items-center justify-between">
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2">
-            <div className="h-8 w-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground font-bold">
-              IB
-            </div>
+            <Image
+              src={theme === 'dark' ? '/darkmode.png' : '/lightmode.png'}
+              alt="InfoBox 로고"
+              width={32}
+              height={32}
+              className="h-8 w-auto"
+            />
             <span className="font-bold text-xl hidden sm:inline-block">InfoBox</span>
           </Link>
 
