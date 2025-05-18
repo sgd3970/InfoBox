@@ -13,10 +13,10 @@ export function Footer() {
         <div className="space-y-4">
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src={theme === 'dark' ? '/darkmode.png' : '/lightmode.png'}
+              src='/favicon.png'
               alt="InfoBox 로고"
-              width={32}
-              height={32}
+              width={64}
+              height={64}
               className="h-8 w-auto"
             />
             <span className="font-bold text-xl">InfoBox</span>

@@ -49,10 +49,10 @@ export function Navbar() {
         <div className="flex items-center gap-6">
           <Link href="/" className="flex items-center space-x-2">
             <Image
-              src={theme === 'dark' ? '/darkmode.png' : '/lightmode.png'}
+              src='/favicon.png'
               alt="InfoBox 로고"
-              width={32}
-              height={32}
+              width={64}
+              height={64}
               className="h-8 w-auto"
             />
             <span className="font-bold text-xl hidden sm:inline-block">InfoBox</span>
