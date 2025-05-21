@@ -121,7 +121,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                     </span>
                     <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                   </div>
-                  <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
+                  <p className="text-muted-foreground text-sm line-clamp-2 break-words">{post.description}</p>
                 </div>
               </Link>
             </>
