@@ -6,6 +6,10 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Search, Edit, Trash, Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { useToast } from "@/components/ui/use-toast"
 
 interface AdminCategoriesClientProps {
   initialCategories: Category[];
@@ -15,12 +19,60 @@ export default function AdminCategoriesClient({ initialCategories }: AdminCatego
   const [searchTerm, setSearchTerm] = useState("")
   const [categories, setCategories] = useState<Category[]>(initialCategories)
   const [loading, setLoading] = useState(false)
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
+  const [newCategory, setNewCategory] = useState({ name: "", slug: "", description: "" })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const { toast } = useToast()
 
   // 검색 필터링
   const filteredCategories = categories.filter((category) => {
     const searchContent = `${category.name} ${category.description || ""}`.toLowerCase()
     return searchContent.includes(searchTerm.toLowerCase())
   })
+
+  const handleAddCategory = async () => {
+    if (!newCategory.name || !newCategory.slug) {
+      toast({
+        title: "입력 오류",
+        description: "카테고리 이름과 슬러그는 필수입니다.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+    try {
+      const response = await fetch("/api/categories", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(newCategory),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "카테고리 추가 중 오류가 발생했습니다.")
+      }
+
+      const addedCategory = await response.json()
+      setCategories((prev) => [...prev, addedCategory])
+      setIsAddModalOpen(false)
+      setNewCategory({ name: "", slug: "", description: "" })
+      toast({
+        title: "성공",
+        description: "새 카테고리가 추가되었습니다.",
+      })
+    } catch (error) {
+      toast({
+        title: "오류",
+        description: error instanceof Error ? error.message : "카테고리 추가 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
@@ -33,11 +85,63 @@ export default function AdminCategoriesClient({ initialCategories }: AdminCatego
             className="max-w-sm"
           />
         </div>
-        <Button>
+        <Button onClick={() => setIsAddModalOpen(true)}>
           <Plus className="h-4 w-4 mr-2" />
           새 카테고리
         </Button>
       </div>
+
+      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>새 카테고리 추가</DialogTitle>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="name">이름</Label>
+              <Input
+                id="name"
+                value={newCategory.name}
+                onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
+                placeholder="카테고리 이름"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="slug">슬러그</Label>
+              <Input
+                id="slug"
+                value={newCategory.slug}
+                onChange={(e) => setNewCategory((prev) => ({ ...prev, slug: e.target.value }))}
+                placeholder="카테고리 슬러그"
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="description">설명</Label>
+              <Textarea
+                id="description"
+                value={newCategory.description}
+                onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
+                placeholder="카테고리 설명 (선택사항)"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
+              취소
+            </Button>
+            <Button onClick={handleAddCategory} disabled={isSubmitting}>
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  추가 중...
+                </>
+              ) : (
+                "추가"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="border rounded-lg">
         <Table>
