@@ -15,6 +15,15 @@ import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Trash2 } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { useToast } from "@/components/ui/use-toast"
 
 const commentFormSchema = z.object({
   nickname: z.string().min(2, { message: "닉네임은 2자 이상이어야 합니다." }),
@@ -41,6 +50,11 @@ export function Comments({ postSlug, category }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
+  const [deletePassword, setDeletePassword] = useState("")
+  const { toast } = useToast()
 
   const form = useForm<CommentFormValues>({
     resolver: zodResolver(commentFormSchema),
@@ -97,34 +111,49 @@ export function Comments({ postSlug, category }: CommentsProps) {
     }
   }
 
-  const handleDeleteComment = async (commentId: string) => {
-    const password = prompt("댓글 삭제를 위해 비밀번호를 입력하세요:");
-    if (!password) return;
+  const handleDeleteClick = (commentId: string) => {
+    setCommentToDelete(commentId)
+    setDeleteDialogOpen(true)
+  }
 
-    if (password.length !== 4 || !/^[0-9]+$/.test(password)) {
-        alert("비밀번호는 4자리 숫자여야 합니다.");
-        return;
-    }
+  const handleDeleteConfirm = async () => {
+    if (!commentToDelete || !deletePassword) return
 
+    setIsDeleting(true)
     try {
-      const response = await fetch(`/api/comments/${commentId}`, {
+      const response = await fetch(`/api/comments/${commentToDelete}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ password }),
-      });
+        body: JSON.stringify({ password: deletePassword }),
+      })
 
-      if (!response.ok) throw new Error("댓글 삭제에 실패했습니다.");
+      const data = await response.json()
 
-      setComments((prev) => prev.filter(comment => comment._id !== commentId));
-      alert("댓글이 삭제되었습니다.");
+      if (!response.ok) {
+        throw new Error(data.error || "댓글 삭제에 실패했습니다.")
+      }
 
+      setComments((prev) => prev.filter((comment) => comment._id !== commentToDelete))
+      toast({
+        title: "댓글 삭제",
+        description: "댓글이 성공적으로 삭제되었습니다.",
+      })
     } catch (error) {
-      console.error("댓글 삭제 오류:", error);
-      alert("댓글 삭제 중 오류가 발생했습니다.");
+      console.error("댓글 삭제 오류:", error)
+      toast({
+        title: "댓글 삭제 실패",
+        description: error instanceof Error ? error.message : "댓글 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setCommentToDelete(null)
+      setDeletePassword("")
     }
-  };
+  }
 
   return (
     <div className="mt-12">
@@ -221,7 +250,8 @@ export function Comments({ postSlug, category }: CommentsProps) {
                       variant="ghost"
                       size="icon"
                       className="h-6 w-6"
-                      onClick={() => handleDeleteComment(comment._id)}
+                      onClick={() => handleDeleteClick(comment._id)}
+                      disabled={isDeleting}
                     >
                       <Trash2 className="h-4 w-4" />
                     </Button>
@@ -234,6 +264,43 @@ export function Comments({ postSlug, category }: CommentsProps) {
           ))
         )}
       </div>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>댓글 삭제</DialogTitle>
+            <DialogDescription>
+              댓글을 삭제하려면 작성 시 입력한 비밀번호를 입력해주세요.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Input
+              type="password"
+              placeholder="비밀번호 4자리"
+              value={deletePassword}
+              onChange={(e) => setDeletePassword(e.target.value)}
+              maxLength={4}
+              disabled={isDeleting}
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteDialogOpen(false)}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleDeleteConfirm}
+              disabled={isDeleting || deletePassword.length !== 4}
+            >
+              {isDeleting ? "삭제 중..." : "삭제"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
