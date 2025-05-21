@@ -59,7 +59,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     return {}
   }
 
-  const ogUrl = new URL(`${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/api/og`)
+  const ogUrl = new URL(`/api/og`, process.env.NEXT_PUBLIC_APP_URL || "https://example.com");
   ogUrl.searchParams.set("title", post.title)
   ogUrl.searchParams.set("category", post.category)
 
@@ -70,7 +70,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       title: post.title,
       description: post.description,
       type: "article",
-      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/blog/${params.category}/${params.slug}`,
+      url: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/blog/${params.category.toLowerCase()}/${params.slug}`,
       images: [
         {
           url: post.image || ogUrl.toString(),
@@ -87,7 +87,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       images: [post.image || ogUrl.toString()],
     },
     alternates: {
-      canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/blog/${params.category}/${params.slug}`,
+      canonical: `${process.env.NEXT_PUBLIC_APP_URL || "https://example.com"}/blog/${params.category.toLowerCase()}/${params.slug}`,
     },
   }
 }

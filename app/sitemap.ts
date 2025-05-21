@@ -4,7 +4,7 @@ import type { Post } from '@/lib/models'; // Post 타입 임포트
 // 모든 포스트를 가져오는 함수 (sitemap 생성용)
 async function getAllPostsForSitemap(): Promise<Post[]> {
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/search?limit=9999`); // 모든 포스트를 가져오도록 큰 limit 설정
+    const searchRes = await fetch(`/api/search?limit=9999`); // 상대 경로 사용, Host 헤더 제거
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];
@@ -65,7 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPostsForSitemap();
 
   const postEntries = posts.map((post) => ({
-    url: `${process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/blog/${post.category.toLowerCase()}/${post.slug}`,
+    url: `${baseUrl}/blog/${post.category.toLowerCase()}/${post.slug}`,
     lastModified: new Date(post.date).toISOString(),
     changeFrequency: "weekly" as const,
     priority: 0.8,
