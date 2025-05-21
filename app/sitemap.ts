@@ -4,7 +4,7 @@ import type { Post } from '@/lib/models'; // Post 타입 임포트
 // 모든 포스트를 가져오는 함수 (sitemap 생성용)
 async function getAllPostsForSitemap(): Promise<Post[]> {
   try {
-    const searchRes = await fetch(`/api/search?limit=9999`); // 상대 경로 사용, Host 헤더 제거
+    const searchRes = await fetch(`https://www.trend-scanner.com/api/search?limit=9999`); // 절대 경로 사용
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];

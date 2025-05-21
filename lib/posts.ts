@@ -24,7 +24,7 @@ export interface Category {
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`/api/categories`, {
+    const response = await fetch(`https://www.trend-scanner.com/api/categories`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
