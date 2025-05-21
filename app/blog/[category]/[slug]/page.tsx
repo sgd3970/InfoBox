@@ -11,6 +11,7 @@ import type { Post } from "@/lib/models"
 import clientPromise from "@/lib/mongodb"
 import { GoogleAd } from "@/components/GoogleAd"
 import { MdxContent } from "@/components/mdx-content"
+import { ViewTracker } from "@/components/view-tracker"
 
 interface PostPageProps {
   params: {
@@ -26,9 +27,6 @@ async function getPost(slug: string): Promise<Post | null> {
     const post = await db.collection("posts").findOne({ slug }) as any as Post;
 
     if (!post) return null
-
-    // 조회수 증가
-    await db.collection("posts").updateOne({ slug }, { $inc: { views: 1 } })
 
     return post as Post
   } catch (error) {
@@ -249,6 +247,9 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           </div>
         )}
+
+        {/* 조회수 추적 컴포넌트 추가 */}
+        <ViewTracker slug={params.slug} />
       </div>
     </>
   )
