@@ -102,28 +102,28 @@ export function AdminPerformanceClient() {
   }
 
   // 컬렉션 통계 데이터 포맷팅
-  const collectionSizeData = Object.entries(performanceData.dbStats.collectionStats || {}).map(
+  const collectionSizeData = Object.entries(performanceData?.dbStats?.collectionStats || {}).map(
     ([name, stats]: [string, any]) => ({
       name,
-      size: Math.round((stats.size / 1024 / 1024) * 100) / 100, // MB 단위로 변환
+      size: Math.round((stats?.size / 1024 / 1024) * 100) / 100, // MB 단위로 변환
     }),
   )
 
   // 인덱스 크기 데이터 포맷팅
-  const indexSizeData = Object.entries(performanceData.dbStats.collectionStats || {}).map(
+  const indexSizeData = Object.entries(performanceData?.dbStats?.collectionStats || {}).map(
     ([name, stats]: [string, any]) => ({
       name,
-      size: Math.round((stats.totalIndexSize / 1024 / 1024) * 100) / 100, // MB 단위로 변환
+      size: Math.round((stats?.totalIndexSize / 1024 / 1024) * 100) / 100, // MB 단위로 변환
     }),
   )
 
   // 쿼리 성능 데이터 포맷팅
-  const queryPerformanceData = Object.entries(performanceData.queryPerformance || {}).map(
+  const queryPerformanceData = Object.entries(performanceData?.queryPerformance || {}).map(
     ([name, stats]: [string, any]) => ({
       name,
-      executionTime: stats.executionTimeMillis,
-      docsExamined: stats.totalDocsExamined,
-      docsReturned: stats.nReturned,
+      executionTime: stats?.executionTimeMillis || 0,
+      docsExamined: stats?.totalDocsExamined || 0,
+      docsReturned: stats?.nReturned || 0,
     }),
   )
 
@@ -162,7 +162,7 @@ export function AdminPerformanceClient() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {Math.round((performanceData.dbStats.dbStats.dataSize / 1024 / 1024) * 100) / 100} MB
+                  {Math.round((performanceData?.dbStats?.dbStats?.dataSize || 0) / 1024 / 1024 * 100) / 100} MB
                 </div>
               </CardContent>
             </Card>
@@ -173,7 +173,7 @@ export function AdminPerformanceClient() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {Math.round((performanceData.dbStats.dbStats.storageSize / 1024 / 1024) * 100) / 100} MB
+                  {Math.round((performanceData?.dbStats?.dbStats?.storageSize || 0) / 1024 / 1024 * 100) / 100} MB
                 </div>
               </CardContent>
             </Card>
@@ -183,7 +183,7 @@ export function AdminPerformanceClient() {
                 <CardTitle className="text-sm font-medium text-muted-foreground">인덱스 수</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{performanceData.dbStats.dbStats.indexes}</div>
+                <div className="text-2xl font-bold">{performanceData?.dbStats?.dbStats?.indexes || 0}</div>
               </CardContent>
             </Card>
 
@@ -193,7 +193,7 @@ export function AdminPerformanceClient() {
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">
-                  {Math.round((performanceData.dbStats.dbStats.totalIndexSize / 1024 / 1024) * 100) / 100} MB
+                  {Math.round((performanceData?.dbStats?.dbStats?.totalIndexSize || 0) / 1024 / 1024 * 100) / 100} MB
                 </div>
               </CardContent>
             </Card>
@@ -295,14 +295,14 @@ export function AdminPerformanceClient() {
                   <PieChart>
                     <Pie
                       data={[
-                        { name: "힙 사용량", value: performanceData.memoryUsage?.heapUsed || 0 },
+                        { name: "힙 사용량", value: performanceData?.memoryUsage?.heapUsed || 0 },
                         {
                           name: "힙 여유 공간",
                           value:
-                            (performanceData.memoryUsage?.heapTotal || 0) -
-                            (performanceData.memoryUsage?.heapUsed || 0),
+                            (performanceData?.memoryUsage?.heapTotal || 0) -
+                            (performanceData?.memoryUsage?.heapUsed || 0),
                         },
-                        { name: "외부 메모리", value: performanceData.memoryUsage?.external || 0 },
+                        { name: "외부 메모리", value: performanceData?.memoryUsage?.external || 0 },
                       ]}
                       cx="50%"
                       cy="50%"
@@ -314,14 +314,14 @@ export function AdminPerformanceClient() {
                       label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
                     >
                       {[
-                        { name: "힙 사용량", value: performanceData.memoryUsage?.heapUsed || 0 },
+                        { name: "힙 사용량", value: performanceData?.memoryUsage?.heapUsed || 0 },
                         {
                           name: "힙 여유 공간",
                           value:
-                            (performanceData.memoryUsage?.heapTotal || 0) -
-                            (performanceData.memoryUsage?.heapUsed || 0),
+                            (performanceData?.memoryUsage?.heapTotal || 0) -
+                            (performanceData?.memoryUsage?.heapUsed || 0),
                         },
-                        { name: "외부 메모리", value: performanceData.memoryUsage?.external || 0 },
+                        { name: "외부 메모리", value: performanceData?.memoryUsage?.external || 0 },
                       ].map((entry, index) => (
                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
