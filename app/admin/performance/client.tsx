@@ -31,7 +31,9 @@ export function AdminPerformanceClient() {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true)
-      const res = await fetch("/api/admin/performance")
+      // 환경 변수 사용 (fallback 포함)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const res = await fetch(`${apiUrl}/api/admin/performance`);
       if (!res.ok) throw new Error("성능 데이터를 가져오는데 실패했습니다")
       const data = await res.json()
       setPerformanceData(data)
@@ -45,14 +47,9 @@ export function AdminPerformanceClient() {
   const handleRevalidate = async (paths: string[]) => {
     setIsRevalidating(true)
     try {
-      const response = await fetch("/api/revalidate", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ paths }),
-      })
-
+      // 환경 변수 사용 (fallback 포함)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const response = await fetch(`${apiUrl}/api/revalidate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paths }) });
       if (!response.ok) {
         const error = await response.json()
         throw new Error(error.error || "캐시 갱신 중 오류가 발생했습니다.")

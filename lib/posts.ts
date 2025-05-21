@@ -24,7 +24,9 @@ export interface Category {
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const response = await fetch(`/api/categories`, {
+    // 환경 변수 사용 (fallback 포함)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${apiUrl}/api/categories`, {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
