@@ -143,9 +143,20 @@ export async function advancedSearch(options: SearchOptions): Promise<{
     const posts = await collection.find(filter).sort(sort).skip(skip).limit(limit).toArray();
     const total = await collection.countDocuments(filter);
 
+    // 가져온 포스트 데이터 검증 및 보완
+    const sanitizedPosts = posts.map(post => ({
+      ...post,
+      // 새로운 필드가 없을 경우 기본값 설정
+      featuredImage: post.featuredImage === undefined ? null : post.featuredImage,
+      images: Array.isArray(post.images) ? post.images : [],
+      tags: Array.isArray(post.tags) ? post.tags : [], // tags 필드도 배열인지 확인
+      views: post.views === undefined ? 0 : post.views, // views 필드 기본값 설정
+      author: post.author === undefined ? "관리자" : post.author, // author 필드 기본값 설정
+    }));
+
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      posts: posts as unknown as Post[], // Explicitly cast via unknown
+      posts: sanitizedPosts as unknown as Post[], // Explicitly cast via unknown
       total,
       page,
       limit,
