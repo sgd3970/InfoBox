@@ -65,8 +65,8 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       </section>
 
       {/* 광고 배너 */}
-      <div className="flex justify-center mb-16">
-        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
+      <div className="container mx-auto px-4 flex justify-center mb-16">
+        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
       </div>
 
       {/* 최신 포스트 섹션 */}
@@ -94,10 +94,10 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
           {latestPosts.map((post, index) => (
             <>
               {index === 1 && (
-                <div key="ad-container" className="group">
+                <div key="ad-container" className="container mx-auto px-4 group">
                   <div className="space-y-4">
                     <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
+                      <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" style={{ width: '100%', height: '100%' }} />
                     </div>
                     <div className="space-y-2"></div>
                     <p className="text-muted-foreground text-sm line-clamp-2"></p>
@@ -149,8 +149,8 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       </section>
 
       {/* 광고 배너 */}
-      <div className="flex justify-center mb-16">
-        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
+      <div className="container mx-auto px-4 flex justify-center mb-16">
+        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
       </div>
     </div>
   )
