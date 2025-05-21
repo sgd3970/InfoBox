@@ -9,6 +9,8 @@ import { SocialShare } from "@/components/social-share"
 import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
 import clientPromise from "@/lib/mongodb"
+import { BlogAd } from "@/components/blog-ad"
+import { MdxContent } from "@/components/mdx-content"
 
 interface PostPageProps {
   params: {
@@ -190,16 +192,12 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
 
           {/* 광고 영역 추가 */}
-          <div className="mb-8 p-4 bg-muted/30 rounded-lg text-center">
-            <p className="text-sm text-muted-foreground mb-2">광고</p>
-            <div className="bg-muted h-[250px] flex items-center justify-center">
-              <p className="text-muted-foreground">728x90 배너 광고</p>
-            </div>
-          </div>
+          <BlogAd />
 
           {/* AI 콘텐츠 요약 */}
           <AIContentSummary content={post.description} />
 
+          {/* 본문 내용 */}
           <div className="prose prose-lg dark:prose-invert max-w-none mt-8">
             {post.content.split("\n").map((paragraph, index) => {
               if (paragraph.startsWith("# ")) {
@@ -216,14 +214,6 @@ export default async function PostPage({ params }: PostPageProps) {
             })}
           </div>
 
-          {/* 인라인 광고 */}
-          <div className="my-8 p-4 bg-muted/30 rounded-lg text-center">
-            <p className="text-sm text-muted-foreground mb-2">광고</p>
-            <div className="bg-muted h-[250px] flex items-center justify-center">
-              <p className="text-muted-foreground">300x250 인라인 광고</p>
-            </div>
-          </div>
-
           {/* AI 추천 콘텐츠 */}
           <AIContentRecommendations
             currentPostSlug={post.slug}
@@ -233,6 +223,9 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* 댓글 시스템 */}
           <Comments category={params.category} postSlug={params.slug} />
+
+          {/* 인라인 광고 */}
+          <BlogAd />
         </article>
 
         {/* 관련 포스트 */}

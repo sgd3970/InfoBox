@@ -1,7 +1,6 @@
 "use client"
 
 import { useEffect } from "react"
-import { Card, CardContent } from "@/components/ui/card"
 
 declare global {
   interface Window {
@@ -9,7 +8,7 @@ declare global {
   }
 }
 
-export function SidebarAds() {
+export function BlogAd() {
   useEffect(() => {
     try {
       // AdSense 스크립트가 이미 로드되어 있는지 확인
@@ -29,17 +28,16 @@ export function SidebarAds() {
   }, [])
 
   return (
-    <Card className="overflow-hidden">
-      <CardContent className="p-4">
-        <ins
-          className="adsbygoogle"
-          style={{ display: 'block' }}
-          data-ad-client="ca-pub-8478624096187058"
-          data-ad-slot="5110735140"
-          data-ad-format="auto"
-          data-full-width-responsive="true"
-        />
-      </CardContent>
-    </Card>
+    <div className="my-8 p-4 bg-muted/30 rounded-lg text-center">
+      <p className="text-sm text-muted-foreground mb-2">광고</p>
+      <ins
+        className="adsbygoogle"
+        style={{ display: 'block' }}
+        data-ad-client="ca-pub-8478624096187058"
+        data-ad-slot="4632464247"
+        data-ad-format="auto"
+        data-full-width-responsive="true"
+      />
+    </div>
   )
-}
+} 

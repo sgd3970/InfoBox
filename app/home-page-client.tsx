@@ -5,14 +5,39 @@ import Image from "next/image"
 import { useTheme } from "next-themes"
 import { AdBanner } from "@/components/ad-banner"
 import type { Post, Category } from "@/lib/models"
+import { useEffect } from "react"
 
 interface HomePageClientProps {
   latestPosts: Post[]
   categories: Category[]
 }
 
+declare global {
+  interface Window {
+    adsbygoogle: any[]
+  }
+}
+
 export function HomePageClient({ latestPosts, categories }: HomePageClientProps) {
   const { theme } = useTheme()
+
+  useEffect(() => {
+    try {
+      // AdSense 스크립트가 이미 로드되어 있는지 확인
+      if (!document.querySelector('script[src*="pagead2.googlesyndication.com"]')) {
+        const script = document.createElement('script')
+        script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478624096187058"
+        script.async = true
+        script.crossOrigin = "anonymous"
+        document.head.appendChild(script)
+      }
+
+      // 광고 초기화
+      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+    } catch (err) {
+      console.error('AdSense 로드 중 오류 발생:', err)
+    }
+  }, [])
 
   return (
     <div className="container py-10">
@@ -84,27 +109,41 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
           </Link>
         </div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {latestPosts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
-              <div className="space-y-4">
-                <div className="relative aspect-video overflow-hidden rounded-lg">
-                  <Image
-                    src={post.image || "/placeholder.svg?height=200&width=400"}
-                    alt={post.title}
-                    width={400}
-                    height={200}
-                    className="object-cover transition-transform group-hover:scale-105"
+          {latestPosts.map((post, index) => (
+            <>
+              {index === 1 && (
+                <div key="ad-container" className="relative aspect-video overflow-hidden rounded-lg">
+                  <ins
+                    className="adsbygoogle"
+                    style={{ display: 'block' }}
+                    data-ad-format="fluid"
+                    data-ad-layout-key="-bf-2o+7o+d0-143"
+                    data-ad-client="ca-pub-8478624096187058"
+                    data-ad-slot="8571709253"
                   />
                 </div>
-                <div className="space-y-2">
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {post.category}
-                  </span>
-                  <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+              )}
+              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
+                <div className="space-y-4">
+                  <div className="relative aspect-video overflow-hidden rounded-lg">
+                    <Image
+                      src={post.image || "/placeholder.svg?height=200&width=400"}
+                      alt={post.title}
+                      width={400}
+                      height={200}
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                      {post.category}
+                    </span>
+                    <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                  </div>
+                  <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
                 </div>
-                <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
-              </div>
-            </Link>
+              </Link>
+            </>
           ))}
         </div>
       </section>
