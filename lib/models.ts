@@ -20,6 +20,7 @@ export interface Post {
   slug: string
   tags?: string[]
   image?: string
+  featuredImage?: string | null
   author?: string
   authorId?: string
   featured?: boolean

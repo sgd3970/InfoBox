@@ -53,7 +53,7 @@ export default async function BlogPage() {
             <div className="grid md:grid-cols-2 gap-6 items-center">
               <div className="relative aspect-video overflow-hidden rounded-lg">
                 <Image
-                  src={featuredPost.image || "/placeholder.svg?height=400&width=800"}
+                  src={featuredPost.featuredImage || featuredPost.image || "/placeholder.svg?height=400&width=800"}
                   alt={featuredPost.title}
                   width={800}
                   height={400}
@@ -95,7 +95,7 @@ export default async function BlogPage() {
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
-                    src={post.image || "/placeholder.svg?height=200&width=400"}
+                    src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
                     alt={post.title}
                     width={400}
                     height={200}

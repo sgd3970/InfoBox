@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 
 interface AdminNewPostClientProps {
   initialCategories: Category[];
@@ -22,6 +23,11 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState("")
+  const [images, setImages] = useState<File[]>([]) // 본문 이미지 파일 목록
+  const [featuredImage, setFeaturedImage] = useState<File | null>(null) // 대표 이미지 파일
+  const [isUploadingImages, setIsUploadingImages] = useState(false) // 이미지 업로드 중 상태
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]) // 업로드된 본문 이미지 URL 목록
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null) // 업로드된 대표 이미지 URL
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>(initialCategories)
   const [categoriesLoading, setCategoriesLoading] = useState(false)
@@ -43,6 +49,64 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
       return
     }
 
+    setIsUploadingImages(true);
+    let uploadedUrls: string[] = [];
+    let uploadedFeaturedImageUrl: string | null = null;
+
+    try {
+      // 본문 이미지 업로드
+      if (images.length > 0) {
+        const formData = new FormData();
+        images.forEach(file => formData.append('file', file));
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json();
+          throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
+        }
+
+        const result: { urls: string[], files: any[] } = await uploadRes.json();
+        uploadedUrls = result.urls;
+        setUploadedImageUrls(uploadedUrls);
+      }
+
+      // 대표 이미지 업로드
+      if (featuredImage) {
+        const formData = new FormData();
+        formData.append('file', featuredImage);
+
+        const uploadRes = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json();
+          throw new Error(errorData.error || '대표 이미지 업로드에 실패했습니다.');
+        }
+
+        const result: { url: string } = await uploadRes.json();
+        uploadedFeaturedImageUrl = result.url;
+        setFeaturedImageUrl(uploadedFeaturedImageUrl);
+      }
+
+    } catch (error: any) {
+      setIsUploadingImages(false);
+      setLoading(false);
+      toast({
+        title: "업로드 오류",
+        description: error.message,
+        variant: "destructive",
+      });
+      return; // Stop if image upload fails
+    } finally {
+      setIsUploadingImages(false);
+    }
+
     const postData = {
       title,
       slug,
@@ -53,6 +117,8 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
       date: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       featured: false,
+      images: uploadedUrls, // 업로드된 본문 이미지 URL 목록 추가
+      featuredImage: uploadedFeaturedImageUrl, // 업로드된 대표 이미지 URL 추가
     }
 
     try {
@@ -92,6 +158,31 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
     setSlug(newTitle.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""));
   };
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages(Array.from(e.target.files));
+    }
+  };
+
+  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFeaturedImage(e.target.files[0]);
+    }
+  };
+
+  const handleInsertImage = (url: string) => {
+    const textarea = document.getElementById('content') as HTMLTextAreaElement;
+    if (textarea) {
+      const start = textarea.selectionStart;
+      const end = textarea.selectionEnd;
+      const markdown = `\n![Alt Text](${url})\n`; // 마크다운 이미지 구문
+      textarea.value = textarea.value.substring(0, start) + markdown + textarea.value.substring(end);
+      setContent(textarea.value);
+      textarea.focus();
+      textarea.setSelectionRange(start + markdown.length, start + markdown.length);
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">새 포스트 작성</h2>
@@ -112,6 +203,57 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
           <Label htmlFor="content">내용 (Markdown)</Label>
           <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} rows={15} required />
         </div>
+
+        {/* 이미지 업로드 섹션 */}
+        <Card>
+          <CardHeader>
+            <CardTitle>이미지 관리</CardTitle>
+            <CardDescription>포스트에 사용할 이미지를 업로드하고 본문에 삽입하세요.</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* 본문 이미지 업로드 */}
+            <div>
+              <Label htmlFor="images">본문 이미지</Label>
+              <Input id="images" type="file" multiple onChange={handleImageChange} accept="image/*" />
+              <p className="text-sm text-muted-foreground mt-1">여러 개의 이미지를 선택할 수 있습니다.</p>
+            </div>
+
+            {/* 본문 이미지 미리보기 */}
+            {images.length > 0 && (
+              <div>
+                <h4 className="text-md font-medium mb-2">선택된 본문 이미지 ({images.length}개)</h4>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                  {images.map((file, index) => (
+                    <div key={index} className="border rounded-md p-2 flex flex-col items-center">
+                      <img src={URL.createObjectURL(file)} alt={`Preview ${index}`} className="w-full h-auto object-cover mb-2 rounded-md" />
+                      <Button variant="outline" size="sm" onClick={() => handleInsertImage(URL.createObjectURL(file))} className="w-full">
+                        본문에 삽입
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* 대표 이미지 업로드 */}
+            <div>
+              <Label htmlFor="featuredImage">대표 이미지</Label>
+              <Input id="featuredImage" type="file" onChange={handleFeaturedImageChange} accept="image/*" />
+              <p className="text-sm text-muted-foreground mt-1">포스트 카드에 사용될 대표 이미지를 선택하세요 (선택 사항).</p>
+            </div>
+
+            {/* 대표 이미지 미리보기 */}
+            {featuredImage && (
+              <div>
+                <h4 className="text-md font-medium mb-2">선택된 대표 이미지</h4>
+                <div className="border rounded-md p-2 flex flex-col items-center max-w-[300px]">
+                  <img src={URL.createObjectURL(featuredImage)} alt="Featured Image Preview" className="w-full h-auto object-cover mb-2 rounded-md" />
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
         <div>
           <Label htmlFor="category">카테고리</Label>
           <Select value={category} onValueChange={setCategory} disabled={categoriesLoading || loading}>
@@ -131,9 +273,9 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
           <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
           <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="예: react, nextjs, 개발" />
         </div>
-        <Button type="submit" disabled={loading || categoriesLoading || !category}>
-          {loading ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          포스트 생성
+        <Button type="submit" disabled={loading || categoriesLoading || !category || isUploadingImages}>
+          {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          {isUploadingImages ? "이미지 업로드 중..." : "포스트 생성"}
         </Button>
       </form>
     </div>
