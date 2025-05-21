@@ -96,8 +96,8 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
               {index === 1 && (
                 <div key="ad-container" className="group">
                   <div className="space-y-4">
-                    <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <GoogleAd slot="8571709253" style={{ width: '100%', height: '100%' }} />
+                    <div className="relative overflow-hidden rounded-lg">
+                      <GoogleAd slot="8571709253" style={{  display: "block", width: '100%', minHeight: '250px',  textAlign: "center" }} />
                     </div>
                     <div className="space-y-2"></div>
                     <p className="text-muted-foreground text-sm line-clamp-2"></p>
