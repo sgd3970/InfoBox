@@ -14,12 +14,12 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { formatDistanceToNow } from "date-fns"
 import { ko } from "date-fns/locale"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Trash2 } from "lucide-react"
 
 const commentFormSchema = z.object({
   nickname: z.string().min(2, { message: "닉네임은 2자 이상이어야 합니다." }),
   password: z.string().length(4, { message: "비밀번호는 4자리 숫자여야 합니다." }).regex(/^\d+$/, { message: "비밀번호는 숫자만 입력 가능합니다." }),
   content: z.string(),
-  isPrivate: z.boolean(),
 })
 
 type CommentFormValues = z.infer<typeof commentFormSchema>
@@ -28,7 +28,6 @@ interface Comment {
   _id: string
   nickname: string
   content: string
-  isPrivate: boolean
   createdAt: string
   postSlug: string
 }
@@ -42,7 +41,6 @@ export function Comments({ postSlug, category }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isPrivate, setIsPrivate] = useState(false)
 
   const form = useForm<CommentFormValues>({
     resolver: zodResolver(commentFormSchema),
@@ -50,7 +48,6 @@ export function Comments({ postSlug, category }: CommentsProps) {
       nickname: "",
       password: "",
       content: "",
-      isPrivate: false,
     },
     mode: "onChange",
   })
@@ -81,7 +78,9 @@ export function Comments({ postSlug, category }: CommentsProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ...data,
+          nickname: data.nickname,
+          password: data.password,
+          content: data.content,
           postSlug,
         }),
       })
@@ -97,6 +96,35 @@ export function Comments({ postSlug, category }: CommentsProps) {
       setIsSubmitting(false)
     }
   }
+
+  const handleDeleteComment = async (commentId: string) => {
+    const password = prompt("댓글 삭제를 위해 비밀번호를 입력하세요:");
+    if (!password) return;
+
+    if (password.length !== 4 || !/^[0-9]+$/.test(password)) {
+        alert("비밀번호는 4자리 숫자여야 합니다.");
+        return;
+    }
+
+    try {
+      const response = await fetch(`/api/comments/${commentId}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ password }),
+      });
+
+      if (!response.ok) throw new Error("댓글 삭제에 실패했습니다.");
+
+      setComments((prev) => prev.filter(comment => comment._id !== commentId));
+      alert("댓글이 삭제되었습니다.");
+
+    } catch (error) {
+      console.error("댓글 삭제 오류:", error);
+      alert("댓글 삭제 중 오류가 발생했습니다.");
+    }
+  };
 
   return (
     <div className="mt-12">
@@ -136,7 +164,6 @@ export function Comments({ postSlug, category }: CommentsProps) {
                           placeholder="****" 
                           maxLength={4}
                           {...field}
-                          disabled={!isPrivate}
                         />
                       </FormControl>
                       <FormMessage />
@@ -144,29 +171,6 @@ export function Comments({ postSlug, category }: CommentsProps) {
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="isPrivate"
-                render={({ field }) => (
-                  <FormItem className="flex flex-row items-center space-x-2 space-y-0">
-                    <FormControl>
-                      <Checkbox
-                        checked={field.value}
-                        onCheckedChange={(checked) => {
-                          field.onChange(checked)
-                          setIsPrivate(checked as boolean)
-                          if (!checked) {
-                            form.setValue("password", "")
-                          }
-                        }}
-                      />
-                    </FormControl>
-                    <FormLabel className="font-normal">
-                      비밀글
-                    </FormLabel>
-                  </FormItem>
-                )}
-              />
               <FormField
                 control={form.control}
                 name="content"
@@ -206,9 +210,6 @@ export function Comments({ postSlug, category }: CommentsProps) {
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <h4 className="font-semibold">{comment.nickname || '익명 사용자'}</h4>
-                      {comment.isPrivate && (
-                        <span className="text-xs text-muted-foreground bg-muted px-2 py-0.5 rounded">비밀글</span>
-                      )}
                     </div>
                     <p className="text-xs text-muted-foreground">
                       {formatDistanceToNow(new Date(comment.createdAt), {
@@ -216,6 +217,14 @@ export function Comments({ postSlug, category }: CommentsProps) {
                         locale: ko,
                       })}
                     </p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleDeleteComment(comment._id)}
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
                   </div>
                   <p className="text-sm">{comment.content}</p>
                 </div>

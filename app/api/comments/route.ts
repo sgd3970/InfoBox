@@ -18,7 +18,7 @@ export async function GET(request: Request) {
       .collection("comments")
       .find(
         { postSlug },
-        { projection: { password: 0 } } // 비밀번호 필드 제외
+        { projection: { password: 0 } } // 비밀번호 필드 제외 유지
       )
       .sort({ createdAt: -1 })
       .toArray()
@@ -32,20 +32,20 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const { postSlug, nickname, password, content, isPrivate } = await request.json()
+    // isPrivate 필드 제거
+    const { postSlug, nickname, password, content } = await request.json()
 
-    if (!postSlug || !nickname || !content) {
+    // 비밀번호 필드 필수 추가
+    if (!postSlug || !nickname || !password || !content) {
       return NextResponse.json(
-        { error: "포스트 슬러그, 닉네임, 내용은 필수입니다." },
+        { error: "포스트 슬러그, 닉네임, 비밀번호, 내용은 필수입니다." },
         { status: 400 }
       )
     }
 
-    if (isPrivate && !password) {
-      return NextResponse.json(
-        { error: "비밀글인 경우 비밀번호를 입력해야 합니다." },
-        { status: 400 }
-      )
+    // 비밀번호 4자리 숫자 유효성 검사 (선택 사항이지만, 클라이언트와 일관성 유지)
+    if (password.length !== 4 || !/^\d+$/.test(password)) {
+        return NextResponse.json({ error: "비밀번호는 4자리 숫자여야 합니다." }, { status: 400 });
     }
 
     const client = await clientPromise
@@ -62,9 +62,9 @@ export async function POST(request: Request) {
       postId: post._id.toString(),
       postSlug,
       nickname,
-      password: isPrivate ? password : "", // 비밀글이 아닌 경우 빈 문자열
+      password, // 비밀번호 필수이므로 그대로 저장
       content,
-      isPrivate: isPrivate || false,
+      // isPrivate 필드 제거
       createdAt: new Date(),
       updatedAt: new Date(),
     }
@@ -82,4 +82,36 @@ export async function POST(request: Request) {
     console.error("댓글 작성 오류:", error)
     return NextResponse.json({ error: "댓글을 작성하는 중 오류가 발생했습니다." }, { status: 500 })
   }
+}
+
+// 댓글 삭제 API (DELETE 메소드 추가)
+export async function DELETE(request: Request) {
+    try {
+        const url = new URL(request.url);
+        const commentId = url.pathname.split('/').pop(); // URL에서 댓글 ID 추출
+        const { password } = await request.json();
+
+        if (!commentId || !password) {
+            return NextResponse.json({ error: "댓글 ID와 비밀번호가 필요합니다." }, { status: 400 });
+        }
+
+        const client = await clientPromise;
+        const db = client.db();
+
+        // 댓글 삭제 (ID와 비밀번호 일치 시)
+        const result = await db.collection('comments').deleteOne({
+            _id: new (require('mongodb').ObjectId)(commentId), // MongoDB ObjectId로 변환
+            password: password // 입력된 비밀번호와 일치하는지 확인
+        });
+
+        if (result.deletedCount === 0) {
+            return NextResponse.json({ error: "댓글을 찾을 수 없거나 비밀번호가 일치하지 않습니다." }, { status: 404 });
+        }
+
+        return NextResponse.json({ message: "댓글이 성공적으로 삭제되었습니다." });
+
+    } catch (error) {
+        console.error('댓글 삭제 오류:', error);
+        return NextResponse.json({ error: "댓글 삭제 중 오류가 발생했습니다." }, { status: 500 });
+    }
 }
