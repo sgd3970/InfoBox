@@ -9,7 +9,7 @@ import { SocialShare } from "@/components/social-share"
 import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
 import clientPromise from "@/lib/mongodb"
-import { BlogAd } from "@/components/blog-ad"
+import { GoogleAd } from "@/components/GoogleAd"
 import { MdxContent } from "@/components/mdx-content"
 
 interface PostPageProps {
@@ -192,7 +192,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
 
           {/* 광고 영역 추가 */}
-          <BlogAd />
+          <GoogleAd slot="4632464247" />
 
           {/* AI 콘텐츠 요약 */}
           <AIContentSummary content={post.description} />
@@ -225,7 +225,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <Comments category={params.category} postSlug={params.slug} />
 
           {/* 인라인 광고 */}
-          <BlogAd />
+          <GoogleAd slot="4632464247" />
         </article>
 
         {/* 관련 포스트 */}

@@ -14,6 +14,7 @@ import { Suspense } from "react"
 import { WebVitals } from "@/components/web-vitals"
 import { ErrorMonitoring } from "@/components/error-monitoring"
 import { UserBehaviorTracking } from "@/components/user-behavior-tracking"
+import Script from "next/script"
 
 const inter = Inter({ subsets: ["latin"] })
 const notoSansKr = Noto_Sans_KR({
@@ -71,6 +72,15 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      <head>
+        <Script
+          id="adsense-script"
+          async
+          strategy="afterInteractive"
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478624096187058"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className={`${inter.className} ${notoSansKr.className}`}>
         <Providers>
             <div className="flex flex-col min-h-screen">

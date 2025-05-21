@@ -3,9 +3,9 @@
 import Link from "next/link"
 import Image from "next/image"
 import { useTheme } from "next-themes"
-import { AdBanner } from "@/components/ad-banner"
+// import { AdBanner } from "@/components/ad-banner"
+import { GoogleAd } from "@/components/GoogleAd"
 import type { Post, Category } from "@/lib/models"
-import { useEffect } from "react"
 
 interface HomePageClientProps {
   latestPosts: Post[]
@@ -20,24 +20,6 @@ declare global {
 
 export function HomePageClient({ latestPosts, categories }: HomePageClientProps) {
   const { theme } = useTheme()
-
-  useEffect(() => {
-    try {
-      // AdSense 스크립트가 이미 로드되어 있는지 확인
-      if (!document.querySelector('script[src*="pagead2.googlesyndication.com"]')) {
-        const script = document.createElement('script')
-        script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478624096187058"
-        script.async = true
-        script.crossOrigin = "anonymous"
-        document.head.appendChild(script)
-      }
-
-      // 광고 초기화
-      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
-    } catch (err) {
-      console.error('AdSense 로드 중 오류 발생:', err)
-    }
-  }, [])
 
   return (
     <div className="container py-10">
@@ -84,7 +66,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner position="top" adSlot="8571709253" />
+        <GoogleAd slot="8571709253" />
       </div>
 
       {/* 최신 포스트 섹션 */}
@@ -113,14 +95,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
             <>
               {index === 1 && (
                 <div key="ad-container" className="relative aspect-video overflow-hidden rounded-lg">
-                  <ins
-                    className="adsbygoogle"
-                    style={{ display: 'block' }}
-                    data-ad-format="fluid"
-                    data-ad-layout-key="-bf-2o+7o+d0-143"
-                    data-ad-client="ca-pub-8478624096187058"
-                    data-ad-slot="8571709253"
-                  />
+                  <GoogleAd slot="8571709253" />
                 </div>
               )}
               <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
@@ -169,7 +144,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner position="bottom" adSlot="8571709253" />
+        <GoogleAd slot="8571709253" />
       </div>
     </div>
   )

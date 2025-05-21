@@ -57,7 +57,7 @@ export function PWARegister() {
   return (
     <div className="fixed bottom-20 right-4 z-50">
       <Button onClick={handleInstallClick} className="shadow-lg flex items-center gap-2">
-        <Download className="h-4 w-4" />앱 설치하기
+        <Download className="h-4 w-4" />InfoBox 앱 설치하기
       </Button>
     </div>
   )
