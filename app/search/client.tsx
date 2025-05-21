@@ -198,7 +198,7 @@ export function SearchClient() {
                       <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="relative aspect-video overflow-hidden">
                           <Image
-                            src={post.image || "/placeholder.svg?height=150&width=300"}
+                            src={post.image || "/placeholder.svg"}
                             alt={post.title}
                             width={300}
                             height={150}
@@ -252,7 +252,7 @@ export function SearchClient() {
                         <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="relative aspect-video overflow-hidden">
                             <Image
-                              src={post.image || "/placeholder.svg?height=150&width=300"}
+                              src={post.image || "/placeholder.svg"}
                               alt={post.title}
                               width={300}
                               height={150}
@@ -307,49 +307,49 @@ export function SearchClient() {
                 {searchResults.map((post) => (
                   <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative aspect-video overflow-hidden">
-          <Image
-            src={post.image || "/placeholder.svg?height=150&width=300"}
-            alt={post.title}
-            width={300}
-            height={150}
-            className="object-cover transition-transform group-hover:scale-105"
-          />
-        </div>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2">
-            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-              {post.category}
-            </span>
-            {post.tags && post.tags.length > 0 && (
-              <div className="flex gap-1 flex-wrap">
-                {post.tags.slice(0, 3).map((tag) => (
-                  <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                    {tag}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-          <h3
-            className="text-xl font-bold group-hover:text-primary transition-colors"
-            dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-          />
-          <p
-            className="text-muted-foreground line-clamp-2"
-            dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-          />
-          <div className="flex items-center text-xs text-muted-foreground">
-            <time dateTime={post.date}>
-              {new Date(post.date).toLocaleDateString("ko-KR", {
-                year: "numeric",
-                month: "long",
-                day: "numeric",
-              })}
-            </time>
-            <span className="mx-2">•</span>
-            <span>{post.views.toLocaleString()} 조회</span>
-          </div>
-        </div>
+                      <Image
+                        src={post.image || "/placeholder.svg"}
+                        alt={post.title}
+                        width={300}
+                        height={150}
+                        className="object-cover transition-transform group-hover:scale-105"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                          {post.category}
+                        </span>
+                        {post.tags && post.tags.length > 0 && (
+                          <div className="flex gap-1 flex-wrap">
+                            {post.tags.slice(0, 3).map((tag) => (
+                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
+                                {tag}
+                              </span>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                      <h3
+                        className="text-xl font-bold group-hover:text-primary transition-colors"
+                        dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                      />
+                      <p
+                        className="text-muted-foreground line-clamp-2"
+                        dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                      />
+                      <div className="flex items-center text-xs text-muted-foreground">
+                        <time dateTime={post.date}>
+                          {new Date(post.date).toLocaleDateString("ko-KR", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </time>
+                        <span className="mx-2">•</span>
+                        <span>{post.views.toLocaleString()} 조회</span>
+                      </div>
+                    </div>
                   </Link>
                 ))}
               </div>

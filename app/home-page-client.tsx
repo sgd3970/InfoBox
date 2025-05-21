@@ -103,7 +103,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                 <div className="space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image
-                      src={post.image || "/placeholder.svg?height=200&width=400"}
+                      src={post.image || "/placeholder.svg"}
                       alt={post.title}
                       width={400}
                       height={200}
