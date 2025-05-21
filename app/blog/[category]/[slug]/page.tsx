@@ -162,15 +162,6 @@ export default async function PostPage({ params }: PostPageProps) {
               )}
               <span>•</span>
               <span>{post.views.toLocaleString()} 조회</span>
-              <span>•</span>
-              <Link
-                href={`/amp/${params.category}/${params.slug}`}
-                className="text-primary hover:underline"
-                target="_blank"
-                rel="noopener"
-              >
-                AMP 버전
-              </Link>
             </div>
             {post.image && (
               <div className="relative aspect-video overflow-hidden rounded-lg">
