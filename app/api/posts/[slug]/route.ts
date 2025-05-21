@@ -177,6 +177,38 @@ export async function DELETE(
     }
 
     console.log(`API /api/posts/${slug} DELETE - Post deleted successfully`)
+
+    // Get the deleted post
+    const deletedPost = await db.collection("posts").findOne({ slug })
+    if (!deletedPost) {
+      return NextResponse.json({ message: "Post not found" }, { status: 404 });
+    }
+
+    // Get the tags from the deleted post
+    const tagsToDelete = deletedPost.tags;
+
+    // Find all posts that use the tags from the deleted post, excluding the deleted post itself
+    const postsUsingTags = await db.collection("posts").find({
+      _id: { $ne: deletedPost._id }, // Exclude the deleted post
+      tags: { $in: tagsToDelete }, // Find posts using any of the tags
+    }).toArray();
+
+    // Get all tags used by the remaining posts
+    const tagsUsedByOtherPosts = postsUsingTags.reduce((acc, post) => {
+      post.tags.forEach((tag: string) => acc.add(tag.toString())); // Convert ObjectId to string for comparison
+      return acc;
+    }, new Set<string>());
+
+    // Find tags that are in the deleted post's tags but not used by any other post
+    const orphanedTagIds = tagsToDelete.filter(
+      (tagId: string) => !tagsUsedByOtherPosts.has(tagId.toString())
+    );
+
+    // Delete the orphaned tags
+    if (orphanedTagIds.length > 0) {
+      await db.collection("tags").deleteMany({ _id: { $in: orphanedTagIds } });
+    }
+
     return NextResponse.json({ message: "포스트가 성공적으로 삭제되었습니다." })
   } catch (error) {
     console.error("API /api/posts/[slug] DELETE 오류:", error)
