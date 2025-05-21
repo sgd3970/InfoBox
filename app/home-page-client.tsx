@@ -89,17 +89,17 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
           {latestPosts.map((post, index) => (
             <>
               {index === 1 && (
-                <div key="ad-container" className="container mx-auto px-4 group">
-                  <div className="space-y-4">
-                    <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" style={{ width: '100%', height: '100%' }} />
+                <div key="ad-container" className="container mx-auto px-4 group w-full">
+                  <div className="space-y-4 w-full">
+                    <div className="relative overflow-hidden rounded-lg">
+                      <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
                     </div>
                     <div className="space-y-2"></div>
                     <p className="text-muted-foreground text-sm line-clamp-2"></p>
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
+              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full">
                 <div className="space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image
