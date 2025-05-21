@@ -34,11 +34,22 @@ export async function GET(request: Request) {
     // 포스트 가져오기
     const posts = await db.collection("posts").find(filter).sort({ date: -1 }).skip(skip).limit(limit).toArray()
 
+    // 가져온 포스트 데이터 검증 및 보완
+    const sanitizedPosts = posts.map(post => ({
+      ...post,
+      // 새로운 필드가 없을 경우 기본값 설정
+      featuredImage: post.featuredImage === undefined ? null : post.featuredImage,
+      images: Array.isArray(post.images) ? post.images : [],
+      tags: Array.isArray(post.tags) ? post.tags : [], // tags 필드도 배열인지 확인
+      views: post.views === undefined ? 0 : post.views, // views 필드 기본값 설정
+      author: post.author === undefined ? "관리자" : post.author, // author 필드 기본값 설정
+    }));
+
     // 총 포스트 수 가져오기
     const total = await db.collection("posts").countDocuments(filter)
 
     return NextResponse.json({
-      posts,
+      posts: sanitizedPosts,
       pagination: {
         total,
         page,
