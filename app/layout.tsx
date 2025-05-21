@@ -81,7 +81,7 @@ export default function RootLayout({
           crossOrigin="anonymous"
         />
       </head>
-      <body className={`${inter.className} ${notoSansKr.className}`}>
+      <body className={`${inter.className} ${notoSansKr.className}`} style={{ overflowX: 'hidden' }}>
         <Providers>
             <div className="flex flex-col min-h-screen">
               <Navbar />
