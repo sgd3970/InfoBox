@@ -84,7 +84,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner position="top" dismissible={true} />
+        <AdBanner position="top" adSlot="8571709253" />
       </div>
 
       {/* 최신 포스트 섹션 */}
@@ -169,7 +169,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <AdBanner position="bottom" dismissible={true} />
+        <AdBanner position="bottom" adSlot="8571709253" />
       </div>
     </div>
   )

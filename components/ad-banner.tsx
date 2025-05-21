@@ -1,76 +1,37 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { X } from "lucide-react"
-import { Button } from "@/components/ui/button"
+import { useEffect } from "react"
 import { Card, CardContent } from "@/components/ui/card"
+
+declare global {
+  interface Window {
+    adsbygoogle: any[]
+  }
+}
 
 interface AdBannerProps {
   position?: "top" | "bottom" | "sidebar"
-  type?: "image" | "text"
-  imageUrl?: string
-  title?: string
-  description?: string
-  ctaText?: string
-  ctaUrl?: string
-  dismissible?: boolean
+  adSlot: string
 }
 
-export function AdBanner({
-  position = "top",
-  type = "text",
-  imageUrl,
-  title = "특별 프로모션",
-  description = "지금 가입하고 프리미엄 콘텐츠를 무료로 이용해보세요!",
-  ctaText = "자세히 보기",
-  ctaUrl = "#",
-  dismissible = true,
-}: AdBannerProps) {
-  const [isVisible, setIsVisible] = useState(true)
-  const [hasInteracted, setHasInteracted] = useState(false)
-
+export function AdBanner({ position = "top", adSlot }: AdBannerProps) {
   useEffect(() => {
-    // 이전에 배너를 닫았는지 확인
-    const bannerDismissed = localStorage.getItem("ad_banner_dismissed")
-    if (bannerDismissed === "true") {
-      setIsVisible(false)
+    try {
+      // AdSense 스크립트가 이미 로드되어 있는지 확인
+      if (!document.querySelector('script[src*="pagead2.googlesyndication.com"]')) {
+        const script = document.createElement('script')
+        script.src = "https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478624096187058"
+        script.async = true
+        script.crossOrigin = "anonymous"
+        document.head.appendChild(script)
+      }
+
+      // 광고 초기화
+      ;(window.adsbygoogle = window.adsbygoogle || []).push({})
+    } catch (err) {
+      console.error('AdSense 로드 중 오류 발생:', err)
     }
-
-    // 배너 노출 추적
-    if (isVisible) {
-      console.log("Ad banner impression")
-      // 실제 구현에서는 아래와 같이 분석 서비스로 전송
-      // window.gtag?.('event', 'ad_impression', {
-      //   event_category: 'advertising',
-      //   event_label: title,
-      // });
-    }
-  }, [isVisible, title])
-
-  const handleDismiss = () => {
-    setIsVisible(false)
-    localStorage.setItem("ad_banner_dismissed", "true")
-
-    console.log("Ad banner dismissed")
-    // 실제 구현에서는 아래와 같이 분석 서비스로 전송
-    // window.gtag?.('event', 'ad_dismissed', {
-    //   event_category: 'advertising',
-    //   event_label: title,
-    // });
-  }
-
-  const handleClick = () => {
-    setHasInteracted(true)
-
-    console.log("Ad banner clicked")
-    // 실제 구현에서는 아래와 같이 분석 서비스로 전송
-    // window.gtag?.('event', 'ad_click', {
-    //   event_category: 'advertising',
-    //   event_label: title,
-    // });
-  }
-
-  if (!isVisible) return null
+  }, [])
 
   const positionClasses = {
     top: "w-full",
@@ -81,40 +42,14 @@ export function AdBanner({
   return (
     <Card className={`overflow-hidden ${positionClasses[position]}`}>
       <CardContent className="p-4">
-        <div className="flex items-center justify-between">
-          {type === "image" && imageUrl ? (
-            <div className="flex flex-col items-start gap-2 sm:flex-row sm:items-center">
-              <img src={imageUrl || "/placeholder.svg"} alt={title} className="h-16 w-auto rounded object-cover" />
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
-              </div>
-              <Button asChild variant="default" size="sm" onClick={handleClick}>
-                <a href={ctaUrl} target="_blank" rel="noopener noreferrer">
-                  {ctaText}
-                </a>
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-1 flex-col items-start gap-2 sm:flex-row sm:items-center">
-              <div className="flex-1">
-                <h3 className="text-lg font-semibold">{title}</h3>
-                <p className="text-sm text-muted-foreground">{description}</p>
-              </div>
-              <Button asChild variant="default" size="sm" onClick={handleClick}>
-                <a href={ctaUrl} target="_blank" rel="noopener noreferrer">
-                  {ctaText}
-                </a>
-              </Button>
-            </div>
-          )}
-          {dismissible && (
-            <Button variant="ghost" size="icon" className="ml-2 h-8 w-8 shrink-0" onClick={handleDismiss}>
-              <X className="h-4 w-4" />
-              <span className="sr-only">배너 닫기</span>
-            </Button>
-          )}
-        </div>
+        <ins
+          className="adsbygoogle"
+          style={{ display: 'block' }}
+          data-ad-client="ca-pub-8478624096187058"
+          data-ad-slot={adSlot}
+          data-ad-format="auto"
+          data-full-width-responsive="true"
+        />
       </CardContent>
     </Card>
   )
