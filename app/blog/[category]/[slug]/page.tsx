@@ -192,7 +192,7 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
 
           {/* 광고 영역 추가 */}
-          <GoogleAd slot="4632464247" />
+          <GoogleAd slot="4632464247" className="h-auto min-h-[100px] lg:h-[150px]" />
 
           {/* AI 콘텐츠 요약 */}
           <AIContentSummary content={post.description} />
@@ -225,7 +225,7 @@ export default async function PostPage({ params }: PostPageProps) {
           <Comments category={params.category} postSlug={params.slug} />
 
           {/* 인라인 광고 */}
-          <GoogleAd slot="4632464247" />
+          <GoogleAd slot="4632464247" className="h-auto min-h-[100px] lg:h-[150px]" />
         </article>
 
         {/* 관련 포스트 */}

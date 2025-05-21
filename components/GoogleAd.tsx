@@ -11,9 +11,10 @@ declare global {
 interface GoogleAdProps {
   slot: string // 광고 슬롯 ID
   style?: React.CSSProperties // 스타일 커스터마이징 가능
+  className?: string // Tailwind CSS 클래스 추가
 }
 
-export const GoogleAd = ({ slot, style }: GoogleAdProps) => {
+export const GoogleAd = ({ slot, style, className }: GoogleAdProps) => {
   const adRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -30,7 +31,7 @@ export const GoogleAd = ({ slot, style }: GoogleAdProps) => {
   }, [slot]) // slot이 변경될 때마다 useEffect 재실행
 
   return (
-    <div style={{ textAlign: "center", minHeight: 100, ...style }} ref={adRef}>
+    <div style={{ textAlign: "center", minHeight: 100, ...style }} ref={adRef} className={className}>
       <ins
         className="adsbygoogle"
         style={{ display: "block" }}

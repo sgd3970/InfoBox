@@ -97,7 +97,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                 <div key="ad-container" className="group">
                   <div className="space-y-4">
                     <div className="relative overflow-hidden rounded-lg">
-                      <GoogleAd slot="8571709253" style={{  display: "block", width: '100%', minHeight: '250px',  textAlign: "center" }} />
+                      <GoogleAd slot="8571709253" style={{  display: "block", minWidth: '400px', width: '100%', minHeight: '250px', height: '100%', textAlign: "center" }} />
                     </div>
                     <div className="space-y-2"></div>
                     <p className="text-muted-foreground text-sm line-clamp-2"></p>
@@ -150,7 +150,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <GoogleAd slot="8571709253" />
+        <GoogleAd slot="4632464247" />
       </div>
     </div>
   )
