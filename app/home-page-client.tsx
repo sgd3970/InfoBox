@@ -66,7 +66,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <GoogleAd slot="8571709253" />
+        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
       </div>
 
       {/* 최신 포스트 섹션 */}
@@ -96,8 +96,8 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
               {index === 1 && (
                 <div key="ad-container" className="group">
                   <div className="space-y-4">
-                    <div className="relative overflow-hidden rounded-lg">
-                      <GoogleAd slot="8571709253" style={{  display: "block", minWidth: '400px', width: '100%', minHeight: '250px', height: '100%', textAlign: "center" }} />
+                    <div className="relative aspect-video overflow-hidden rounded-lg">
+                      <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
                     </div>
                     <div className="space-y-2"></div>
                     <p className="text-muted-foreground text-sm line-clamp-2"></p>
@@ -150,7 +150,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 광고 배너 */}
       <div className="flex justify-center mb-16">
-        <GoogleAd slot="4632464247" />
+        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] max-w-full mx-auto" />
       </div>
     </div>
   )
