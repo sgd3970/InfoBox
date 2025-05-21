@@ -52,6 +52,7 @@ export function Comments({ postSlug, category }: CommentsProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [confirmDialogOpen, setConfirmDialogOpen] = useState(false)
   const [commentToDelete, setCommentToDelete] = useState<string | null>(null)
   const [deletePassword, setDeletePassword] = useState("")
   const { toast } = useToast()
@@ -116,6 +117,19 @@ export function Comments({ postSlug, category }: CommentsProps) {
     setDeleteDialogOpen(true)
   }
 
+  const handlePasswordSubmit = () => {
+    if (deletePassword.length !== 4) {
+      toast({
+        title: "비밀번호 오류",
+        description: "비밀번호는 4자리 숫자여야 합니다.",
+        variant: "destructive",
+      })
+      return
+    }
+    setDeleteDialogOpen(false)
+    setConfirmDialogOpen(true)
+  }
+
   const handleDeleteConfirm = async () => {
     if (!commentToDelete || !deletePassword) return
 
@@ -149,10 +163,17 @@ export function Comments({ postSlug, category }: CommentsProps) {
       })
     } finally {
       setIsDeleting(false)
-      setDeleteDialogOpen(false)
+      setConfirmDialogOpen(false)
       setCommentToDelete(null)
       setDeletePassword("")
     }
+  }
+
+  const handleCancel = () => {
+    setDeleteDialogOpen(false)
+    setConfirmDialogOpen(false)
+    setCommentToDelete(null)
+    setDeletePassword("")
   }
 
   return (
@@ -286,7 +307,36 @@ export function Comments({ postSlug, category }: CommentsProps) {
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
+              onClick={handleCancel}
+              disabled={isDeleting}
+            >
+              취소
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handlePasswordSubmit}
+              disabled={isDeleting || deletePassword.length !== 4}
+            >
+              다음
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={confirmDialogOpen} onOpenChange={setConfirmDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>댓글 삭제 확인</DialogTitle>
+            <DialogDescription>
+              정말로 이 댓글을 삭제하시겠습니까?
+              <br />
+              삭제된 댓글은 복구할 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={handleCancel}
               disabled={isDeleting}
             >
               취소
@@ -294,7 +344,7 @@ export function Comments({ postSlug, category }: CommentsProps) {
             <Button
               variant="destructive"
               onClick={handleDeleteConfirm}
-              disabled={isDeleting || deletePassword.length !== 4}
+              disabled={isDeleting}
             >
               {isDeleting ? "삭제 중..." : "삭제"}
             </Button>
