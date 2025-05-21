@@ -64,11 +64,6 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
         </div>
       </section>
 
-      {/* 광고 배너 */}
-      <div className="container mx-auto px-4 flex justify-center mb-16">
-        <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
-      </div>
-
       {/* 최신 포스트 섹션 */}
       <section className="mb-16">
         <div className="flex justify-between items-center mb-8">
@@ -105,7 +100,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                 </div>
               )}
               <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
-                <div className="space-y-4">
+                <div className="space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image
                       src={post.image || "/placeholder.svg?height=200&width=400"}
