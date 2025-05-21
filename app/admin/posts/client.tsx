@@ -18,7 +18,7 @@ export default function AdminPostsClient() {
 
   const fetchPosts = async () => {
       try {
-      const res = await fetch("https://www.trend-scanner.com/api/posts", { credentials: "include" })
+      const res = await fetch("/api/posts", { credentials: "include" })
       if (!res.ok) {
         throw new Error("포스트를 가져오는데 실패했습니다.")
       }
@@ -42,7 +42,7 @@ export default function AdminPostsClient() {
     }
 
     try {
-      const res = await fetch(`https://www.trend-scanner.com/api/posts/${slug}`, {
+      const res = await fetch(`/api/posts/${slug}`, {
         method: "DELETE",
         credentials: "include",
       })

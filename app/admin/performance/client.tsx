@@ -31,7 +31,7 @@ export function AdminPerformanceClient() {
   const fetchPerformanceData = async () => {
     try {
       setLoading(true)
-      const res = await fetch("https://www.trend-scanner.com/api/admin/performance")
+      const res = await fetch("/api/admin/performance")
       if (!res.ok) throw new Error("성능 데이터를 가져오는데 실패했습니다")
       const data = await res.json()
       setPerformanceData(data)
@@ -45,7 +45,7 @@ export function AdminPerformanceClient() {
   const handleRevalidate = async (paths: string[]) => {
     setIsRevalidating(true)
     try {
-      const response = await fetch("https://www.trend-scanner.com/api/revalidate", {
+      const response = await fetch("/api/revalidate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
