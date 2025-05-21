@@ -24,15 +24,18 @@ export interface Category {
 
 export async function getCategories(): Promise<Category[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, {
-      next: { revalidate: 3600 }
-    });
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL}/api/categories`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
     
-    if (!res.ok) {
+    if (!response.ok) {
       throw new Error('카테고리를 가져오는데 실패했습니다');
     }
     
-    return await res.json();
+    return await response.json();
   } catch (error) {
     console.error('카테고리 가져오기 오류:', error);
     return [];
