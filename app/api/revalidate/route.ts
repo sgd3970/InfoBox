@@ -12,18 +12,26 @@ export async function POST(request: Request) {
   }
 
   try {
-    const { path } = await request.json()
+    const { paths } = await request.json()
 
-    if (!path) {
+    if (!paths || !Array.isArray(paths) || paths.length === 0) {
       return NextResponse.json(
-        { error: "revalidate할 경로가 필요합니다." },
+        { error: "revalidate할 경로 배열이 필요합니다." },
         { status: 400 }
       )
     }
 
-    revalidatePath(path)
-    console.log(`API /api/revalidate POST - Revalidated path: ${path}`)
-    return NextResponse.json({ revalidated: true, message: "캐시가 성공적으로 갱신되었습니다." })
+    // 모든 경로 revalidate
+    paths.forEach(path => {
+      revalidatePath(path)
+      console.log(`API /api/revalidate POST - Revalidated path: ${path}`)
+    })
+
+    return NextResponse.json({ 
+      revalidated: true, 
+      message: `${paths.length}개의 경로 캐시가 성공적으로 갱신되었습니다.`,
+      paths 
+    })
   } catch (error) {
     console.error("API /api/revalidate POST 오류:", error)
     return NextResponse.json(

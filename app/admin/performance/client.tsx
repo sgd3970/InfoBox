@@ -42,7 +42,7 @@ export function AdminPerformanceClient() {
     }
   }
 
-  const handleRevalidate = async (path: string) => {
+  const handleRevalidate = async (paths: string[]) => {
     setIsRevalidating(true)
     try {
       const response = await fetch("/api/revalidate", {
@@ -50,7 +50,7 @@ export function AdminPerformanceClient() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ path }),
+        body: JSON.stringify({ paths }),
       })
 
       if (!response.ok) {
@@ -439,73 +439,32 @@ export function AdminPerformanceClient() {
         <CardHeader>
           <CardTitle>캐시 관리</CardTitle>
           <CardDescription>
-            각 페이지의 캐시를 수동으로 갱신할 수 있습니다.
+            모든 페이지의 캐시를 한 번에 갱신할 수 있습니다.
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-4">
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">메인 페이지</h3>
-              <Button
-                variant="outline"
-                onClick={() => handleRevalidate("/")}
-                disabled={isRevalidating}
-              >
-                {isRevalidating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    갱신 중...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    메인 페이지 캐시 갱신
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">블로그 목록</h3>
-              <Button
-                variant="outline"
-                onClick={() => handleRevalidate("/blog")}
-                disabled={isRevalidating}
-              >
-                {isRevalidating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    갱신 중...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    블로그 목록 캐시 갱신
-                  </>
-                )}
-              </Button>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <h3 className="text-sm font-medium">카테고리 목록</h3>
-              <Button
-                variant="outline"
-                onClick={() => handleRevalidate("/blog/categories")}
-                disabled={isRevalidating}
-              >
-                {isRevalidating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    갱신 중...
-                  </>
-                ) : (
-                  <>
-                    <RefreshCw className="mr-2 h-4 w-4" />
-                    카테고리 목록 캐시 갱신
-                  </>
-                )}
-              </Button>
-            </div>
+          <div className="space-y-4">
+            <Button
+              variant="outline"
+              onClick={() => handleRevalidate(["/", "/blog", "/blog/categories"])}
+              disabled={isRevalidating}
+              className="w-full"
+            >
+              {isRevalidating ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  캐시 갱신 중...
+                </>
+              ) : (
+                <>
+                  <RefreshCw className="mr-2 h-4 w-4" />
+                  모든 페이지 캐시 갱신
+                </>
+              )}
+            </Button>
+            <p className="text-sm text-muted-foreground">
+              메인 페이지, 블로그 목록, 카테고리 목록의 캐시가 모두 갱신됩니다.
+            </p>
           </div>
         </CardContent>
       </Card>
