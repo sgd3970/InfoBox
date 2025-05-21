@@ -7,42 +7,20 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Plus, Search, Edit, Trash, Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 
-export default function AdminCategoriesClient() {
+interface AdminCategoriesClientProps {
+  initialCategories: Category[];
+}
+
+export default function AdminCategoriesClient({ initialCategories }: AdminCategoriesClientProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        setLoading(true)
-        const res = await fetch("/api/categories")
-        if (!res.ok) throw new Error("카테고리를 가져오는데 실패했습니다")
-        const data = await res.json()
-        setCategories(data)
-      } catch (error) {
-        console.error("카테고리 가져오기 오류:", error)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCategories()
-  }, [])
+  const [categories, setCategories] = useState<Category[]>(initialCategories)
+  const [loading, setLoading] = useState(false)
 
   // 검색 필터링
   const filteredCategories = categories.filter((category) => {
     const searchContent = `${category.name} ${category.description || ""}`.toLowerCase()
     return searchContent.includes(searchTerm.toLowerCase())
   })
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-4">

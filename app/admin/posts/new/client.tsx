@@ -11,7 +11,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 
-export default function AdminNewPostClient() {
+interface AdminNewPostClientProps {
+  initialCategories: Category[];
+}
+
+export default function AdminNewPostClient({ initialCategories }: AdminNewPostClientProps) {
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [description, setDescription] = useState("")
@@ -19,33 +23,11 @@ export default function AdminNewPostClient() {
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState("")
   const [loading, setLoading] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [categories, setCategories] = useState<Category[]>(initialCategories)
+  const [categoriesLoading, setCategoriesLoading] = useState(false)
 
   const router = useRouter()
   const { toast } = useToast()
-
-  useEffect(() => {
-    async function fetchCategories() {
-      try {
-        setCategoriesLoading(true)
-        const res = await fetch('/api/categories')
-        if (!res.ok) throw new Error("카테고리를 가져오는데 실패했습니다.")
-        const data = await res.json()
-        setCategories(data)
-      } catch (error) {
-        console.error("카테고리 가져오기 오류:", error)
-        toast({
-          title: "카테고리 로딩 오류",
-          description: "카테고리 목록을 불러오는데 실패했습니다.",
-          variant: "destructive",
-        })
-      } finally {
-        setCategoriesLoading(false)
-      }
-    }
-    fetchCategories()
-  }, [toast])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -132,19 +114,18 @@ export default function AdminNewPostClient() {
         </div>
         <div>
           <Label htmlFor="category">카테고리</Label>
-          <Select onValueChange={setCategory} disabled={categoriesLoading || categories.length === 0}>
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder={categoriesLoading ? "로딩 중..." : "카테고리 선택"} />
+          <Select value={category} onValueChange={setCategory} disabled={categoriesLoading || loading}>
+            <SelectTrigger id="category">
+              <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
             <SelectContent>
               {categories.map((cat) => (
-                <SelectItem key={cat._id || cat.slug} value={cat.name}>{cat.name}</SelectItem>
+                <SelectItem key={cat.slug} value={cat.slug}>
+                  {cat.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
-          {categoriesLoading === false && categories.length === 0 && (
-             <p className="text-sm text-red-500 mt-1">카테고리 목록을 불러오지 못했습니다. 카테고리를 먼저 생성해주세요.</p>
-          )}
         </div>
         <div>
           <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
