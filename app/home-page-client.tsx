@@ -89,17 +89,17 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
           {latestPosts.map((post, index) => (
             <>
               {index === 1 && (
-                <div key="ad-container" className="container mx-auto px-4 group w-full">
+                <div key="ad-container" className="container mx-auto px-4 group w-full min-w-0">
                   <div className="space-y-4 w-full">
                     <div className="relative overflow-hidden rounded-lg">
                       <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
                     </div>
                     <div className="space-y-2"></div>
-                    <p className="text-muted-foreground text-sm line-clamp-2"></p>
+                    <p className="text-muted-foreground text-sm line-clamp-2 break-words min-w-0"></p>
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full">
+              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full min-w-0">
                 <div className="space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image
@@ -116,7 +116,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                     </span>
                     <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                   </div>
-                  <p className="text-muted-foreground text-sm line-clamp-2 break-words">{post.description}</p>
+                  <p className="text-muted-foreground text-sm line-clamp-2 break-words min-w-0">{post.description}</p>
                 </div>
               </Link>
             </>
