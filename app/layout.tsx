@@ -85,21 +85,19 @@ export default function RootLayout({
         <Providers>
             <div className="flex flex-col min-h-screen">
               <Navbar />
-              <Suspense>
-                <main className="flex-1">{children}</main>
-              </Suspense>
+              <main className="flex-1">{children}</main>
               <Footer />
               <CookieConsent />
               <PWARegister />
             </div>
-          <Suspense>
-          <Analytics />
-          </Suspense>
-          <WebVitals />
-          <ErrorMonitoring />
-          <Suspense>
+
+          <Suspense fallback={null}>
+            <Analytics />
             <UserBehaviorTracking />
           </Suspense>
+
+          <WebVitals />
+          <ErrorMonitoring />
           <ServiceWorkerRegistration />
         </Providers>
       </body>
