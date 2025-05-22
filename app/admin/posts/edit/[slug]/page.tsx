@@ -14,6 +14,7 @@ async function getPostBySlug(slug: string): Promise<Post | null> {
   try {
     const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/${slug}`, {
       next: { revalidate: 0 }, // 관리자 페이지는 캐싱하지 않음
+      cache: 'no-store'
     });
 
     if (!res.ok) {

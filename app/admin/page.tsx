@@ -1,12 +1,12 @@
 import { Suspense } from "react"
 import AdminDashboardClient from "./client"
+import Loading from "./loading"
+import AdminAuthCheck from "../admin-auth-check"
 
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/stats`, {
-        next: { revalidate: 600 }, // 10분마다 재생성
-    })
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/stats`, { cache: 'no-store' })
 
     if (!res.ok) {
         console.error("사이트 통계 API 호출 실패:", res.status)
@@ -33,17 +33,13 @@ export default async function AdminDashboardPage() {
     const siteStats = await getSiteStats()
 
   return (
-    <div className="container mx-auto py-6 px-4">
-      <h1 className="text-3xl font-bold mb-6">관리자 대시보드</h1>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center h-96">
-            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
-          </div>
-        }
-      >
-        <AdminDashboardClient siteStats={siteStats} />
-      </Suspense>
-    </div>
+    <AdminAuthCheck>
+      <div className="container mx-auto py-6 px-4">
+        <h1 className="text-3xl font-bold mb-6">관리자 대시보드</h1>
+        <Suspense fallback={<Loading />}>
+          <AdminDashboardClient siteStats={siteStats} />
+        </Suspense>
+      </div>
+    </AdminAuthCheck>
   )
 }

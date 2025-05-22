@@ -1,4 +1,6 @@
 import { MongoClient, type MongoClientOptions } from "mongodb"
+import dns from 'dns';
+dns.setDefaultResultOrder('ipv4first');
 
 if (!process.env.MONGODB_URI) {
   throw new Error("MONGODB_URI 환경 변수가 설정되지 않았습니다.")
