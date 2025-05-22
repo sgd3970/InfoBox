@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import OfflineClientPage from "./OfflineClientPage"
+import { Metadata } from "next"
 
 export const metadata = {
   title: "오프라인 | InfoBox",
@@ -7,6 +8,24 @@ export const metadata = {
 }
 
 export const dynamic = "force-dynamic"
+
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "오프라인 - 트렌드 스캐너",
+    description: "인터넷 연결이 없습니다. 오프라인 모드로 전환되었습니다.",
+    openGraph: {
+      title: "오프라인 - 트렌드 스캐너",
+      description: "인터넷 연결이 없습니다. 오프라인 모드로 전환되었습니다.",
+      type: "website",
+      url: `${BASE_URL}/offline`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/offline`,
+    },
+  }
+}
 
 export default function OfflinePage() {
   return (

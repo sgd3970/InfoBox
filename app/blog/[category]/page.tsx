@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
+import { Metadata } from "next"
 
 interface CategoryPageProps {
   params: {
@@ -24,6 +25,18 @@ async function getPostsByCategory(category: string): Promise<Post[]> {
   } catch (error) {
     console.error(`카테고리 ${category} 포스트 fetch 오류:`, error)
     return []
+  }
+}
+
+async function getCategoryInfo(category: string) {
+  try {
+    const res = await fetch(`/api/categories`, {})
+    if (!res.ok) return null
+    const categories = await res.json()
+    return categories.find((c: { slug: string }) => c.slug === category)
+  } catch (error) {
+    console.error("카테고리 정보 가져오기 오류:", error)
+    return null
   }
 }
 
@@ -71,4 +84,28 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       )}
     </div>
   )
+}
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+  const category = params.category.toLowerCase()
+  const categoryInfo = await getCategoryInfo(category)
+
+  if (!categoryInfo) {
+    return {}
+  }
+
+  return {
+    title: `${categoryInfo.name} - 트렌드 스캐너`,
+    description: categoryInfo.description || `${categoryInfo.name} 카테고리의 모든 게시물을 확인하세요.`,
+    openGraph: {
+      title: `${categoryInfo.name} - 트렌드 스캐너`,
+      description: categoryInfo.description || `${categoryInfo.name} 카테고리의 모든 게시물을 확인하세요.`,
+      type: "website",
+      url: `${BASE_URL}/blog/${category}`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/blog/${category}`,
+    },
+  }
 } 

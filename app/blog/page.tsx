@@ -1,6 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
+import { Metadata } from "next"
 
 export const metadata = {
   title: "블로그 | InfoBox",
@@ -116,4 +117,22 @@ export default async function BlogPage() {
       </div>
     </div>
   )
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "블로그 - 트렌드 스캐너",
+    description: "최신 트렌드와 기술 소식을 확인하세요.",
+    openGraph: {
+      title: "블로그 - 트렌드 스캐너",
+      description: "최신 트렌드와 기술 소식을 확인하세요.",
+      type: "website",
+      url: `${BASE_URL}/blog`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/blog`,
+    },
+  }
 }

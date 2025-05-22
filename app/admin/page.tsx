@@ -2,6 +2,7 @@ import { Suspense } from "react"
 import AdminDashboardClient from "./client"
 import Loading from "./loading"
 import { AdminAuthCheck } from "@/components/admin/admin-auth-check"
+import { Metadata } from "next"
 
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
@@ -24,9 +25,22 @@ async function getSiteStats() {
 
 export const dynamic = "force-dynamic"
 
-export const metadata = {
-  title: "관리자 대시보드",
-  description: "사이트 통계 및 관리 기능을 제공하는 관리자 대시보드입니다.",
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "관리자 - 트렌드 스캐너",
+    description: "트렌드 스캐너 관리자 페이지입니다.",
+    openGraph: {
+      title: "관리자 - 트렌드 스캐너",
+      description: "트렌드 스캐너 관리자 페이지입니다.",
+      type: "website",
+      url: `${BASE_URL}/admin`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/admin`,
+    },
+  }
 }
 
 export default async function AdminDashboardPage() {

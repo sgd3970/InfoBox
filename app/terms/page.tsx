@@ -5,6 +5,24 @@ export const metadata: Metadata = {
   description: "InfoBox 이용약관",
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "이용약관 - 트렌드 스캐너",
+    description: "트렌드 스캐너의 이용약관을 확인하세요.",
+    openGraph: {
+      title: "이용약관 - 트렌드 스캐너",
+      description: "트렌드 스캐너의 이용약관을 확인하세요.",
+      type: "website",
+      url: `${BASE_URL}/terms`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/terms`,
+    },
+  }
+}
+
 export default function TermsPage() {
   return (
     <div className="container py-10 prose dark:prose-invert max-w-none">

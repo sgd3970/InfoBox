@@ -1,5 +1,6 @@
 import { Suspense } from "react"
 import { SearchClient } from "./client"
+import { Metadata } from "next"
 
 // 동적 렌더링 사용
 export const dynamic = "force-dynamic"
@@ -8,6 +9,24 @@ export const dynamic = "force-dynamic"
 export const metadata = {
   title: "검색 | InfoBox",
   description: "InfoBox에서 원하는 정보를 검색해보세요.",
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "검색 - 트렌드 스캐너",
+    description: "트렌드 스캐너에서 원하는 내용을 검색하세요.",
+    openGraph: {
+      title: "검색 - 트렌드 스캐너",
+      description: "트렌드 스캐너에서 원하는 내용을 검색하세요.",
+      type: "website",
+      url: `${BASE_URL}/search`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/search`,
+    },
+  }
 }
 
 export default function SearchPage() {

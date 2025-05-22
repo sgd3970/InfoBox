@@ -10,6 +10,24 @@ export const metadata: Metadata = {
 // 동적 렌더링 사용
 export const dynamic = "force-dynamic"
 
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "프로필 - 트렌드 스캐너",
+    description: "트렌드 스캐너 프로필을 관리하세요.",
+    openGraph: {
+      title: "프로필 - 트렌드 스캐너",
+      description: "트렌드 스캐너 프로필을 관리하세요.",
+      type: "website",
+      url: `${BASE_URL}/profile`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/profile`,
+    },
+  }
+}
+
 export default function ProfilePage() {
   return (
     <div className="container py-10">

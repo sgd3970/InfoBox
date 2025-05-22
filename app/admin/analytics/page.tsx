@@ -24,9 +24,22 @@ async function getPerformanceData() {
 
 export const dynamic = "force-dynamic"
 
-export const metadata: Metadata = {
-  title: "관리자 - 분석 | InfoBox",
-  description: "사이트 통계 및 분석 데이터를 확인합니다.",
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "분석 - 트렌드 스캐너",
+    description: "트렌드 스캐너 사이트 분석 데이터를 확인하세요.",
+    openGraph: {
+      title: "분석 - 트렌드 스캐너",
+      description: "트렌드 스캐너 사이트 분석 데이터를 확인하세요.",
+      type: "website",
+      url: `${BASE_URL}/admin/analytics`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/admin/analytics`,
+    },
+  }
 }
 
 export default async function AdminAnalyticsPage() {

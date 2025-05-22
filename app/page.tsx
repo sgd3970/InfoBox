@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Post, Category } from "@/lib/models"
 import { HomePageClient } from "./home-page-client"
+import { Metadata } from "next"
 
 async function getPosts(): Promise<Post[]> {
   try {
@@ -48,4 +49,22 @@ export default async function HomePage() {
   const categories = await getCategories()
 
   return <HomePageClient latestPosts={latestPosts} categories={categories} />
+}
+
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "트렌드 스캐너 - 최신 트렌드와 기술 소식",
+    description: "최신 트렌드와 기술 소식을 한눈에 확인하세요.",
+    openGraph: {
+      title: "트렌드 스캐너 - 최신 트렌드와 기술 소식",
+      description: "최신 트렌드와 기술 소식을 한눈에 확인하세요.",
+      type: "website",
+      url: BASE_URL,
+    },
+    alternates: {
+      canonical: BASE_URL,
+    },
+  }
 }

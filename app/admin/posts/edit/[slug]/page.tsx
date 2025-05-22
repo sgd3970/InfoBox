@@ -2,6 +2,7 @@ import { notFound } from 'next/navigation';
 import { AdminAuthCheck } from '@/components/admin/admin-auth-check';
 import PostEditClient from './client';
 import type { Post } from '@/lib/models';
+import { Metadata } from 'next';
 
 interface PostEditPageProps {
   params: {
@@ -53,4 +54,30 @@ export default async function PostEditPage({ params }: PostEditPageProps) {
       <PostEditClient initialPost={initialPost} />
     </AdminAuthCheck>
   );
+}
+
+export async function generateMetadata({ params }: PostEditPageProps): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+  const post = await getPostBySlug(params.slug)
+
+  if (!post) {
+    return {
+      title: "포스트 수정 - 트렌드 스캐너",
+      description: "트렌드 스캐너 포스트를 수정하세요.",
+    }
+  }
+
+  return {
+    title: `${post.title} 수정 - 트렌드 스캐너`,
+    description: `${post.title} 포스트를 수정하세요.`,
+    openGraph: {
+      title: `${post.title} 수정 - 트렌드 스캐너`,
+      description: `${post.title} 포스트를 수정하세요.`,
+      type: "website",
+      url: `${BASE_URL}/admin/posts/edit/${params.slug}`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/admin/posts/edit/${params.slug}`,
+    },
+  }
 } 

@@ -3,6 +3,7 @@ export const dynamic = 'force-dynamic';
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
+import { Metadata } from "next"
 
 interface TagPageProps {
   params: {
@@ -70,4 +71,23 @@ export default async function TagPage({ params }: TagPageProps) {
       )}
     </div>
   )
+}
+
+export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+  const tagSlug = params.slug
+
+  return {
+    title: `#${tagSlug} - 트렌드 스캐너`,
+    description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
+    openGraph: {
+      title: `#${tagSlug} - 트렌드 스캐너`,
+      description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
+      type: "website",
+      url: `${BASE_URL}/blog/tags/${tagSlug}`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/blog/tags/${tagSlug}`,
+    },
+  }
 } 

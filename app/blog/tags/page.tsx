@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import TagsClient, { type TagData } from "./client"
 import type { Post } from "@/lib/models"
+import { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
 
@@ -9,11 +10,31 @@ export const metadata = {
   description: "InfoBox 블로그의 모든 태그를 확인하세요.",
 }
 
+export async function generateMetadata(): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+
+  return {
+    title: "태그 - 트렌드 스캐너",
+    description: "모든 태그 목록을 확인하세요.",
+    openGraph: {
+      title: "태그 - 트렌드 스캐너",
+      description: "모든 태그 목록을 확인하세요.",
+      type: "website",
+      url: `${BASE_URL}/blog/tags`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/blog/tags`,
+    },
+  }
+}
+
 export default async function TagsPage() {
   // 모든 포스트 가져오기
   let allPosts = [];
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?limit=1000`, {}); // 충분히 큰 limit 설정
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const url = new URL('/api/search?limit=1000', BASE_URL).toString()
+    const searchRes = await fetch(url, {})
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       allPosts = searchData.posts || [];
