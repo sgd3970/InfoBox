@@ -5,7 +5,7 @@ import type { Post } from '@/lib/models'; // Post 타입 임포트
 async function getAllPostsForSitemap(): Promise<Post[]> {
   try {
     // 환경 변수 사용 (fallback 포함)
-    const apiUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
     const searchRes = await fetch(`${apiUrl}/api/search?limit=9999`);
     if (searchRes.ok) {
       const searchData = await searchRes.json();

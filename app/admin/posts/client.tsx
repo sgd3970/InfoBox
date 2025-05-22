@@ -19,7 +19,7 @@ export default function AdminPostsClient() {
   const fetchPosts = async () => {
       try {
       // 환경 변수 사용 (fallback 포함)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const res = await fetch(`${apiUrl}/api/posts`, { credentials: "include" });
       if (!res.ok) {
         throw new Error("포스트를 가져오는데 실패했습니다.")
@@ -45,7 +45,7 @@ export default function AdminPostsClient() {
 
     try {
       // 환경 변수 사용 (fallback 포함)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const res = await fetch(`${apiUrl}/api/posts/${slug}`, { method: "DELETE", credentials: "include" });
 
       if (!res.ok) {

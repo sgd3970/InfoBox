@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getMongoClient } from "@/lib/mongodb"
 import type { Post } from "@/lib/models"
 
 export const dynamic = "force-dynamic"
@@ -10,7 +10,7 @@ export async function GET(
 ) {
   try {
     const tagSlug = params.slug
-    const client = await clientPromise
+    const client = await getMongoClient()
     const db = client.db()
     
     const posts = await db

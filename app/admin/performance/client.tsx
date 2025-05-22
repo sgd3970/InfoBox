@@ -32,7 +32,7 @@ export function AdminPerformanceClient() {
     try {
       setLoading(true)
       // 환경 변수 사용 (fallback 포함)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const res = await fetch(`${apiUrl}/api/admin/performance`);
       if (!res.ok) throw new Error("성능 데이터를 가져오는데 실패했습니다")
       const data = await res.json()
@@ -48,7 +48,7 @@ export function AdminPerformanceClient() {
     setIsRevalidating(true)
     try {
       // 환경 변수 사용 (fallback 포함)
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL;
       const response = await fetch(`${apiUrl}/api/revalidate`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paths }) });
       if (!response.ok) {
         const error = await response.json()
