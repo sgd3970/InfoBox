@@ -15,6 +15,7 @@ export function ViewTracker({ slug }: ViewTrackerProps) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ slug }),
+      cache: 'no-store',
     }).then(response => {
       if (!response.ok) {
         console.error('Failed to update view count', response.statusText);

@@ -211,7 +211,9 @@ export default async function PostPage({ params }: PostPageProps) {
           />
 
           {/* 댓글 시스템 */}
-          <Comments category={params.category} postSlug={params.slug} />
+          {post._id && (
+            <Comments category={params.category} postId={post._id.toString()} />
+          )}
 
           {/* 인라인 광고 */}
           <GoogleAd slot="4632464247" className="h-auto max-h-[150px] max-w-[90%] lg:h-[150px] mx-auto" />

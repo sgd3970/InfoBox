@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import type { Post } from "@/lib/models"
 
 interface Recommendation {
   title: string
@@ -16,6 +17,11 @@ interface AIContentRecommendationsProps {
   currentPostSlug: string
   currentPostCategory: string
   currentPostTags?: string[]
+}
+
+interface PostWithScore {
+  post: Post
+  score: number
 }
 
 export function AIContentRecommendations({
@@ -41,7 +47,7 @@ export function AIContentRecommendations({
       }
 
       const searchData = await searchRes.json()
-      const allPosts: any[] = searchData.posts; // 가져온 포스트 목록 사용
+      const allPosts = (searchData.results || []) as Post[]; // results 배열 사용
 
       // 실제 API 호출 예시:
       // const response = await fetch('/api/ai/recommend', {
@@ -58,14 +64,14 @@ export function AIContentRecommendations({
       // setRecommendations(data.recommendations);
 
       // 시뮬레이션된 추천 (태그와 카테고리 기반)
-      const otherPosts = allPosts.filter((post) => post.slug !== currentPostSlug)
+      const otherPosts = allPosts.filter((post: Post) => post.slug !== currentPostSlug)
 
       // 태그 기반 점수 계산
-      const postsWithScore = otherPosts.map((post) => {
+      const postsWithScore = otherPosts.map((post: Post): PostWithScore => {
         let score = 0
 
         // 같은 카테고리면 점수 추가
-        if (post.category.toLowerCase() === currentPostCategory.toLowerCase()) {
+        if (post.category?.toLowerCase() === currentPostCategory.toLowerCase()) {
           score += 3
         }
 
@@ -85,9 +91,9 @@ export function AIContentRecommendations({
 
       // 점수에 따라 정렬하고 상위 3개 선택
       const recommendedPosts = postsWithScore
-        .sort((a, b) => b.score - a.score)
+        .sort((a: PostWithScore, b: PostWithScore) => b.score - a.score)
         .slice(0, 3)
-        .map((item) => ({
+        .map((item: PostWithScore) => ({
           title: item.post.title,
           description: item.post.description || "",
           url: `/blog/${item.post.category.toLowerCase()}/${item.post.slug}`,

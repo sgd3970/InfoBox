@@ -35,18 +35,19 @@ type CommentFormValues = z.infer<typeof commentFormSchema>
 
 interface Comment {
   _id: string
+  postId: string
   nickname: string
   content: string
   createdAt: string
-  postSlug: string
+  isPrivate: boolean
 }
 
 interface CommentsProps {
-  postSlug: string
+  postId: string
   category: string
 }
 
-export function Comments({ postSlug, category }: CommentsProps) {
+export function Comments({ postId, category }: CommentsProps) {
   const [comments, setComments] = useState<Comment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -70,7 +71,7 @@ export function Comments({ postSlug, category }: CommentsProps) {
   useEffect(() => {
     async function fetchComments() {
       try {
-        const response = await fetch(`/api/comments?postSlug=${postSlug}`)
+        const response = await fetch(`/api/comments?postId=${postId}`)
         if (!response.ok) throw new Error("댓글을 불러오는데 실패했습니다.")
         const data = await response.json()
         setComments(data)
@@ -82,7 +83,7 @@ export function Comments({ postSlug, category }: CommentsProps) {
     }
 
     fetchComments()
-  }, [postSlug])
+  }, [postId])
 
   async function onSubmit(data: CommentFormValues) {
     setIsSubmitting(true)
@@ -93,10 +94,11 @@ export function Comments({ postSlug, category }: CommentsProps) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          postId,
           nickname: data.nickname,
           password: data.password,
-          content: data.content,
-          postSlug,
+          text: data.content,
+          isPrivate: false,
         }),
       })
 
