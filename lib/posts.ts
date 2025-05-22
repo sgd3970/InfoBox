@@ -1,4 +1,4 @@
-import type { Post } from "@/lib/models"
+import type { Post, Category } from "@/lib/models"
 import clientPromise from "@/lib/mongodb"
 
 // export interface Post {
@@ -16,31 +16,33 @@ import clientPromise from "@/lib/mongodb"
 //   }
 // }
 
-export interface Category {
-  slug: string;
-  name: string;
-  postCount: number;
-}
+// export interface Category {
+//   slug: string;
+//   name: string;
+//   postCount: number;
+// }
 
-export async function getCategories(): Promise<Category[]> {
+// getCategories 함수는 더 이상 사용되지 않으므로 제거합니다.
+
+// 다른 함수들은 필요에 따라 유지하거나 API 라우트로 이동시킬 수 있습니다.
+
+// 예시: 단일 포스트 가져오기 함수 (API 라우트 사용)
+export async function getPost(slug: string): Promise<Post | null> {
   try {
-    // 환경 변수 사용 (fallback 포함)
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
-    const response = await fetch(`${apiUrl}/api/categories`, {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts/${slug}`, {
+        next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
     })
-    
-    if (!response.ok) {
-      throw new Error('카테고리를 가져오는데 실패했습니다');
+
+    if (!res.ok) {
+        console.error(`포스트 ${slug} API 호출 실패:`, res.status)
+        return null
     }
-    
-    return await response.json();
+
+    const post = await res.json()
+    return post as Post | null
   } catch (error) {
-    console.error('카테고리 가져오기 오류:', error);
-    return [];
+    console.error(`포스트 ${slug} fetch 오류:`, error)
+    return null
   }
 }
 

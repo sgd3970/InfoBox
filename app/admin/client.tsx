@@ -3,28 +3,35 @@
 import { useState, useEffect } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Loader2 } from "lucide-react"
+import Link from "next/link"
 
-export default function AdminDashboardClient() {
-  const [stats, setStats] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+interface AdminDashboardClientProps {
+  siteStats: any; // 또는 실제 통계 데이터 타입으로 정의
+}
+
+export default function AdminDashboardClient({ siteStats }: AdminDashboardClientProps) {
+  const [stats, setStats] = useState<any>(siteStats)
+  const [loading, setLoading] = useState(!siteStats)
 
   useEffect(() => {
-    async function fetchStats() {
-      try {
-        setLoading(true)
-        const res = await fetch("/api/stats")
-        if (!res.ok) throw new Error("통계 데이터를 가져오는데 실패했습니다")
-        const data = await res.json()
-        setStats(data)
-      } catch (error) {
-        console.error("통계 데이터 가져오기 오류:", error)
-      } finally {
-        setLoading(false)
+    if (!siteStats) {
+      async function fetchStats() {
+        try {
+          setLoading(true)
+          const res = await fetch("/api/stats")
+          if (!res.ok) throw new Error("통계 데이터를 가져오는데 실패했습니다")
+          const data = await res.json()
+          setStats(data)
+        } catch (error) {
+          console.error("통계 데이터 가져오기 오류:", error)
+        } finally {
+          setLoading(false)
+        }
       }
-    }
 
-    fetchStats()
-  }, [])
+      fetchStats()
+    }
+  }, [siteStats])
 
   if (loading) {
     return (
@@ -47,6 +54,7 @@ export default function AdminDashboardClient() {
       <h2 className="text-2xl font-bold">개요</h2>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {/* 총 포스트 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 포스트</CardTitle>
@@ -56,6 +64,7 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
 
+        {/* 총 카테고리 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 카테고리</CardTitle>
@@ -65,6 +74,7 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
 
+        {/* 총 태그 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 태그</CardTitle>
@@ -74,6 +84,7 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
 
+        {/* 총 사용자 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 사용자</CardTitle>
@@ -83,6 +94,7 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
 
+        {/* 총 댓글 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 댓글</CardTitle>
@@ -92,6 +104,7 @@ export default function AdminDashboardClient() {
           </CardContent>
         </Card>
 
+        {/* 총 조회수 */}
         <Card>
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-muted-foreground">총 조회수</CardTitle>
@@ -102,6 +115,7 @@ export default function AdminDashboardClient() {
         </Card>
       </div>
 
+      {/* 최근 활동 */}
       <h2 className="text-2xl font-bold mt-8">최근 활동</h2>
 
       <Card>
@@ -120,23 +134,25 @@ export default function AdminDashboardClient() {
                   </p>
                 </div>
                 <div className="flex gap-2">
-                  <a
+                  <Link
                     href={`/blog/${post.category.toLowerCase()}/${post.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline"
                   >
                     보기
-                  </a>
-                  <a href={`/admin/posts/edit/${post.slug}`} className="text-sm text-primary hover:underline">
+                  </Link>
+                  <Link href={`/admin/posts/edit/${post.slug}`} className="text-sm text-primary hover:underline">
                     편집
-                  </a>
+                  </Link>
                 </div>
               </div>
             ))}
           </div>
         </CardContent>
       </Card>
+
+      {/* 통계 차트 및 기타 정보는 AdminAnalyticsClient에서 표시 */}
     </div>
   )
 }

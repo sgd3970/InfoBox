@@ -1,23 +1,44 @@
 import Link from "next/link"
 import Image from "next/image"
-import clientPromise from "@/lib/mongodb"
 import type { Post, Category } from "@/lib/models"
-import { getCategories } from "@/lib/posts"
 import { HomePageClient } from "./home-page-client"
 
 async function getPosts(): Promise<Post[]> {
   try {
-    const client = await clientPromise
-    const db = client.db()
-    const posts = await db
-      .collection("posts")
-      .find({})
-      .sort({ publishedAt: -1 })
-      .limit(6)
-      .toArray()
-    return (posts as unknown) as Post[]
+    // API 라우트에서 최신 포스트 가져오기
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts/latest`, {
+      next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
+    })
+    
+    if (!res.ok) {
+      console.error("최신 포스트 API 호출 실패:", res.status)
+      return []
+    }
+    
+    const posts = await res.json()
+    return posts as Post[]
   } catch (error) {
-    console.error("포스트 가져오기 오류:", error)
+    console.error("최신 포스트 fetch 오류:", error)
+    return []
+  }
+}
+
+async function getCategories(): Promise<Category[]> {
+  try {
+    // API 라우트에서 카테고리 가져오기
+    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/categories`, {
+      next: { revalidate: 3600 }, // 1시간마다 재생성 (ISR)
+    })
+
+    if (!res.ok) {
+        console.error("카테고리 API 호출 실패:", res.status)
+        return []
+    }
+
+    const categories = await res.json()
+    return categories as Category[]
+  } catch (error) {
+    console.error("카테고리 fetch 오류:", error)
     return []
   }
 }
