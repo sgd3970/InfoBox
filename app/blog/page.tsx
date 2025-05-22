@@ -12,26 +12,21 @@ export const dynamic = "force-dynamic"
 
 async function getPosts() {
   try {
-    const client = await clientPromise
-    const db = client.db()
-    const posts = await db.collection("posts").find().sort({ date: -1 }).limit(7).toArray()
-    return posts.map(post => {
-      // 날짜 필드를 Date 객체로 변환을 시도합니다.
-      const createdAt = post.createdAt ? new Date(post.createdAt) : null;
-      const updatedAt = post.updatedAt ? new Date(post.updatedAt) : null;
-      const date = post.date ? new Date(post.date) : null;
-
-      return {
-      ...post,
-      _id: post._id.toString(),
-        // 유효한 Date 객체인 경우에만 toISOString 호출 또는 직접 Date 객체 사용
-        createdAt: createdAt instanceof Date && !isNaN(createdAt.getTime()) ? createdAt.toISOString() : post.createdAt,
-        updatedAt: updatedAt instanceof Date && !isNaN(updatedAt.getTime()) ? updatedAt.toISOString() : post.updatedAt,
-        date: date instanceof Date && !isNaN(date.getTime()) ? date.toISOString() : post.date, // date 필드도 유사하게 처리
-      }
-    }) as Post[]
+    const apiUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    // API 라우트에서 최신 포스트 가져오기
+    const res = await fetch(`${apiUrl}/api/posts/latest`, {
+      next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
+    })
+    
+    if (!res.ok) {
+      console.error("최신 포스트 API 호출 실패:", res.status)
+      return []
+    }
+    
+    const posts = await res.json()
+    return posts as Post[]
   } catch (error) {
-    console.error("포스트 가져오기 오류:", error)
+    console.error("최신 포스트 fetch 오류:", error)
     return []
   }
 }
