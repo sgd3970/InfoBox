@@ -13,7 +13,7 @@ export default async function TagsPage() {
   // 모든 포스트 가져오기
   let allPosts = [];
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?limit=1000`); // 충분히 큰 limit 설정
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?limit=1000`, {}); // 충분히 큰 limit 설정
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       allPosts = searchData.posts || [];

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
@@ -16,7 +18,7 @@ async function getPostsByTag(tag: string): Promise<Post[]> {
   console.log(`Fetching posts for tag: ${tag}`);
   // 예시: /api/search 엔드포인트를 사용하여 태그로 필터링
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?tags=${encodeURIComponent(tag)}&limit=100`);
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?tags=${encodeURIComponent(tag)}&limit=100`, {});
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];

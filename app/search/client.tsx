@@ -66,7 +66,7 @@ export function SearchClient() {
         params.set("limit", limit.toString())
 
         // 검색 API 호출
-        const res = await fetch(`/api/search?${params.toString()}`)
+        const res = await fetch(`/api/search?${params.toString()}`, { cache: 'no-store' })
 
         if (!res.ok) {
           throw new Error("검색 중 오류가 발생했습니다.")

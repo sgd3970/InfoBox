@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import type { Metadata } from "next"
@@ -22,10 +24,8 @@ interface PostPageProps {
 // API 라우트를 사용하여 단일 포스트를 가져오는 함수
 async function getPost(slug: string): Promise<Post | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
-    const res = await fetch(`${apiUrl}/api/posts/${slug}`, {
-      next: { revalidate: 60 }, // ISR 설정
-    });
+    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
+    const res = await fetch(`${apiUrl}/api/posts/${slug}`, {});
 
     if (!res.ok) {
       console.error(`포스트 ${slug} API 호출 실패:`, res.status);
@@ -46,9 +46,9 @@ async function getPost(slug: string): Promise<Post | null> {
 // API 라우트를 사용하여 관련 포스트를 가져오는 함수
 async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<Post[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
     // /api/search API를 사용하여 같은 카테고리의 다른 포스트 검색
-    const res = await fetch(`${apiUrl}/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`); // 관련 없는 포스트가 섞일 수 있으므로 여유 있게 가져옴
+    const res = await fetch(`${apiUrl}/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`, {});
 
     if (!res.ok) {
       console.error(`관련 포스트 API 호출 실패 (카테고리: ${category}):`, res.status);

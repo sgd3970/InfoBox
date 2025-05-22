@@ -11,11 +11,9 @@ export const dynamic = "force-dynamic"
 
 async function getPosts() {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
     // API 라우트에서 최신 포스트 가져오기
-    const res = await fetch(`${apiUrl}/api/posts/latest`, {
-      next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
-    })
+    const res = await fetch(`${apiUrl}/api/posts/latest`, {})
     
     if (!res.ok) {
       console.error("최신 포스트 API 호출 실패:", res.status)

@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
@@ -10,9 +12,7 @@ interface TagPageProps {
 
 async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/tag/${tagSlug}`, {
-      next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
-    })
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/tag/${tagSlug}`, {})
 
     if (!res.ok) {
       console.error(`태그 ${tagSlug} 포스트 API 호출 실패:`, res.status)

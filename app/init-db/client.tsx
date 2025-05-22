@@ -14,7 +14,7 @@ export default function InitDbClient() {
       setLoading(true)
       setResult(null)
 
-      const res = await fetch("/api/init-db")
+      const res = await fetch("/api/init-db", { cache: 'no-store' })
       const data = await res.json()
 
       setResult(data)

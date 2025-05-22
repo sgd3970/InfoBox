@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { optimizeIndexes, getIndexInfo } from "@/lib/db-indexes"
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     // 인덱스 최적화 실행

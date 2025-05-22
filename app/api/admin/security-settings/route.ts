@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server"
 import { getSecuritySettings, getDatabaseUsers, getBackupStatus } from "@/lib/db-security"
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function GET() {
   try {
     const securitySettings = await getSecuritySettings()

@@ -3,6 +3,9 @@ import { writeFile, mkdir, readdir } from "fs/promises"
 import path from "path"
 // import { v4 as uuidv4 } from 'uuid'; // uuid 더 이상 사용 안함
 
+export const runtime = 'nodejs';
+export const dynamic = 'force-dynamic';
+
 export async function POST(request: Request) {
   try {
     const formData = await request.formData()
