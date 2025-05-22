@@ -19,7 +19,7 @@ const initialData = {
 }
 
 export const dynamic = "force-dynamic"
-export const maxDuration = 300 // 5분 타임아웃
+export const maxDuration = 60 // 5분 타임아웃
 
 export async function GET() {
   try {
