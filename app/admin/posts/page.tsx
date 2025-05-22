@@ -9,11 +9,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "포스트 관리 - 트렌드 스캐너",
-    description: "트렌드 스캐너 포스트를 관리하세요.",
+    title: "포스트 관리 - InfoBox",
+    description: "InfoBox 포스트를 관리하세요.",
     openGraph: {
-      title: "포스트 관리 - 트렌드 스캐너",
-      description: "트렌드 스캐너 포스트를 관리하세요.",
+      title: "포스트 관리 - InfoBox",
+      description: "InfoBox 포스트를 관리하세요.",
       type: "website",
       url: `${BASE_URL}/admin/posts`,
     },
