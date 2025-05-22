@@ -56,6 +56,14 @@ export async function getMongoClient() {
   return clientPromise
 }
 
+// clientPromise를 lazy하게 export
+const lazyClientPromise = {
+  then: (callback: (client: MongoClient) => any) => getMongoClient().then(callback),
+  catch: (callback: (error: any) => any) => getMongoClient().catch(callback),
+}
+
+export default lazyClientPromise
+
 // 연결 풀 상태 가져오기 (lazy하게 수정)
 export async function getConnectionStatus() {
   try {

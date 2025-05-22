@@ -64,8 +64,7 @@ export async function analyzeQueryPerformance(
 
   return getCachedData(cacheKey, async () => {
     try {
-      const client = await clientPromise
-      const db = client.db()
+      const db = await getDatabase()
 
       // 쿼리 설명 가져오기 (실행 계획만)
       const explainResult = await db
