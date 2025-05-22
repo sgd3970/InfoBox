@@ -6,15 +6,10 @@ if (!process.env.MONGODB_URI) {
 
 const uri = process.env.MONGODB_URI
 const options: MongoClientOptions = {
-  maxPoolSize: 10, // 최대 연결 풀 크기
-  minPoolSize: 5, // 최소 연결 풀 크기
-  maxIdleTimeMS: 30000, // 최대 유휴 시간 (30초)
-  connectTimeoutMS: 10000, // 연결 제한 시간 (10초)
-  socketTimeoutMS: 45000, // 소켓 제한 시간 (45초)
-  serverSelectionTimeoutMS: 5000, // 서버 선택 제한 시간 (5초)
-  heartbeatFrequencyMS: 10000, // 하트비트 빈도 (10초)
-  retryWrites: true, // 쓰기 재시도
-  w: "majority", // 쓰기 확인
+  maxPoolSize: 10,          // 적절한 동시 처리 수용
+  retryWrites: true,        // 자동 재시도
+  w: "majority",            // 데이터 정합성 보장
+  serverSelectionTimeoutMS: 10000,  // 약간 넉넉하게 설정 (기본은 30000)
 }
 
 let client: MongoClient
@@ -37,20 +32,9 @@ if (process.env.NODE_ENV === "development") {
   clientPromise = client.connect()
 }
 
-// 연결 상태 모니터링
+// 연결 상태 모니터링 (에러 핸들링만 유지)
 clientPromise
   .then((client) => {
-    //console.log("MongoDB에 성공적으로 연결되었습니다.")
-
-    // 연결 이벤트 리스너
-    client.on("serverHeartbeatFailed", (event) => {
-      console.error("MongoDB 서버 하트비트 실패:", event)
-    })
-
-    // client.on("serverHeartbeatSucceeded", () => {
-    //   console.log("MongoDB 서버 하트비트 성공")
-    // })
-
     client.on("error", (error) => {
       console.error("MongoDB 연결 오류:", error)
     })
@@ -61,7 +45,7 @@ clientPromise
 
 export default clientPromise
 
-// 연결 풀 상태 가져오기
+// 연결 풀 상태 가져오기 (간소화된 버전)
 export async function getConnectionStatus() {
   try {
     const client = await clientPromise
@@ -70,16 +54,12 @@ export async function getConnectionStatus() {
     // 서버 상태 가져오기
     const serverStatus = await admin.serverStatus()
 
-    // 연결 풀 정보 추출
+    // 연결 풀 정보 추출 (필수 정보만)
     const connectionInfo = {
       current: serverStatus.connections?.current || 0,
       available: serverStatus.connections?.available || 0,
-      totalCreated: serverStatus.connections?.totalCreated || 0,
-      active: serverStatus.globalLock?.activeClients?.total || 0,
       maxPoolSize: options.maxPoolSize,
-      minPoolSize: options.minPoolSize,
-      maxIdleTimeMS: options.maxIdleTimeMS,
-      connectTimeoutMS: options.connectTimeoutMS,
+      serverSelectionTimeoutMS: options.serverSelectionTimeoutMS,
     }
 
     return connectionInfo
