@@ -1,10 +1,5 @@
 import type { Metadata } from "next"
 
-export const metadata: Metadata = {
-  title: "개인정보처리방침 | InfoBox",
-  description: "InfoBox 개인정보처리방침",
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 

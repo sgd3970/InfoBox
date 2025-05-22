@@ -2,11 +2,6 @@ import { Suspense } from "react"
 import OfflineClientPage from "./OfflineClientPage"
 import { Metadata } from "next"
 
-export const metadata = {
-  title: "오프라인 | InfoBox",
-  description: "현재 오프라인 상태입니다.",
-}
-
 export const dynamic = "force-dynamic"
 
 export async function generateMetadata(): Promise<Metadata> {

@@ -2,11 +2,6 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 import { ProfileClient } from "./profile-client"
 
-export const metadata: Metadata = {
-  title: "내 프로필 | InfoBox",
-  description: "InfoBox 계정 프로필 관리",
-}
-
 // 동적 렌더링 사용
 export const dynamic = "force-dynamic"
 

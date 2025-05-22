@@ -2,11 +2,6 @@ import type { Metadata } from "next"
 import { Suspense } from "react"
 import { LoginForm } from "./login-form"
 
-export const metadata: Metadata = {
-  title: "로그인 | InfoBox",
-  description: "InfoBox 계정으로 로그인하세요.",
-}
-
 // 동적 렌더링 사용
 export const dynamic = "force-dynamic"
 
