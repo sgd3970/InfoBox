@@ -13,7 +13,8 @@ interface CategoryPageProps {
 
 async function getPostsByCategory(category: string): Promise<Post[]> {
   try {
-    const res = await fetch(`/api/posts/category/${category}`, {})
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const res = await fetch(`${BASE_URL}/api/posts/category/${category}`, {})
     
     if (!res.ok) {
       console.error(`카테고리 ${category} 포스트 API 호출 실패:`, res.status)
@@ -30,7 +31,8 @@ async function getPostsByCategory(category: string): Promise<Post[]> {
 
 async function getCategoryInfo(category: string) {
   try {
-    const res = await fetch(`/api/categories`, {})
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const res = await fetch(`${BASE_URL}/api/categories`, {})
     if (!res.ok) return null
     const categories = await res.json()
     return categories.find((c: { slug: string }) => c.slug === category)

@@ -56,6 +56,7 @@ export interface SearchOptions {
 
 export const advancedSearch = async (options: SearchOptions): Promise<{ results: Post[], total: number, pages: number }> => {
   try {
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
     const params = new URLSearchParams()
     if (options.query) params.append('q', options.query)
     if (options.category) params.append('category', options.category)
@@ -67,7 +68,7 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     if (options.page) params.append('page', options.page.toString())
     if (options.limit) params.append('limit', options.limit.toString())
 
-    const res = await fetch(`/api/search?${params.toString()}`, {
+    const res = await fetch(`${BASE_URL}/api/search?${params.toString()}`, {
       next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
     })
 

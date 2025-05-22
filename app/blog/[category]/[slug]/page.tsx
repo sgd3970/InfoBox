@@ -24,29 +24,28 @@ interface PostPageProps {
 // API 라우트를 사용하여 단일 포스트를 가져오는 함수
 async function getPost(slug: string): Promise<Post | null> {
   try {
-    const res = await fetch(`/api/posts/${slug}`, {});
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const res = await fetch(`${BASE_URL}/api/posts/${slug}`, {});
 
     if (!res.ok) {
       console.error(`포스트 ${slug} API 호출 실패:`, res.status);
-      // return null; // API 호출 실패 시 null 반환
-       // API 호출 실패 시에도 포스트 데이터가 없음을 나타내기 위해 notFound()를 유발하도록 변경
-       if (res.status === 404) return null; // 404 에러 시 null 반환하여 notFound() 유발
-       throw new Error(`포스트 ${slug} API 호출 오류: ${res.status}`);
+      if (res.status === 404) return null;
+      throw new Error(`포스트 ${slug} API 호출 오류: ${res.status}`);
     }
 
     const post = await res.json();
     return post as Post;
   } catch (error) {
     console.error(`포스트 ${slug} fetch 오류:`, error);
-    return null; // 오류 발생 시 null 반환
+    return null;
   }
 }
 
 // API 라우트를 사용하여 관련 포스트를 가져오는 함수
 async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<Post[]> {
   try {
-    // /api/search API를 사용하여 같은 카테고리의 다른 포스트 검색
-    const res = await fetch(`/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`, {});
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const res = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`, {});
 
     if (!res.ok) {
       console.error(`관련 포스트 API 호출 실패 (카테고리: ${category}):`, res.status);
@@ -54,7 +53,6 @@ async function getRelatedPosts(currentSlug: string, category: string, limit = 3)
     }
 
     const searchResults = await res.json();
-    // 현재 포스트를 제외하고 최대 limit 개수만큼 선택
     const relatedPosts = (searchResults.results as Post[]).filter(post => post.slug !== currentSlug).slice(0, limit);
 
     return relatedPosts;
