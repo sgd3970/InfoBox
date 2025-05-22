@@ -8,7 +8,6 @@ import { AIContentRecommendations } from "@/components/ai-content-recommendation
 import { SocialShare } from "@/components/social-share"
 import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
-import clientPromise from "@/lib/mongodb"
 import { GoogleAd } from "@/components/GoogleAd"
 import { MdxContent } from "@/components/mdx-content"
 import { ViewTracker } from "@/components/view-tracker"

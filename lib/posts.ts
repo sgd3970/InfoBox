@@ -1,5 +1,4 @@
 import type { Post, Category } from "@/lib/models"
-import clientPromise from "@/lib/mongodb"
 
 // export interface Post {
 //   title: string

@@ -1,7 +1,6 @@
 import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
-import clientPromise from "@/lib/mongodb"
 
 export const metadata = {
   title: "블로그 | InfoBox",
