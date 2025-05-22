@@ -1,7 +1,7 @@
 import { Suspense } from "react"
 import AdminDashboardClient from "./client"
 import Loading from "./loading"
-import AdminAuthCheck from "../admin-auth-check"
+import { AdminAuthCheck } from "@/components/admin/admin-auth-check"
 
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
