@@ -3,11 +3,6 @@ import Image from "next/image"
 import type { Post } from "@/lib/models"
 import { Metadata } from "next"
 
-export const metadata = {
-  title: "블로그 | InfoBox",
-  description: "최신 기술 트렌드와 유용한 정보를 제공하는 블로그입니다.",
-}
-
 export const dynamic = "force-dynamic"
 
 async function getPosts() {

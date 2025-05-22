@@ -5,11 +5,6 @@ import { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
 
-export const metadata = {
-  title: "포스트 관리 | 관리자 대시보드",
-  description: "블로그 포스트를 관리합니다.",
-}
-
 export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
