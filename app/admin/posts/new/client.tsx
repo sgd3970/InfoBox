@@ -17,11 +17,9 @@ import dynamic from 'next/dynamic'
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 import 'react-quill/dist/quill.snow.css'
 
-interface AdminNewPostClientProps {
-  initialCategories: Category[];
-}
+interface AdminNewPostClientProps {}
 
-export default function AdminNewPostClient({ initialCategories }: AdminNewPostClientProps) {
+export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
   const [description, setDescription] = useState("")
@@ -34,8 +32,8 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]) // 업로드된 본문 이미지 URL 목록
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null) // 업로드된 대표 이미지 URL
   const [loading, setLoading] = useState(false)
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
-  const [categoriesLoading, setCategoriesLoading] = useState(false)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [categoriesLoading, setCategoriesLoading] = useState(true)
 
   const router = useRouter()
   const { toast } = useToast()

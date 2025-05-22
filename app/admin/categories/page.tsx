@@ -1,4 +1,3 @@
-import { getCategories } from "@/lib/posts"
 import AdminCategoriesClient from "./client"
 import type { Metadata } from "next"
 
@@ -10,11 +9,10 @@ export const metadata: Metadata = {
 }
 
 export default async function AdminCategoriesPage() {
-  // Server Component에서 데이터 fetching
-  const categories = await getCategories()
+  // Server Component에서 데이터 fetching 로직 제거
 
   return (
-    // Suspense 제거 (데이터 fetching이 서버에서 완료됨)
-    <AdminCategoriesClient initialCategories={categories} />
+    // AdminCategoriesClient에서 데이터 fetching
+    <AdminCategoriesClient />
   )
 } 

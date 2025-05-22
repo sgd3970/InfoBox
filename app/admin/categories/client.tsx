@@ -1,149 +1,248 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Search, Edit, Trash, Loader2 } from "lucide-react"
+import { Plus, Search, Edit, Trash, Loader2, Pencil } from "lucide-react"
 import type { Category } from "@/lib/models"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
 
-interface AdminCategoriesClientProps {
-  initialCategories: Category[];
-}
+export default function AdminCategoriesClient() {
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [newCategoryName, setNewCategoryName] = useState("")
+  const [newCategorySlug, setNewCategorySlug] = useState("")
+  const [newCategoryDescription, setNewCategoryDescription] = useState("")
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
+  const [categoryToDelete, setCategoryToDelete] = useState<string | null>(null)
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null)
+  const [editedCategoryData, setEditedCategoryData] = useState<Partial<Category>>({})
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
 
-export default function AdminCategoriesClient({ initialCategories }: AdminCategoriesClientProps) {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categories, setCategories] = useState<Category[]>(initialCategories)
-  const [loading, setLoading] = useState(false)
-  const [isAddModalOpen, setIsAddModalOpen] = useState(false)
-  const [newCategory, setNewCategory] = useState({ name: "", slug: "", description: "" })
-  const [isSubmitting, setIsSubmitting] = useState(false)
   const { toast } = useToast()
+  const router = useRouter()
 
-  // 검색 필터링
-  const filteredCategories = categories.filter((category) => {
-    const searchContent = `${category.name} ${category.description || ""}`.toLowerCase()
-    return searchContent.includes(searchTerm.toLowerCase())
-  })
+  const fetchCategories = async () => {
+    try {
+      setLoading(true)
+      setError(null)
+      const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/categories`)
+      if (!res.ok) throw new Error("카테고리 데이터를 가져오는데 실패했습니다")
+      const data = await res.json()
+      setCategories(data)
+    } catch (err) {
+      console.error("카테고리 데이터 가져오기 오류:", err)
+      setError("카테고리를 불러오는데 실패했습니다.")
+      setCategories([])
+    } finally {
+      setLoading(false)
+    }
+  }
 
-  const handleAddCategory = async () => {
-    if (!newCategory.name || !newCategory.slug) {
+  useEffect(() => {
+    fetchCategories()
+  }, [])
+
+  const handleCreateCategory = async () => {
+    if (!newCategoryName || !newCategorySlug) {
       toast({
-        title: "입력 오류",
+        title: "오류",
         description: "카테고리 이름과 슬러그는 필수입니다.",
         variant: "destructive",
       })
       return
     }
 
-    setIsSubmitting(true)
     try {
-      const response = await fetch("/api/categories", {
+      const res = await fetch("/api/categories", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(newCategory),
+        body: JSON.stringify({
+          name: newCategoryName,
+          slug: newCategorySlug,
+          description: newCategoryDescription,
+        }),
       })
 
-      if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "카테고리 추가 중 오류가 발생했습니다.")
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "카테고리 생성에 실패했습니다")
       }
 
-      const addedCategory = await response.json()
-      setCategories((prev) => [...prev, addedCategory])
-      setIsAddModalOpen(false)
-      setNewCategory({ name: "", slug: "", description: "" })
       toast({
         title: "성공",
-        description: "새 카테고리가 추가되었습니다.",
+        description: "카테고리가 생성되었습니다.",
       })
-    } catch (error) {
+      setIsDialogOpen(false)
+      setNewCategoryName("")
+      setNewCategorySlug("")
+      setNewCategoryDescription("")
+      fetchCategories()
+    } catch (err: any) {
+      console.error("카테고리 생성 오류:", err)
       toast({
         title: "오류",
-        description: error instanceof Error ? error.message : "카테고리 추가 중 오류가 발생했습니다.",
+        description: err.message || "카테고리 생성 중 오류가 발생했습니다.",
         variant: "destructive",
       })
-    } finally {
-      setIsSubmitting(false)
     }
   }
 
+  const confirmDeleteCategory = (categoryId: string) => {
+    setCategoryToDelete(categoryId)
+    setIsDeleting(true)
+  }
+
+  const handleDeleteCategory = async () => {
+    if (!categoryToDelete) return
+
+    try {
+      const res = await fetch(`/api/categories/${categoryToDelete}`, {
+        method: "DELETE",
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "카테고리 삭제에 실패했습니다")
+      }
+
+      toast({
+        title: "성공",
+        description: "카테고리가 삭제되었습니다.",
+      })
+      setIsDeleting(false)
+      setCategoryToDelete(null)
+      fetchCategories()
+    } catch (err: any) {
+      console.error("카테고리 삭제 오류:", err)
+      toast({
+        title: "오류",
+        description: err.message || "카테고리 삭제 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+      setIsDeleting(false)
+      setCategoryToDelete(null)
+    }
+  }
+
+  const startEditingCategory = (category: Category) => {
+    setEditingCategory(category)
+    setEditedCategoryData({
+      name: category.name,
+      slug: category.slug,
+      description: category.description,
+    })
+    setIsEditDialogOpen(true)
+  }
+
+  const handleEditInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setEditedCategoryData({ ...editedCategoryData, [name]: value })
+  }
+
+  const handleSaveCategory = async () => {
+    if (!editingCategory || !editedCategoryData.name || !editedCategoryData.slug) {
+      toast({
+        title: "오류",
+        description: "카테고리 이름과 슬러그는 필수입니다.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const res = await fetch(`/api/categories/${editingCategory._id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(editedCategoryData),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "카테고리 수정에 실패했습니다")
+      }
+
+      toast({
+        title: "성공",
+        description: "카테고리가 수정되었습니다.",
+      })
+      setIsEditDialogOpen(false)
+      setEditingCategory(null)
+      setEditedCategoryData({})
+      fetchCategories()
+    } catch (err: any) {
+      console.error("카테고리 수정 오류:", err)
+      toast({
+        title: "오류",
+        description: err.message || "카테고리 수정 중 오류가 발생했습니다.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="text-center py-10">
+        <p className="text-red-500">{error}</p>
+        <Button onClick={fetchCategories} className="mt-4">다시 시도</Button>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <div className="flex gap-2">
-          <Input
-            placeholder="카테고리 검색..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="max-w-sm"
-          />
-        </div>
-        <Button onClick={() => setIsAddModalOpen(true)}>
-          <Plus className="h-4 w-4 mr-2" />
-          새 카테고리
-        </Button>
+        <h2 className="text-2xl font-bold">카테고리 관리</h2>
+        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>새 카테고리</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>새 카테고리 생성</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">이름</Label>
+                <Input id="name" value={newCategoryName} onChange={(e) => setNewCategoryName(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="slug" className="text-right">슬러그</Label>
+                <Input id="slug" value={newCategorySlug} onChange={(e) => setNewCategorySlug(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="description" className="text-right">설명</Label>
+                <Input id="description" value={newCategoryDescription} onChange={(e) => setNewCategoryDescription(e.target.value)} className="col-span-3" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>취소</Button>
+              <Button onClick={handleCreateCategory}>생성</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
 
-      <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>새 카테고리 추가</DialogTitle>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="name">이름</Label>
-              <Input
-                id="name"
-                value={newCategory.name}
-                onChange={(e) => setNewCategory((prev) => ({ ...prev, name: e.target.value }))}
-                placeholder="카테고리 이름"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="slug">슬러그</Label>
-              <Input
-                id="slug"
-                value={newCategory.slug}
-                onChange={(e) => setNewCategory((prev) => ({ ...prev, slug: e.target.value }))}
-                placeholder="카테고리 슬러그"
-              />
-            </div>
-            <div className="grid gap-2">
-              <Label htmlFor="description">설명</Label>
-              <Textarea
-                id="description"
-                value={newCategory.description}
-                onChange={(e) => setNewCategory((prev) => ({ ...prev, description: e.target.value }))}
-                placeholder="카테고리 설명 (선택사항)"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsAddModalOpen(false)}>
-              취소
-            </Button>
-            <Button onClick={handleAddCategory} disabled={isSubmitting}>
-              {isSubmitting ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  추가 중...
-                </>
-              ) : (
-                "추가"
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <div className="border rounded-lg">
+      <div className="rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>
@@ -151,38 +250,72 @@ export default function AdminCategoriesClient({ initialCategories }: AdminCatego
               <TableHead>슬러그</TableHead>
               <TableHead>설명</TableHead>
               <TableHead>포스트 수</TableHead>
-              <TableHead className="text-right">작업</TableHead>
+              <TableHead className="text-right">액션</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredCategories.map((category) => (
-              <TableRow key={category._id}>
+            {categories.map((category) => (
+              <TableRow key={category._id.toString()}>
                 <TableCell className="font-medium">{category.name}</TableCell>
                 <TableCell>{category.slug}</TableCell>
-                <TableCell>{category.description || "-"}</TableCell>
-                <TableCell>{category.postCount}</TableCell>
+                <TableCell>{category.description}</TableCell>
+                <TableCell>{'postCount' in category && category.postCount !== undefined ? category.postCount : 'N/A'}</TableCell>
                 <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" className="text-red-500 hover:text-red-700">
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </div>
+                  <Button variant="ghost" size="icon" onClick={() => startEditingCategory(category)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => confirmDeleteCategory(category._id.toString())}>
+                    <Trash className="h-4 w-4 text-red-500" />
+                  </Button>
                 </TableCell>
               </TableRow>
             ))}
-            {filteredCategories.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={5} className="text-center py-4">
-                  검색 결과가 없습니다.
-                </TableCell>
-              </TableRow>
-            )}
           </TableBody>
         </Table>
       </div>
+
+      <Dialog open={isDeleting} onOpenChange={setIsDeleting}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>카테고리 삭제 확인</DialogTitle>
+            <DialogDescription>
+              이 카테고리를 정말 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsDeleting(false)}>취소</Button>
+            <Button variant="destructive" onClick={handleDeleteCategory}>삭제</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {editingCategory && (
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>카테고리 수정</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-name" className="text-right">이름</Label>
+                <Input id="edit-name" name="name" value={editedCategoryData.name} onChange={handleEditInputChange} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-slug" className="text-right">슬러그</Label>
+                <Input id="edit-slug" name="slug" value={editedCategoryData.slug} onChange={handleEditInputChange} className="col-span-3" disabled={true} />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-description" className="text-right">설명</Label>
+                <Input id="edit-description" name="description" value={editedCategoryData.description} onChange={handleEditInputChange} className="col-span-3" />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>취소</Button>
+              <Button onClick={handleSaveCategory}>저장</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   )
 } 
