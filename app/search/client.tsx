@@ -81,7 +81,11 @@ export function SearchClient() {
         setPages(data.pages || 0)
 
         // Calculate and set categories here
-        const uniqueCategories = Array.from(new Set((data.results || []).map((post) => post.category.toLowerCase())));
+        const uniqueCategories = Array.from(
+          new Set(
+            (data.results || []).map((post: Post) => post.category.toLowerCase())
+          )
+        ) as string[];
         setCategories(uniqueCategories);
 
       } catch (error) {
