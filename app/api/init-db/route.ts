@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { processInBatches, withRetry } from "@/lib/cache"
+import { ObjectId } from "mongodb"
 
 // 초기 데이터 정의
 const initialData = {
@@ -23,8 +24,7 @@ export const maxDuration = 60 // 5분 타임아웃
 
 export async function GET() {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 진행 상황 추적
     const progress: { [key: string]: number } = {}

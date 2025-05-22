@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { advancedSearch, type SearchOptions } from "@/lib/search"
-import clientPromise from "@/lib/mongodb"
+// import clientPromise from "@/lib/mongodb" // getDatabase 사용
 
 export const dynamic = "force-dynamic"
 
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
       limit: Number.parseInt(searchParams.get("limit") || "10", 10),
     }
 
-    // 고급 검색 실행
+    // 고급 검색 실행 (advancedSearch 함수 내부에서 getDatabase 사용)
     const results = await advancedSearch(options)
 
     return NextResponse.json(results)

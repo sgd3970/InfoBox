@@ -1,11 +1,10 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import bcrypt from "bcryptjs"
 
 export async function POST() {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     const adminEmail = "zbehddl@gmail.com"; // 변경할 이메일
 
@@ -38,9 +37,9 @@ export async function POST() {
       { status: 201 }
     )
   } catch (error) {
-    console.error("관리자 계정 생성 중 오류:", error)
+    console.error("API /api/auth/setup POST 오류:", error)
     return NextResponse.json(
-      { error: "관리자 계정 생성에 실패했습니다." },
+      { success: false, error: "사용자 생성 중 오류가 발생했습니다." },
       { status: 500 }
     )
   }

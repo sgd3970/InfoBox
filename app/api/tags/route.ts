@@ -1,10 +1,9 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 
 export async function GET() {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 태그 가져오기
     const tags = await db.collection("tags").find().sort({ postCount: -1 }).toArray()

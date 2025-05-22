@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -15,8 +15,7 @@ export async function GET() {
   }
 
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
     
     // 사용자 목록 가져오기 (가입일순)
     const users = await db
@@ -56,8 +55,7 @@ export async function POST(request: Request) {
       )
     }
 
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 이메일 중복 확인
     const existingUser = await db.collection("users").findOne({ email })
@@ -112,8 +110,7 @@ export async function PUT(request: Request) {
       )
     }
 
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 이메일 중복 확인 (자기 자신 제외)
     const existingUser = await db.collection("users").findOne({
@@ -179,8 +176,7 @@ export async function DELETE(request: Request) {
       )
     }
 
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 관리자 계정은 삭제 불가
     const user = await db.collection("users").findOne({ _id: new ObjectId(id) })

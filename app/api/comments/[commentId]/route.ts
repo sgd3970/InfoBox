@@ -1,43 +1,74 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
+
+export async function PUT(
+  request: Request,
+  { params }: { params: { commentId: string } }
+) {
+  const session = await getServerSession(authOptions)
+
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
+  }
+
+  try {
+    const commentId = params.commentId
+    const { text } = await request.json()
+    const db = await getDatabase()
+
+    const result = await db.collection("comments").updateOne(
+      { _id: new ObjectId(commentId) },
+      { $set: { text, updatedAt: new Date() } }
+    )
+
+    if (result.matchedCount === 0) {
+      return NextResponse.json(
+        { error: "댓글을 찾을 수 없습니다." },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ message: "댓글이 수정되었습니다." })
+  } catch (error) {
+    console.error("API /api/comments/[commentId] PUT 오류:", error)
+    return NextResponse.json(
+      { error: "댓글 수정 중 오류가 발생했습니다." },
+      { status: 500 }
+    )
+  }
+}
 
 export async function DELETE(
   request: Request,
   { params }: { params: { commentId: string } }
 ) {
+  const session = await getServerSession(authOptions)
+
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
+  }
+
   try {
-    const { commentId } = params
-    const { password } = await request.json()
+    const commentId = params.commentId
+    const db = await getDatabase()
 
-    if (!commentId || !password) {
-      return NextResponse.json(
-        { error: "댓글 ID와 비밀번호가 필요합니다." },
-        { status: 400 }
-      )
-    }
-
-    const client = await clientPromise
-    const db = client.db()
-
-    // 댓글 삭제 (ID와 비밀번호 일치 시)
-    const result = await db.collection("comments").deleteOne({
-      _id: new ObjectId(commentId),
-      password: password
-    })
+    const result = await db.collection("comments").deleteOne({ _id: new ObjectId(commentId) })
 
     if (result.deletedCount === 0) {
       return NextResponse.json(
-        { error: "댓글을 찾을 수 없거나 비밀번호가 일치하지 않습니다." },
+        { error: "댓글을 찾을 수 없습니다." },
         { status: 404 }
       )
     }
 
-    return NextResponse.json({ message: "댓글이 성공적으로 삭제되었습니다." })
+    return NextResponse.json({ message: "댓글이 삭제되었습니다." })
   } catch (error) {
-    console.error("댓글 삭제 오류:", error)
+    console.error("API /api/comments/[commentId] DELETE 오류:", error)
     return NextResponse.json(
       { error: "댓글 삭제 중 오류가 발생했습니다." },
       { status: 500 }

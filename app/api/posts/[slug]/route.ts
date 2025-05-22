@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
@@ -15,8 +15,7 @@ export async function GET(
   console.log(`API /api/posts/${slug} GET - Fetching post with slug: ${slug}`)
 
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
     const post = await db.collection("posts").findOne({ slug })
 
     if (!post) {
@@ -46,8 +45,7 @@ export async function POST(request: Request) {
 
   try {
     const postData = await request.json()
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 필수 필드 검증
     const requiredFields = ["title", "slug", "description", "content", "category"]
@@ -117,8 +115,7 @@ export async function PUT(
 
   try {
     const updatedPostData = await request.json()
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
     const { _id, ...fieldsToUpdate } = updatedPostData;
@@ -166,8 +163,7 @@ export async function DELETE(
   }
 
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     const result = await db.collection("posts").deleteOne({ slug })
 
@@ -180,16 +176,13 @@ export async function DELETE(
 
     // Get the deleted post
     const deletedPost = await db.collection("posts").findOne({ slug })
-    if (!deletedPost) {
-      return NextResponse.json({ message: "Post not found" }, { status: 404 });
-    }
 
     // Get the tags from the deleted post
-    const tagsToDelete = deletedPost.tags;
+    const tagsToDelete = deletedPost?.tags;
 
     // Find all posts that use the tags from the deleted post, excluding the deleted post itself
     const postsUsingTags = await db.collection("posts").find({
-      _id: { $ne: deletedPost._id }, // Exclude the deleted post
+      _id: { $ne: deletedPost?._id }, // Exclude the deleted post
       tags: { $in: tagsToDelete }, // Find posts using any of the tags
     }).toArray();
 
@@ -200,12 +193,12 @@ export async function DELETE(
     }, new Set<string>());
 
     // Find tags that are in the deleted post's tags but not used by any other post
-    const orphanedTagIds = tagsToDelete.filter(
+    const orphanedTagIds = tagsToDelete?.filter(
       (tagId: string) => !tagsUsedByOtherPosts.has(tagId.toString())
     );
 
     // Delete the orphaned tags
-    if (orphanedTagIds.length > 0) {
+    if (orphanedTagIds && orphanedTagIds.length > 0) {
       await db.collection("tags").deleteMany({ _id: { $in: orphanedTagIds } });
     }
 

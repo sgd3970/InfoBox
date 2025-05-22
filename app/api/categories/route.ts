@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import type { Category } from "@/lib/models"
@@ -8,8 +8,7 @@ export const dynamic = "force-dynamic"
 
 export async function GET() {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
     const categories = await db.collection<Category>("categories").find({}).toArray()
 
     // _id를 문자열로 변환하여 직렬화 가능하게 함
@@ -36,8 +35,7 @@ export async function POST(request: Request) {
 
   try {
     const categoryData = await request.json()
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     // 필수 필드 검증
     if (!categoryData.name || !categoryData.slug) {

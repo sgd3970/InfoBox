@@ -1,117 +1,136 @@
 import { NextResponse } from "next/server"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
+import { ObjectId } from "mongodb"
+import { getServerSession } from "next-auth"
+import { authOptions } from "@/lib/auth"
+import type { Comment } from "@/lib/models"
+import bcrypt from "bcrypt"
+
+export const dynamic = "force-dynamic"
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const postSlug = searchParams.get("postSlug")
+    const postId = searchParams.get("postId")
 
-    if (!postSlug) {
-      return NextResponse.json({ error: "포스트 슬러그가 필요합니다." }, { status: 400 })
+    if (!postId) {
+      return NextResponse.json(
+        { error: "postId가 필요합니다." },
+        { status: 400 }
+      )
     }
 
-    const client = await clientPromise
-    const db = client.db()
-
-    // 댓글 가져오기 (비밀번호 제외)
+    const db = await getDatabase()
     const comments = await db
-      .collection("comments")
-      .find(
-        { postSlug },
-        { projection: { password: 0 } } // 비밀번호 필드 제외 유지
-      )
-      .sort({ createdAt: -1 })
+      .collection<Comment>("comments")
+      .find({ postId: postId })
+      .sort({ createdAt: 1 })
       .toArray()
 
-    return NextResponse.json(comments)
+    const serializableComments = comments.map(comment => ({
+      ...comment,
+      _id: comment._id.toString(),
+      postId: comment.postId.toString(),
+    }))
+
+    return NextResponse.json(serializableComments)
   } catch (error) {
-    console.error("댓글 가져오기 오류:", error)
-    return NextResponse.json({ error: "댓글을 가져오는 중 오류가 발생했습니다." }, { status: 500 })
+    console.error("API /api/comments GET 오류:", error)
+    return NextResponse.json(
+      { error: "댓글을 가져오는 중 오류가 발생했습니다." },
+      { status: 500 }
+    )
   }
 }
 
 export async function POST(request: Request) {
   try {
-    // isPrivate 필드 제거
-    const { postSlug, nickname, password, content } = await request.json()
+    const { postId, nickname, password, text, isPrivate } = await request.json()
 
-    // 비밀번호 필드 필수 추가
-    if (!postSlug || !nickname || !password || !content) {
+    if (!postId || !nickname || !text) {
       return NextResponse.json(
-        { error: "포스트 슬러그, 닉네임, 비밀번호, 내용은 필수입니다." },
+        { error: "postId, 닉네임, 내용은 필수입니다." },
         { status: 400 }
       )
     }
 
-    // 비밀번호 4자리 숫자 유효성 검사 (선택 사항이지만, 클라이언트와 일관성 유지)
-    if (password.length !== 4 || !/^\d+$/.test(password)) {
-        return NextResponse.json({ error: "비밀번호는 4자리 숫자여야 합니다." }, { status: 400 });
-    }
+    const db = await getDatabase()
 
-    const client = await clientPromise
-    const db = client.db()
+    // 비밀번호 해싱 (선택 사항)
+    const hashedPassword = password ? await bcrypt.hash(password, 10) : undefined
 
-    // 포스트 확인
-    const post = await db.collection("posts").findOne({ slug: postSlug })
-    if (!post) {
-      return NextResponse.json({ error: "존재하지 않는 포스트입니다." }, { status: 404 })
-    }
-
-    // 댓글 작성
-    const comment = {
-      postId: post._id.toString(),
-      postSlug,
+    const newComment = {
+      postId: new ObjectId(postId),
       nickname,
-      password, // 비밀번호 필수이므로 그대로 저장
-      content,
-      // isPrivate 필드 제거
+      password: hashedPassword,
+      text,
+      isPrivate: isPrivate || false,
       createdAt: new Date(),
       updatedAt: new Date(),
     }
 
-    const result = await db.collection("comments").insertOne(comment)
-
-    // 응답에서는 비밀번호 제외
-    const { password: _, ...commentWithoutPassword } = comment
-
-    return NextResponse.json({
+    const result = await db.collection("comments").insertOne(newComment)
+    const insertedComment = {
       _id: result.insertedId,
-      ...commentWithoutPassword,
-    })
+      ...newComment,
+      postId: newComment.postId.toString(),
+    }
+
+    // 포스트 댓글 수 업데이트
+    await db.collection("posts").updateOne(
+      { _id: new ObjectId(postId) },
+      { $inc: { commentCount: 1 } }
+    )
+
+    return NextResponse.json(insertedComment, { status: 201 })
   } catch (error) {
-    console.error("댓글 작성 오류:", error)
-    return NextResponse.json({ error: "댓글을 작성하는 중 오류가 발생했습니다." }, { status: 500 })
+    console.error("API /api/comments POST 오류:", error)
+    return NextResponse.json(
+      { error: "댓글 생성 중 오류가 발생했습니다." },
+      { status: 500 }
+    )
   }
 }
 
-// 댓글 삭제 API (DELETE 메소드 추가)
-export async function DELETE(request: Request) {
-    try {
-        const url = new URL(request.url);
-        const commentId = url.pathname.split('/').pop(); // URL에서 댓글 ID 추출
-        const { password } = await request.json();
+export async function DELETE(
+  request: Request,
+) {
+  const session = await getServerSession(authOptions)
 
-        if (!commentId || !password) {
-            return NextResponse.json({ error: "댓글 ID와 비밀번호가 필요합니다." }, { status: 400 });
-        }
+  if (!session || session.user?.role !== "admin") {
+    return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
+  }
 
-        const client = await clientPromise;
-        const db = client.db();
+  try {
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
 
-        // 댓글 삭제 (ID와 비밀번호 일치 시)
-        const result = await db.collection('comments').deleteOne({
-            _id: new (require('mongodb').ObjectId)(commentId), // MongoDB ObjectId로 변환
-            password: password // 입력된 비밀번호와 일치하는지 확인
-        });
-
-        if (result.deletedCount === 0) {
-            return NextResponse.json({ error: "댓글을 찾을 수 없거나 비밀번호가 일치하지 않습니다." }, { status: 404 });
-        }
-
-        return NextResponse.json({ message: "댓글이 성공적으로 삭제되었습니다." });
-
-    } catch (error) {
-        console.error('댓글 삭제 오류:', error);
-        return NextResponse.json({ error: "댓글 삭제 중 오류가 발생했습니다." }, { status: 500 });
+    if (!id) {
+      return NextResponse.json(
+        { error: "댓글 ID가 필요합니다." },
+        { status: 400 }
+      )
     }
+
+    const db = await getDatabase()
+
+    const result = await db.collection("comments").deleteOne({
+      _id: new ObjectId(id),
+    })
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json(
+        { error: "댓글을 찾을 수 없습니다." },
+        { status: 404 }
+      )
+    }
+
+    return NextResponse.json({ message: "댓글이 삭제되었습니다." })
+  } catch (error) {
+    console.error("댓글 삭제 오류:", error)
+    return NextResponse.json(
+      { error: "댓글을 삭제하는 중 오류가 발생했습니다." },
+      { status: 500 }
+    )
+  }
 }

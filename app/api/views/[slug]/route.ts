@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import clientPromise from '@/lib/mongodb';
+import { getDatabase } from '@/lib/mongodb';
 
 export async function POST(request: Request) {
   try {
@@ -9,8 +9,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'Slug is required' }, { status: 400 });
     }
 
-    const client = await clientPromise;
-    const db = client.db();
+    const db = await getDatabase();
 
     // 조회수 증가
     const result = await db.collection('posts').updateOne(

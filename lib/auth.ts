@@ -1,6 +1,6 @@
 import { NextAuthOptions } from "next-auth"
 import CredentialsProvider from "next-auth/providers/credentials"
-import clientPromise from "@/lib/mongodb"
+import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import bcrypt from "bcryptjs"
 
@@ -17,8 +17,7 @@ export const authOptions: NextAuthOptions = {
           throw new Error("이메일과 비밀번호를 입력해주세요.")
         }
 
-        const client = await clientPromise
-        const db = client.db()
+        const db = await getDatabase()
         const user = await db.collection("users").findOne({
           email: credentials.email,
         })
