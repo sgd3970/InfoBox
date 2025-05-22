@@ -28,7 +28,7 @@ import type { Post, Category } from "@/lib/models"
 // 예시: 단일 포스트 가져오기 함수 (API 라우트 사용)
 export const getPost = async (slug: string): Promise<Post | null> => {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/${slug}`, {
+    const res = await fetch(`/api/posts/${slug}`, {
       next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
     });
 

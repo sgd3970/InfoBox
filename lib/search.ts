@@ -67,7 +67,7 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     if (options.page) params.append('page', options.page.toString())
     if (options.limit) params.append('limit', options.limit.toString())
 
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?${params.toString()}`, {
+    const res = await fetch(`/api/search?${params.toString()}`, {
       next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
     })
 
@@ -87,7 +87,7 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
 // 검색 제안 함수 - API 라우트 사용
 export const getSearchSuggestions = async (query: string): Promise<string[]> => {
     try {
-        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search/suggestions?q=${encodeURIComponent(query)}`, {
+        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`, {
             next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
         })
 

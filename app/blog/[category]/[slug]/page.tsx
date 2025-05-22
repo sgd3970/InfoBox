@@ -24,8 +24,7 @@ interface PostPageProps {
 // API 라우트를 사용하여 단일 포스트를 가져오는 함수
 async function getPost(slug: string): Promise<Post | null> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const res = await fetch(`${apiUrl}/api/posts/${slug}`, {});
+    const res = await fetch(`/api/posts/${slug}`, {});
 
     if (!res.ok) {
       console.error(`포스트 ${slug} API 호출 실패:`, res.status);
@@ -46,9 +45,8 @@ async function getPost(slug: string): Promise<Post | null> {
 // API 라우트를 사용하여 관련 포스트를 가져오는 함수
 async function getRelatedPosts(currentSlug: string, category: string, limit = 3): Promise<Post[]> {
   try {
-    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
     // /api/search API를 사용하여 같은 카테고리의 다른 포스트 검색
-    const res = await fetch(`${apiUrl}/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`, {});
+    const res = await fetch(`/api/search?category=${encodeURIComponent(category)}&limit=${limit + 5}`, {});
 
     if (!res.ok) {
       console.error(`관련 포스트 API 호출 실패 (카테고리: ${category}):`, res.status);

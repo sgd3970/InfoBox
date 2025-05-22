@@ -4,9 +4,7 @@ import type { Post } from '@/lib/models'; // Post 타입 임포트
 // 모든 포스트를 가져오는 함수 (sitemap 생성용)
 async function getAllPostsForSitemap(): Promise<Post[]> {
   try {
-    // 환경 변수 사용 (fallback 포함)
-    const apiUrl = process.env.NEXT_PUBLIC_APP_URL;
-    const searchRes = await fetch(`${apiUrl}/api/search?limit=9999`);
+    const searchRes = await fetch(`/api/search?limit=9999`);
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];

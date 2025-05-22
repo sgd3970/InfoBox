@@ -12,7 +12,7 @@ interface CategoryPageProps {
 
 async function getPostsByCategory(category: string): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/category/${category}`, {})
+    const res = await fetch(`/api/posts/category/${category}`, {})
     
     if (!res.ok) {
       console.error(`카테고리 ${category} 포스트 API 호출 실패:`, res.status)

@@ -6,7 +6,7 @@ import { AdminAuthCheck } from "@/components/admin/admin-auth-check"
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/stats`, {})
+    const res = await fetch(`/api/stats`, {})
 
     if (!res.ok) {
         console.error("사이트 통계 API 호출 실패:", res.status)

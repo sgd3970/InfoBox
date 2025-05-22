@@ -6,7 +6,7 @@ import { AdminAnalyticsClient } from "./client"
 // 성능 데이터를 가져오는 함수 (API 라우트 사용)
 async function getPerformanceData() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/performance`, { cache: 'no-store' })
+    const res = await fetch(`/api/admin/performance`, { cache: 'no-store' })
 
     if (!res.ok) {
       console.error("성능 데이터 API 호출 실패:", res.status)
