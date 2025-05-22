@@ -9,6 +9,11 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
+import dynamic from 'next/dynamic';
+
+// ReactQuill 에디터를 클라이언트 사이드에서만 로드
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+import 'react-quill/dist/quill.snow.css'
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -78,6 +83,26 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
   };
 
+  // ReactQuill 에디터 설정
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  }
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'color', 'background',
+    'link', 'image'
+  ]
+
   return (
     <div className="container py-8">
       <h1 className="text-2xl font-bold mb-6">포스트 수정</h1>
@@ -95,8 +120,17 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           <Textarea id="description" name="description" value={post.description} onChange={handleChange} required />
         </div>
         <div>
-          <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (마크다운)</label>
-          <Textarea id="content" name="content" value={post.content} onChange={handleChange} required rows={15} />
+          <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (HTML)</label>
+          <div className="mt-2">
+            <ReactQuill
+              theme="snow"
+              value={post.content}
+              onChange={(content) => setPost({ ...post, content })}
+              modules={modules}
+              formats={formats}
+              className="h-[400px] mb-12"
+            />
+          </div>
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>

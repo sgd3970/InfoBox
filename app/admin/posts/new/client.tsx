@@ -11,6 +11,11 @@ import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
+import dynamic from 'next/dynamic'
+
+// ReactQuill 에디터를 클라이언트 사이드에서만 로드
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
+import 'react-quill/dist/quill.snow.css'
 
 interface AdminNewPostClientProps {
   initialCategories: Category[];
@@ -34,6 +39,26 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
 
   const router = useRouter()
   const { toast } = useToast()
+
+  // ReactQuill 에디터 설정
+  const modules = {
+    toolbar: [
+      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+      ['bold', 'italic', 'underline', 'strike'],
+      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'color': [] }, { 'background': [] }],
+      ['link', 'image'],
+      ['clean']
+    ],
+  }
+
+  const formats = [
+    'header',
+    'bold', 'italic', 'underline', 'strike',
+    'list', 'bullet',
+    'color', 'background',
+    'link', 'image'
+  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -200,8 +225,17 @@ export default function AdminNewPostClient({ initialCategories }: AdminNewPostCl
           <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
         </div>
         <div>
-          <Label htmlFor="content">내용 (Markdown)</Label>
-          <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} rows={15} required />
+          <Label htmlFor="content">내용 (HTML)</Label>
+          <div className="mt-2">
+            <ReactQuill
+              theme="snow"
+              value={content}
+              onChange={setContent}
+              modules={modules}
+              formats={formats}
+              className="h-[400px] mb-12"
+            />
+          </div>
         </div>
 
         {/* 이미지 업로드 섹션 */}
