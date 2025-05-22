@@ -1,4 +1,4 @@
-import clientPromise from "./mongodb"
+import { getDatabase } from "./mongodb"
 import { processInBatches, withRetry } from "./cache"
 import { IndexSpecification, IndexDescription } from "mongodb"
 
@@ -34,8 +34,7 @@ const indexDefinitions: Record<string, IndexDescription[]> = {
 // 인덱스 최적화 (배치 처리 적용)
 export async function optimizeIndexes(onProgress?: (progress: number) => void) {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     console.log("데이터베이스 인덱스 최적화 시작...")
 
@@ -75,8 +74,7 @@ export async function optimizeIndexes(onProgress?: (progress: number) => void) {
 // 인덱스 정보 가져오기 (필수 정보만)
 export async function getIndexInfo() {
   try {
-    const client = await clientPromise
-    const db = client.db()
+    const db = await getDatabase()
 
     const indexInfo: Record<string, any[]> = {}
     const collections = Object.keys(indexDefinitions)
@@ -101,6 +99,50 @@ export async function getIndexInfo() {
     return indexInfo
   } catch (error) {
     console.error("인덱스 정보 가져오기 오류:", error)
+    return null
+  }
+}
+
+// 인덱스 생성 함수
+export async function createIndexes() {
+  try {
+    const db = await getDatabase()
+    
+    for (const [collectionName, indexes] of Object.entries(indexDefinitions)) {
+      for (const index of indexes) {
+        await db.collection(collectionName).createIndex(index.key, {
+          name: index.name,
+          ...(index as any),
+        })
+      }
+    }
+    
+    return true
+  } catch (error) {
+    console.error("인덱스 생성 오류:", error)
+    return false
+  }
+}
+
+// 인덱스 상태 확인 함수
+export async function getIndexStatus() {
+  try {
+    const db = await getDatabase()
+    const status: Record<string, any> = {}
+    
+    for (const collectionName of Object.keys(indexDefinitions)) {
+      const indexes = await db.collection(collectionName).indexes()
+      status[collectionName] = indexes.map(index => ({
+        name: index.name,
+        key: index.key,
+        size: index.size,
+        usage: index.usage,
+      }))
+    }
+    
+    return status
+  } catch (error) {
+    console.error("인덱스 상태 확인 오류:", error)
     return null
   }
 }

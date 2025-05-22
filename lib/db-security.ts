@@ -1,9 +1,9 @@
-import clientPromise from "./mongodb"
+import { getMongoClient } from "./mongodb"
 
 // 데이터베이스 보안 설정 가져오기
 export async function getSecuritySettings() {
   try {
-    const client = await clientPromise
+    const client = await getMongoClient()
     const admin = client.db().admin()
 
     // 서버 정보 가져오기

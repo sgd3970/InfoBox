@@ -1,4 +1,4 @@
-import clientPromise from "./mongodb"
+import { getDatabase } from "./mongodb"
 import { getCachedData, createCacheKey } from "./cache"
 
 // 데이터베이스 성능 통계 가져오기 (캐시 적용)
@@ -7,8 +7,7 @@ export async function getDatabaseStats() {
   
   return getCachedData(cacheKey, async () => {
     try {
-      const client = await clientPromise
-      const db = client.db()
+      const db = await getDatabase()
 
       // 데이터베이스 통계 가져오기
       const dbStats = await db.stats()

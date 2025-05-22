@@ -7,6 +7,13 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Loader2, Database, ViewIcon as Index, Shield, RefreshCw } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 
+interface ConnectionStatus {
+  current: number
+  available: number
+  maxPoolSize: number
+  serverSelectionTimeoutMS: number
+}
+
 export function AdminDatabaseClient() {
   const { auth } = useAuth()
   const [activeTab, setActiveTab] = useState("indexes")
@@ -14,6 +21,8 @@ export function AdminDatabaseClient() {
   const [optimizing, setOptimizing] = useState(false)
   const [indexInfo, setIndexInfo] = useState<Record<string, any[]> | null>(null)
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null)
+  const [connectionStatus, setConnectionStatus] = useState<ConnectionStatus | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   // 인덱스 정보 가져오기
   const fetchIndexInfo = async () => {
@@ -59,6 +68,28 @@ export function AdminDatabaseClient() {
       fetchIndexInfo()
     }
   }, [auth.status, auth.user])
+
+  useEffect(() => {
+    async function fetchConnectionStatus() {
+      try {
+        setLoading(true)
+        const response = await fetch("/api/admin/connection-status")
+        if (!response.ok) {
+          throw new Error("연결 상태를 가져오는데 실패했습니다.")
+        }
+        const data = await response.json()
+        setConnectionStatus(data.connectionStatus)
+      } catch (err) {
+        setError(err instanceof Error ? err.message : "알 수 없는 오류가 발생했습니다.")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    fetchConnectionStatus()
+    const interval = setInterval(fetchConnectionStatus, 30000) // 30초마다 갱신
+    return () => clearInterval(interval)
+  }, [])
 
   if (auth.status !== "authenticated" || auth.user?.role !== "admin") {
     return (
@@ -185,24 +216,36 @@ export function AdminDatabaseClient() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="border rounded-md p-4">
                   <h3 className="text-lg font-medium mb-2">연결 상태</h3>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span>상태:</span>
-                      <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs">연결됨</span>
+                  {loading ? (
+                    <div className="flex items-center justify-center py-4">
+                      <Loader2 className="h-4 w-4 animate-spin" />
                     </div>
-                    <div className="flex justify-between">
-                      <span>최대 연결 수:</span>
-                      <span>100</span>
+                  ) : error ? (
+                    <div className="text-red-500">{error}</div>
+                  ) : connectionStatus ? (
+                    <div className="space-y-2">
+                      <div className="flex justify-between">
+                        <span>상태:</span>
+                        <span className="inline-block bg-green-100 text-green-800 px-2 py-1 rounded text-xs">
+                          연결됨
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>최대 연결 수:</span>
+                        <span>{connectionStatus.maxPoolSize}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>활성 연결 수:</span>
+                        <span>{connectionStatus.current}</span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span>사용 가능한 연결 수:</span>
+                        <span>{connectionStatus.available}</span>
+                      </div>
                     </div>
-                    <div className="flex justify-between">
-                      <span>활성 연결 수:</span>
-                      <span>5</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>대기 연결 수:</span>
-                      <span>0</span>
-                    </div>
-                  </div>
+                  ) : (
+                    <div className="text-gray-500">연결 상태를 가져올 수 없습니다.</div>
+                  )}
                 </div>
 
                 <div className="border rounded-md p-4">
