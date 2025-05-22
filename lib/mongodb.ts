@@ -19,7 +19,7 @@ declare global {
 
 // 전역 변수로 클라이언트 인스턴스 저장
 let client: MongoClient | null = null
-let clientPromise: Promise<MongoClient> | null = null
+let clientPromise: Promise<MongoClient>
 
 // 개발 환경에서만 전역 변수 사용
 if (process.env.NODE_ENV === "development") {
@@ -34,7 +34,7 @@ if (process.env.NODE_ENV === "development") {
   clientPromise = client.connect()
 }
 
-// 연결 상태 모니터링
+// 연결 상태 모니터링 (선택 사항, 연결 오류 로깅)
 clientPromise
   .then((client) => {
     client.on("error", (error) => {
@@ -42,34 +42,27 @@ clientPromise
     })
   })
   .catch((error) => {
-    console.error("MongoDB 연결 실패:", error)
-    // 연결 실패 시 클라이언트 초기화
-    client = null
-    clientPromise = null
-    if (process.env.NODE_ENV === "development") {
-      global._mongoClientPromise = undefined
-    }
+    console.error("MongoDB 초기 연결 실패:", error)
+    // 초기 연결 실패 시 애플리케이션 종료 또는 복구 로직 필요
+    // Vercel 서버리스 환경에서는 함수 인스턴스 재시작으로 이어질 수 있음
   })
 
-// 기본 export는 clientPromise
+// 기본 export는 clientPromise (Promise<MongoClient> 타입)
 export default clientPromise
 
-// 유틸리티 함수들
-export async function getMongoClient() {
-  if (!clientPromise) {
-    throw new Error("MongoDB 클라이언트가 초기화되지 않았습니다.")
-  }
+// 유틸리티 함수들 (필요하다면)
+export async function getMongoClient(): Promise<MongoClient> {
   return clientPromise
 }
 
 export async function getDatabase() {
-  const client = await getMongoClient()
+  const client = await clientPromise
   return client.db()
 }
 
 export async function getConnectionStatus() {
   try {
-    const client = await getMongoClient()
+    const client = await clientPromise
     const admin = client.db().admin()
     const serverStatus = await admin.serverStatus()
 
@@ -89,9 +82,8 @@ export async function closeConnection() {
   if (client) {
     await client.close()
     client = null
-    clientPromise = null
-    if (process.env.NODE_ENV === "development") {
-      global._mongoClientPromise = undefined
+    if (process.env.NODE_ENV === "development" && global._mongoClientPromise) {
+       global._mongoClientPromise = undefined;
     }
   }
 }
