@@ -76,12 +76,12 @@ export function SearchClient() {
         console.log("Search results fetched successfully:", data)
         console.log("Current searchResults state before update:", searchResults)
 
-        setSearchResults(data.posts)
-        setTotal(data.total)
-        setPages(data.pages)
+        setSearchResults(data.results || [])
+        setTotal(data.total || 0)
+        setPages(data.pages || 0)
 
         // Calculate and set categories here
-        const uniqueCategories = Array.from(new Set((data.posts as Post[]).map((post) => post.category.toLowerCase())));
+        const uniqueCategories = Array.from(new Set((data.results || []).map((post) => post.category.toLowerCase())));
         setCategories(uniqueCategories);
 
       } catch (error) {
