@@ -10,7 +10,7 @@ interface CategoryPageProps {
 
 async function getPostsByCategory(category: string): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts/category/${category}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/category/${category}`, {
       next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
     })
     

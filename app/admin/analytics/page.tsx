@@ -5,7 +5,7 @@ import { AdminAnalyticsClient } from "./client"
 // 성능 데이터를 가져오는 함수 (API 라우트 사용)
 async function getPerformanceData() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/admin/performance`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/admin/performance`, {
         next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
     })
 

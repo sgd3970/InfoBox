@@ -4,7 +4,7 @@ import AdminDashboardClient from "./client"
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/stats`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/stats`, {
         next: { revalidate: 600 }, // 10분마다 재생성
     })
 

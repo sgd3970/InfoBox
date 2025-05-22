@@ -14,7 +14,7 @@ export function CategoriesContent() {
     async function fetchCategories() {
       try {
         setLoading(true);
-        const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/categories`);
+        const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`);
         if (!res.ok) throw new Error('카테고리 데이터를 가져오는데 실패했습니다');
         const data = await res.json();
         setCategories(data);

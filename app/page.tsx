@@ -6,7 +6,7 @@ import { HomePageClient } from "./home-page-client"
 async function getPosts(): Promise<Post[]> {
   try {
     // API 라우트에서 최신 포스트 가져오기
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts/latest`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/latest`, {
       next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
     })
     
@@ -26,7 +26,7 @@ async function getPosts(): Promise<Post[]> {
 async function getCategories(): Promise<Category[]> {
   try {
     // API 라우트에서 카테고리 가져오기
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/categories`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, {
       next: { revalidate: 3600 }, // 1시간마다 재생성 (ISR)
     })
 

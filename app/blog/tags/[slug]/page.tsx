@@ -10,7 +10,7 @@ interface TagPageProps {
 
 async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   try {
-    const res = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/posts/tag/${tagSlug}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/posts/tag/${tagSlug}`, {
       next: { revalidate: 60 }, // 60초마다 재생성 (ISR)
     })
 
