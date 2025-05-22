@@ -1,19 +1,14 @@
-import type { Metadata } from "next"
-
-export const metadata: Metadata = {
-  title: "이용약관 | InfoBox",
-  description: "InfoBox 이용약관",
-}
+import { Metadata } from "next"
 
 export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "이용약관 - 트렌드 스캐너",
-    description: "트렌드 스캐너의 이용약관을 확인하세요.",
+    title: "이용약관 - InfoBox",
+    description: "InfoBox 이용약관",
     openGraph: {
-      title: "이용약관 - 트렌드 스캐너",
-      description: "트렌드 스캐너의 이용약관을 확인하세요.",
+      title: "이용약관 - InfoBox",
+      description: "InfoBox 이용약관",
       type: "website",
       url: `${BASE_URL}/terms`,
     },
