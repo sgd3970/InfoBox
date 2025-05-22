@@ -73,6 +73,12 @@ export default function RootLayout({
   return (
     <html lang="ko" suppressHydrationWarning>
       <head>
+        <link
+          rel="preload"
+          href="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-8478624096187058"
+          as="script"
+          crossOrigin="anonymous"
+        />
         <Script
           id="adsense-script"
           async
