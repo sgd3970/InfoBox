@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Plus, Search, Edit, Trash, Loader2, Pencil } from "lucide-react"
 import type { Category } from "@/lib/models"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogFooter, DialogDescription } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { useToast } from "@/components/ui/use-toast"
@@ -160,6 +160,10 @@ export default function AdminCategoriesClient() {
     }
 
     try {
+      if (!editingCategory._id || typeof editingCategory._id !== 'string') {
+        throw new Error('유효하지 않은 카테고리 ID입니다.')
+      }
+
       const res = await fetch(`/api/categories/${editingCategory._id}`, {
         method: "PUT",
         headers: {
@@ -255,7 +259,7 @@ export default function AdminCategoriesClient() {
           </TableHeader>
           <TableBody>
             {categories.map((category) => (
-              <TableRow key={category._id.toString()}>
+              <TableRow key={category._id?.toString() || category.slug}>
                 <TableCell className="font-medium">{category.name}</TableCell>
                 <TableCell>{category.slug}</TableCell>
                 <TableCell>{category.description}</TableCell>
@@ -264,12 +268,19 @@ export default function AdminCategoriesClient() {
                   <Button variant="ghost" size="icon" onClick={() => startEditingCategory(category)}>
                     <Pencil className="h-4 w-4" />
                   </Button>
-                  <Button variant="ghost" size="icon" onClick={() => confirmDeleteCategory(category._id.toString())}>
+                  <Button variant="ghost" size="icon" onClick={() => confirmDeleteCategory(category._id?.toString() || category.slug)}>
                     <Trash className="h-4 w-4 text-red-500" />
                   </Button>
                 </TableCell>
               </TableRow>
             ))}
+            {categories.length === 0 && !loading && !error && (
+              <TableRow>
+                <TableCell colSpan={5} className="text-center py-4">
+                  카테고리가 없습니다.
+                </TableCell>
+              </TableRow>
+            )}
           </TableBody>
         </Table>
       </div>
