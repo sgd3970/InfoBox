@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const ogUrl = new URL(`/api/og`, BASE_URL)
   ogUrl.searchParams.set("title", post.title)
-  ogUrl.searchParams.set("category", post.category)
+  ogUrl.searchParams.set("category", post.categoryName || '')
 
   return {
     title: post.title,
@@ -120,7 +120,7 @@ export default async function PostPage({ params }: PostPageProps) {
   const postUrl = `${BASE_URL}/blog/${params.category}/${params.slug}`
 
   // 관련 포스트 찾기 (같은 카테고리의 다른 포스트)
-  const relatedPosts = await getRelatedPosts(params.slug, post.category)
+  const relatedPosts = await getRelatedPosts(params.slug, params.category)
 
   // HTML 엔티티 디코딩
   const decodedContent = decodeHtmlEntities(post.content);
@@ -144,10 +144,10 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/blog/category/${encodeURIComponent(post.category.toLowerCase())}`}
+                  href={`/blog/category/${encodeURIComponent(post.categorySlug)}`}
                   className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
                 >
-                  {post.category}
+                  {post.categoryName}
                 </Link>
                 {post.tags && post.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap">
@@ -215,7 +215,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* AI 추천 콘텐츠 */}
           <AIContentRecommendations
             currentPostSlug={post.slug}
-            currentPostCategory={post.category}
+            currentPostCategory={post.categorySlug}
             currentPostTags={post.tags || []}
           />
 
@@ -236,7 +236,7 @@ export default async function PostPage({ params }: PostPageProps) {
               {relatedPosts.map((relatedPost) => (
                 <Link
                   key={relatedPost._id}
-                  href={`/blog/${relatedPost.category.toLowerCase()}/${relatedPost.slug}`}
+                  href={`/blog/${relatedPost.categorySlug}/${relatedPost.slug}`}
                   className="group"
                 >
                   <div className="space-y-2">

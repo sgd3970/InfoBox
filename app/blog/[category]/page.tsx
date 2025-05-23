@@ -50,7 +50,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <h1 className="text-2xl font-bold mb-6">카테고리: {params.category}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
+          <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="block">
             <div className="rounded-lg border shadow-sm overflow-hidden">
               {post.image && (
                 <Image
@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
-                  <span>{post.category}</span>
+                  <span>{post.categoryName}</span>
                   {/* 태그 표시 추가 */}
                   {post.tags && post.tags.length > 0 && (
                       <>

@@ -40,7 +40,6 @@ export function AIContentRecommendations({
     try {
       // 실제 환경에서는 API 호출을 통해 AI 추천을 생성합니다.
       // 여기서는 시뮬레이션을 위해 setTimeout을 사용합니다.
-      //const searchRes = await fetch("/api/search?limit=50") // 임시로 최대 50개의 포스트를 가져옴
       const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
       const searchRes = await fetch(`${BASE_URL}/api/search?limit=50`); // 임시로 최대 50개의 포스트를 가져옴
 
@@ -73,7 +72,7 @@ export function AIContentRecommendations({
         let score = 0
 
         // 같은 카테고리면 점수 추가
-        if (post.category?.toLowerCase() === currentPostCategory.toLowerCase()) {
+        if (post.categorySlug?.toLowerCase() === currentPostCategory.toLowerCase()) {
           score += 3
         }
 
@@ -98,7 +97,7 @@ export function AIContentRecommendations({
         .map((item: PostWithScore) => ({
           title: item.post.title,
           description: item.post.description || "",
-          url: `/blog/${item.post.category.toLowerCase()}/${item.post.slug}`,
+          url: `/blog/${item.post.categorySlug}/${item.post.slug}`,
         }))
 
       setRecommendations(recommendedPosts)

@@ -90,8 +90,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            // 포스트 링크에서도 post.category는 슬러그가 저장되어야 함
-            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
+            <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
