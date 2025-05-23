@@ -152,17 +152,28 @@ export async function PUT(
     // ——————————————————————————————
 
     // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
-    const { _id, ...fieldsToUpdate } = updatedPostData;
+    // categorySlug와 categoryName을 명시적으로 추출하여 업데이트에 포함
+    const { _id, category, ...fieldsToUpdate } = updatedPostData; // 기존 category 필드는 분리
+    
+    const fieldsToSet: any = { ...fieldsToUpdate };
+
+    // categorySlug와 categoryName이 요청에 포함되어 있으면 업데이트 필드에 추가
+    if (updatedPostData.categorySlug !== undefined) {
+        fieldsToSet.categorySlug = updatedPostData.categorySlug;
+    }
+    if (updatedPostData.categoryName !== undefined) {
+        fieldsToSet.categoryName = updatedPostData.categoryName;
+    }
 
     // 날짜 필드를 업데이트할 경우 Date 객체로 변환 (클라이언트에서 문자열로 보낼 경우 대비)
-    if (fieldsToUpdate.date) fieldsToUpdate.date = new Date(fieldsToUpdate.date);
-    fieldsToUpdate.updatedAt = new Date(); // 업데이트 시간은 항상 현재 시간으로 설정 (Date 객체)
+    if (fieldsToSet.date) fieldsToSet.date = new Date(fieldsToSet.date);
+    fieldsToSet.updatedAt = new Date(); // 업데이트 시간은 항상 현재 시간으로 설정 (Date 객체)
 
     const result = await db
       .collection("posts")
       .updateOne(
         { slug }, // 슬러그로 포스트 찾기
-        { $set: fieldsToUpdate } // _id를 제외한 필드 업데이트
+        { $set: fieldsToSet } // 업데이트 필드 사용
       )
 
     if (result.matchedCount === 0) {

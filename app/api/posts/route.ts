@@ -102,8 +102,8 @@ export async function POST(request: Request) {
     }
     // ——————————————————————————————
 
-    // 필수 필드 검증
-    const requiredFields = ["title", "slug", "description", "content", "category"]
+    // 필수 필드 검증: category 대신 categorySlug와 categoryName 검증
+    const requiredFields = ["title", "slug", "description", "content", "categorySlug", "categoryName"]
     for (const field of requiredFields) {
       if (!postData[field]) {
         return NextResponse.json(
@@ -125,8 +125,13 @@ export async function POST(request: Request) {
     }
 
     // 포스트 데이터 준비 및 날짜 필드를 Date 객체로 명시적으로 변환
+    // category 대신 categorySlug와 categoryName을 저장
+    const { category, ...restPostData } = postData; // 기존 category 필드는 분리
+
     const newPost = {
-      ...postData,
+      ...restPostData,
+      categorySlug: postData.categorySlug, // 새 필드 저장
+      categoryName: postData.categoryName, // 새 필드 저장
       author: session.user.name || session.user.email || "관리자", // 세션에서 작성자 정보 가져오기
       views: 0,
       date: new Date(postData.date || Date.now()), // 클라이언트에서 보낸 날짜 사용 또는 현재 시간 (Date 객체)
@@ -139,20 +144,20 @@ export async function POST(request: Request) {
     // 데이터베이스에 포스트 삽입
     const result = await db.collection("posts").insertOne(newPost)
 
-    // 태그 컬렉션 업데이트 로직 추가
+    // 태그 컬렉션 업데이트 로직 추가 (categorySlug 기준)
     if (newPost.tags && Array.isArray(newPost.tags)) {
       for (const tagName of newPost.tags) {
-        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); // 태그 이름으로 슬러그 생성
-        if (!tagSlug) continue; // 유효하지 않은 태그 슬러그 건너뛰기
+        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        if (!tagSlug) continue;
 
         await db.collection("tags").updateOne(
           { slug: tagSlug },
           { 
-            $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() }, // 새로 삽입 시 설정
-            $inc: { postCount: 1 }, // postCount 1 증가
-            $set: { updatedAt: new Date() } // 업데이트 시간 설정
+            $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() },
+            $inc: { postCount: 1 },
+            $set: { updatedAt: new Date() }
           },
-          { upsert: true } // 태그가 없으면 새로 생성
+          { upsert: true }
         );
       }
     }

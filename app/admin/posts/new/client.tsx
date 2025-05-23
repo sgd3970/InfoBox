@@ -24,7 +24,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [slug, setSlug] = useState("")
   const [description, setDescription] = useState("")
   const [content, setContent] = useState("")
-  const [category, setCategory] = useState("")
+  const [categorySlug, setCategorySlug] = useState("")
+  const [categoryName, setCategoryName] = useState("")
   const [tags, setTags] = useState("")
   const [images, setImages] = useState<File[]>([]) // 본문 이미지 파일 목록
   const [featuredImage, setFeaturedImage] = useState<File | null>(null) // 대표 이미지 파일
@@ -62,7 +63,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     e.preventDefault()
     setLoading(true)
 
-    if (!category) {
+    if (!categorySlug) {
       toast({
         title: "포스트 생성 오류",
         description: "카테고리를 선택해주세요.",
@@ -156,7 +157,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       slug,
       description,
       content: cleanedContent, // 정제된 content 사용
-      category,
+      categorySlug,
+      categoryName,
       tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
       date: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
@@ -342,7 +344,18 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
 
         <div>
           <Label htmlFor="category">카테고리</Label>
-          <Select value={category} onValueChange={setCategory} disabled={categoriesLoading || loading}>
+          <Select onValueChange={(slug) => {
+              setCategorySlug(slug);
+              const selectedCategory = categories.find(c => c.slug === slug);
+              if (selectedCategory) {
+                setCategoryName(selectedCategory.name);
+              } else {
+                setCategoryName(""); // 못 찾았을 경우 빈 문자열
+              }
+            }} 
+            value={categorySlug}
+            disabled={categoriesLoading || loading}
+          >
             <SelectTrigger id="category">
               <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
@@ -359,7 +372,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
           <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
           <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="예: react, nextjs, 개발" />
         </div>
-        <Button type="submit" disabled={loading || categoriesLoading || !category || isUploadingImages}>
+        <Button type="submit" disabled={loading || categoriesLoading || !categorySlug || isUploadingImages}>
           {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           {isUploadingImages ? "이미지 업로드 중..." : "포스트 생성"}
         </Button>

@@ -16,7 +16,8 @@ export interface Post {
   description: string
   content: string
   date: string
-  category: string
+  categorySlug: string
+  categoryName: string
   slug: string
   tags?: string[]
   image?: string

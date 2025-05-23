@@ -10,6 +10,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
 import dynamic from 'next/dynamic';
+import { Loader2 } from 'lucide-react';
 
 // ReactQuill 에디터를 클라이언트 사이드에서만 로드
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
@@ -22,6 +23,8 @@ interface PostEditClientProps {
 export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const router = useRouter();
   const [post, setPost] = useState<Post>(initialPost);
+  const [categorySlug, setCategorySlug] = useState(initialPost.categorySlug || "");
+  const [categoryName, setCategoryName] = useState(initialPost.categoryName || "");
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
@@ -40,21 +43,41 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         }
         const data = await res.json();
         setCategories(data);
+        
+        const initialCategory = data.find((cat: Category) => cat.slug === initialPost.categorySlug);
+        if (initialCategory) {
+          setCategoryName(initialCategory.name);
+        }
+
       } catch (error) {
         console.error('카테고리 가져오기 오류:', error);
         toast.error('카테고리를 불러오는데 실패했습니다.');
       }
     };
     fetchCategories();
-  }, []);
+  }, [initialPost.categorySlug]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setPost({ ...post, [name]: value });
   };
 
+  const handleCategoryChange = (slug: string) => {
+    setCategorySlug(slug);
+    const selectedCategory = categories.find(c => c.slug === slug);
+    if (selectedCategory) {
+      setCategoryName(selectedCategory.name);
+    } else {
+      setCategoryName("");
+    }
+  };
+
   const handleSelectChange = (name: string, value: string) => {
-    setPost({ ...post, [name]: value });
+    if (name === 'category') {
+      handleCategoryChange(value);
+    } else {
+      setPost({ ...post, [name]: value });
+    }
   };
 
   const handleCheckboxChange = (name: string, checked: boolean) => {
@@ -77,7 +100,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     e.preventDefault()
     setLoading(true)
 
-    if (!post.category) {
+    if (!categorySlug) {
       toast.error("카테고리를 선택해주세요.");
       setLoading(false)
       return
@@ -88,7 +111,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     let uploadedFeaturedImageUrl: string | null = null;
 
     try {
-      // 본문 이미지 업로드
       if (images.length > 0) {
         const formData = new FormData();
         images.forEach(file => formData.append('file', file));
@@ -109,7 +131,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         setUploadedImageUrls(uploadedUrls);
       }
 
-      // 대표 이미지 업로드
       if (featuredImage) {
         const formData = new FormData();
         formData.append('file', featuredImage);
@@ -139,15 +160,17 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       setIsUploadingImages(false);
     }
 
-    // ReactQuill content에서 불필요한 article 태그 제거
     let cleanContent = post.content;
     if (post.content.startsWith('<article>') && post.content.endsWith('</article>')) {
-      cleanContent = post.content.slice(9, -10); // <article>와 </article> 제거
+      cleanContent = post.content.slice(9, -10);
     }
+    cleanContent = cleanContent.replace(/<\/?article>/g, '').trim();
 
     const postData = {
       ...post,
-      content: cleanContent, // 정제된 content 사용
+      content: cleanContent,
+      categorySlug: categorySlug,
+      categoryName: categoryName,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),
@@ -177,7 +200,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
   }
 
-  // ReactQuill 에디터 설정
   const modules = {
     toolbar: [
       [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
@@ -228,16 +250,19 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
-          <Select name="category" value={post.category} onValueChange={(value) => handleSelectChange('category', value)}>
+          <Select onValueChange={handleCategoryChange} value={categorySlug} disabled={categories.length === 0 || loading}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
             <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category._id} value={category.name}>{category.name}</SelectItem>
+              {categories.map((cat) => (
+                <SelectItem key={cat.slug} value={cat.slug}>
+                  {cat.name}
+                </SelectItem>
               ))}
             </SelectContent>
           </Select>
+          {categoryName && <p className="text-sm text-muted-foreground mt-1">선택된 카테고리: {categoryName}</p>}
         </div>
         <div>
           <label htmlFor="tags" className="block text-sm font-medium text-gray-700">태그 (쉼표로 구분)</label>
@@ -255,8 +280,9 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           <Checkbox id="featured" name="featured" checked={post.featured || false} onCheckedChange={(checked) => handleCheckboxChange('featured', !!checked)} />
           <label htmlFor="featured" className="text-sm font-medium leading-none">추천 포스트</label>
         </div>
-        <Button type="submit" disabled={loading}>
-          {loading ? '수정 중...' : '포스트 수정'}
+        <Button type="submit" disabled={loading || categories.length === 0 || !categorySlug || isUploadingImages}>
+          {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+          {isUploadingImages ? "이미지 업로드 중..." : "포스트 수정"}
         </Button>
       </form>
     </div>

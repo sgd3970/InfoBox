@@ -13,7 +13,8 @@ export async function GET() {
 
     // 각 카테고리의 포스트 개수를 가져옵니다.
     const categoriesWithPostCount = await Promise.all(categories.map(async (category) => {
-      const postCount = await db.collection("posts").countDocuments({ category: category.slug })
+      // postCount를 셀 때 categorySlug 필드를 기준으로 합니다.
+      const postCount = await db.collection("posts").countDocuments({ categorySlug: category.slug })
       return {
         ...category,
         _id: category._id.toString(),
