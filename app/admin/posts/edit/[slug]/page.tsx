@@ -13,9 +13,13 @@ interface PostEditPageProps {
 async function getPostBySlug(slug: string): Promise<Post | null> {
   console.log(`getPostBySlug: Attempting to fetch post with slug: ${slug}`);
   try {
-    const res = await fetch(`/api/posts/${slug}`, {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+    const res = await fetch(`${BASE_URL}/api/posts/${slug}`, {
       next: { revalidate: 0 }, // 관리자 페이지는 캐싱하지 않음
-      cache: 'no-store'
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
     });
 
     if (!res.ok) {
