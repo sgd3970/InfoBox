@@ -139,6 +139,24 @@ export async function POST(request: Request) {
     // 데이터베이스에 포스트 삽입
     const result = await db.collection("posts").insertOne(newPost)
 
+    // 태그 컬렉션 업데이트 로직 추가
+    if (newPost.tags && Array.isArray(newPost.tags)) {
+      for (const tagName of newPost.tags) {
+        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, ''); // 태그 이름으로 슬러그 생성
+        if (!tagSlug) continue; // 유효하지 않은 태그 슬러그 건너뛰기
+
+        await db.collection("tags").updateOne(
+          { slug: tagSlug },
+          { 
+            $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() }, // 새로 삽입 시 설정
+            $inc: { postCount: 1 }, // postCount 1 증가
+            $set: { updatedAt: new Date() } // 업데이트 시간 설정
+          },
+          { upsert: true } // 태그가 없으면 새로 생성
+        );
+      }
+    }
+
     console.log("API /api/posts POST - Post created successfully")
     return NextResponse.json(
       { message: "포스트가 성공적으로 생성되었습니다.", postId: result.insertedId },
