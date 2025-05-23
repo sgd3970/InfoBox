@@ -37,7 +37,7 @@ export default async function TagPage({ params }: TagPageProps) {
       <h1 className="text-2xl font-bold mb-6">태그: {params.slug}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
+          <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="block">
             <div className="rounded-lg border shadow-sm overflow-hidden">
               {post.image && (
                 <Image
@@ -54,7 +54,7 @@ export default async function TagPage({ params }: TagPageProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
-                  <span>{post.category}</span>
+                  <span>{post.categoryName}</span>
                   {post.tags && post.tags.length > 0 && (
                       <>
                         <span className="mx-2">•</span>
