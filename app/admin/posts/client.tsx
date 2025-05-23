@@ -17,20 +17,26 @@ export default function AdminPostsClient() {
   const [loading, setLoading] = useState(true)
 
   const fetchPosts = async () => {
-      try {
-      const res = await fetch(`/api/posts`, { credentials: "include" });
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${BASE_URL}/api/posts`, { 
+        credentials: "include",
+        cache: 'no-store'  // 캐시 비활성화
+      });
+      
       if (!res.ok) {
         throw new Error("포스트를 가져오는데 실패했습니다.")
       }
-        const data = await res.json()
-        setPosts(data.posts)
-      } catch (error) {
-        console.error("포스트 가져오기 오류:", error)
+      
+      const data = await res.json()
+      setPosts(data)  // API는 posts 배열을 직접 반환하므로 data.posts가 아닌 data를 사용
+    } catch (error) {
+      console.error("포스트 가져오기 오류:", error)
       toast.error("포스트를 불러오는데 실패했습니다.")
-      } finally {
-        setLoading(false)
-      }
+    } finally {
+      setLoading(false)
     }
+  }
 
   useEffect(() => {
     fetchPosts()
