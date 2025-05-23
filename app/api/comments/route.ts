@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import type { Comment } from "@/lib/models"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 export const dynamic = "force-dynamic"
 
