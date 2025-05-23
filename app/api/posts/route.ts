@@ -6,6 +6,17 @@ import { authOptions } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
+// HTML 엔티티를 디코딩하는 헬퍼 함수
+function decodeHtmlEntities(html: string) {
+  if (!html) return '';
+  return html
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+}
+
 export async function GET(request: Request) {
   const session = await getServerSession(authOptions)
 
@@ -73,6 +84,11 @@ export async function POST(request: Request) {
   try {
     const postData = await request.json()
     const db = await getDatabase()
+
+    // content 필드의 HTML 엔티티를 실제 태그로 바꿔 줍니다.
+    if (typeof postData.content === 'string') {
+      postData.content = decodeHtmlEntities(postData.content);
+    }
 
     // 필수 필드 검증
     const requiredFields = ["title", "slug", "description", "content", "category"]

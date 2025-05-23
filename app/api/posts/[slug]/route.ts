@@ -6,6 +6,17 @@ import { authOptions } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
+// HTML 엔티티를 디코딩하는 헬퍼 함수
+function decodeHtmlEntities(html: string) {
+  if (!html) return '';
+  return html
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&quot;/g, '"')
+    .replace(/&#039;/g, "'");
+}
+
 // 특정 포스트 가져오기 (GET 함수 수정)
 export async function GET(
   request: Request,
@@ -122,6 +133,11 @@ export async function PUT(
   try {
     const updatedPostData = await request.json()
     const db = await getDatabase()
+
+    // content 필드의 HTML 엔티티를 실제 태그로 바꿔 줍니다.
+    if (typeof updatedPostData.content === 'string') {
+      updatedPostData.content = decodeHtmlEntities(updatedPostData.content);
+    }
 
     // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
     const { _id, ...fieldsToUpdate } = updatedPostData;
