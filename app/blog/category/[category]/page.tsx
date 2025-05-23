@@ -16,7 +16,6 @@ async function getCategoryPosts(categorySlug: string): Promise<Post[]> {
     const searchRes = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(categorySlug)}&limit=1000`, { cache: 'no-store' });
     if (searchRes.ok) {
       const searchData = await searchRes.json();
-      console.log(`[getCategoryPosts] Received data for category ${categorySlug}:`, searchData);
       // API 응답 구조에 따라 결과 접근 방식이 다를 수 있습니다.
       // 만약 searchData가 { results: Post[], total: number, pages: number } 형태라면 searchData.results를 사용해야 합니다.
       // 이전 수정사항에 따라 advancedSearch는 { results: Post[], ... } 형태를 반환합니다.

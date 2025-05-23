@@ -50,7 +50,7 @@ export function CategoriesContent() {
       <h1 className="text-2xl font-bold mb-6">카테고리</h1>
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((category) => (
-          <Link key={category.slug} href={`/blog/${category.slug}`} className="block">
+          <Link key={category.slug} href={`/blog/category/${category.slug}`} className="block">
             <Card className="hover:shadow-md transition-shadow">
               <CardHeader>
                 <CardTitle>{category.name}</CardTitle>
