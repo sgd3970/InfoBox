@@ -11,13 +11,17 @@ export async function GET() {
     const db = await getDatabase()
     const categories = await db.collection<Category>("categories").find({}).toArray()
 
-    // _id를 문자열로 변환하여 직렬화 가능하게 함
-    const serializableCategories = categories.map(category => ({
+    // 각 카테고리의 포스트 개수를 가져옵니다.
+    const categoriesWithPostCount = await Promise.all(categories.map(async (category) => {
+      const postCount = await db.collection("posts").countDocuments({ category: category.slug })
+      return {
         ...category,
         _id: category._id.toString(),
+        postCount,
+      }
     }))
 
-    return NextResponse.json(serializableCategories)
+    return NextResponse.json(categoriesWithPostCount)
   } catch (error) {
     console.error("카테고리 API 오류:", error)
     // 오류 발생 시에도 빈 배열로 응답하여 페이지가 깨지지 않도록 함
