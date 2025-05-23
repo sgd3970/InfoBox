@@ -99,7 +99,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full min-w-0">
+              <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group w-full min-w-0">
                 <div className="space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <Image
@@ -112,7 +112,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   </div>
                   <div className="space-y-2">
                     <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                      {post.category}
+                      {post.categoryName}
                     </span>
                     <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                   </div>
