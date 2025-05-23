@@ -11,7 +11,8 @@ interface CategoryPageProps {
 
 async function getCategoryPosts(category: string): Promise<Post[]> {
   try {
-    const searchRes = await fetch(`/api/search?category=${encodeURIComponent(category)}&limit=1000`, { cache: 'no-store' });
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'; // 절대 경로 사용
+    const searchRes = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(category)}&limit=1000`, { cache: 'no-store' });
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];
