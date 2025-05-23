@@ -138,11 +138,24 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       cleanContent = content.slice(9, -10); // <article>와 </article> 제거
     }
 
+    // 1) content 중 <article> 태그 제거
+    let cleanedContent = content.replace(/<\/?article>/g, '');
+    // 2) 혹시 들어있는 HTML 엔티티(&lt;, &gt;, &amp;, &nbsp; 등)도 해제
+    cleanedContent = cleanedContent
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&')
+      .replace(/&quot;/g, '"')
+      .replace(/&#039;/g, "'")
+      .replace(/&nbsp;/g, ' '); // &nbsp; 추가
+    // 3) 앞뒤 공백\u00b7개행 잘라내기
+    cleanedContent = cleanedContent.trim();
+
     const postData = {
       title,
       slug,
       description,
-      content: cleanContent, // 정제된 content 사용
+      content: cleanedContent, // 정제된 content 사용
       category,
       tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
       date: new Date().toISOString(),

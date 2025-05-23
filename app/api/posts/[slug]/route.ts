@@ -14,7 +14,8 @@ function decodeHtmlEntities(html: string) {
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'");
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, " ");
 }
 
 // 특정 포스트 가져오기 (GET 함수 수정)
@@ -134,10 +135,21 @@ export async function PUT(
     const updatedPostData = await request.json()
     const db = await getDatabase()
 
-    // content 필드의 HTML 엔티티를 실제 태그로 바꿔 줍니다.
-    if (typeof updatedPostData.content === 'string') {
-      updatedPostData.content = decodeHtmlEntities(updatedPostData.content);
+    // ——————————————————————————————
+    // 서버측 안전 장치: 클라이언트에서 혹시 놓쳤을 수 있는 클렌징
+    // 1) HTML 엔티티 디코딩
+    if (typeof updatedPostData.content === "string") {
+      updatedPostData.content = decodeHtmlEntities(updatedPostData.content)
     }
+    // 2) 혹시 남아 있는 <article> 태그 제거
+    if (typeof updatedPostData.content === "string") {
+      updatedPostData.content = updatedPostData.content.replace(/<\/?article>/g, "")
+    }
+    // 3) 앞뒤 공백\u00b7개행 제거
+    if (typeof updatedPostData.content === "string") {
+       updatedPostData.content = updatedPostData.content.trim()
+    }
+    // ——————————————————————————————
 
     // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
     const { _id, ...fieldsToUpdate } = updatedPostData;

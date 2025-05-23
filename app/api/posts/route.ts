@@ -14,7 +14,8 @@ function decodeHtmlEntities(html: string) {
     .replace(/&gt;/g, ">")
     .replace(/&amp;/g, "&")
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'");
+    .replace(/&#039;/g, "'")
+    .replace(/&nbsp;/g, " ");
 }
 
 export async function GET(request: Request) {
@@ -85,10 +86,21 @@ export async function POST(request: Request) {
     const postData = await request.json()
     const db = await getDatabase()
 
-    // content 필드의 HTML 엔티티를 실제 태그로 바꿔 줍니다.
-    if (typeof postData.content === 'string') {
-      postData.content = decodeHtmlEntities(postData.content);
+    // ——————————————————————————————
+    // 서버측 안전 장치: 클라이언트에서 혹시 놓쳤을 수 있는 클렌징
+    // 1) HTML 엔티티 디코딩
+    if (typeof postData.content === "string") {
+      postData.content = decodeHtmlEntities(postData.content)
     }
+    // 2) 혹시 남아 있는 <article> 태그 제거
+    if (typeof postData.content === "string") {
+      postData.content = postData.content.replace(/<\/?article>/g, "")
+    }
+    // 3) 앞뒤 공백\u00b7개행 제거
+    if (typeof postData.content === "string") {
+       postData.content = postData.content.trim()
+    }
+    // ——————————————————————————————
 
     // 필수 필드 검증
     const requiredFields = ["title", "slug", "description", "content", "category"]
