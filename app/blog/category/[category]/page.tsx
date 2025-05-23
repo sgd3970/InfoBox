@@ -83,7 +83,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="mb-8">
         <h1 className="text-4xl font-bold">{formattedCategoryName}</h1>
         {/* 포스트 개수는 getCategoryPosts 결과의 길이를 사용 */}
-        <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
+        {category && <p className="text-muted-foreground mt-2">{category.postCount}개의 게시물이 있습니다.</p>}
         
       </div>
 
