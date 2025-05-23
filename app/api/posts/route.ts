@@ -60,8 +60,22 @@ export async function GET(request: Request) {
 
     // _id를 문자열로 변환하여 직렬화 가능하게 함
     const serializablePosts = posts.map(post => ({
-        ...post,
         _id: post._id.toString(),
+        title: post.title,
+        slug: post.slug,
+        description: post.description,
+        content: post.content,
+        categorySlug: post.categorySlug,
+        categoryName: post.categoryName,
+        tags: post.tags,
+        date: post.date,
+        image: post.image,
+        featuredImage: post.featuredImage,
+        views: post.views,
+        author: post.author,
+        featured: post.featured,
+        createdAt: post.createdAt,
+        updatedAt: post.updatedAt,
     }))
 
     return NextResponse.json(serializablePosts)
