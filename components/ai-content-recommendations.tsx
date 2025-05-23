@@ -40,7 +40,9 @@ export function AIContentRecommendations({
     try {
       // 실제 환경에서는 API 호출을 통해 AI 추천을 생성합니다.
       // 여기서는 시뮬레이션을 위해 setTimeout을 사용합니다.
-      const searchRes = await fetch("/api/search?limit=50") // 임시로 최대 50개의 포스트를 가져옴
+      //const searchRes = await fetch("/api/search?limit=50") // 임시로 최대 50개의 포스트를 가져옴
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
+      const searchRes = await fetch(`${BASE_URL}/api/search?limit=50`); // 임시로 최대 50개의 포스트를 가져옴
 
       if (!searchRes.ok) {
         throw new Error("포스트 목록을 가져오는데 실패했습니다.")

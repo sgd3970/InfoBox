@@ -13,7 +13,8 @@ interface TagPageProps {
 
 async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   try {
-    const res = await fetch(`/api/posts/tag/${tagSlug}`, {})
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+    const res = await fetch(`${BASE_URL}/api/posts/tag/${tagSlug}`, {})
 
     if (!res.ok) {
       console.error(`태그 ${tagSlug} 포스트 API 호출 실패:`, res.status)
