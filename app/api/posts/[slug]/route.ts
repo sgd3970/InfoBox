@@ -6,7 +6,7 @@ import { authOptions } from "@/lib/auth"
 
 export const dynamic = "force-dynamic"
 
-// 특정 포스트 가져오기 (GET 함수 유지)
+// 특정 포스트 가져오기 (GET 함수 수정)
 export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
@@ -24,7 +24,9 @@ export async function GET(
     }
 
     console.log(`API /api/posts/${slug} GET - Post found`)
-    return NextResponse.json(post)
+    // _id를 문자열로 변환하여 반환 (선택 사항이지만 일관성을 위해 유지)
+    const serializablePost = post ? { ...post, _id: post._id.toString() } : null;
+    return NextResponse.json(serializablePost)
   } catch (error) {
     console.error("API /api/posts/[slug] GET 오류:", error)
     return NextResponse.json(
