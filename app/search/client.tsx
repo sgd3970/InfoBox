@@ -84,7 +84,7 @@ export function SearchClient() {
         // Calculate and set categories here
         const uniqueCategories = Array.from(
           new Set(
-            (data.results || []).map((post: Post) => post.category.toLowerCase())
+            (data.results || []).map((post: Post) => post.categorySlug.toLowerCase())
           )
         ) as string[];
         setCategories(uniqueCategories);
@@ -106,7 +106,7 @@ export function SearchClient() {
     if (categorySlug === "all") {
       return searchResults
     }
-    return searchResults.filter((post) => post.category.toLowerCase() === categorySlug.toLowerCase())
+    return searchResults.filter((post) => post.categorySlug.toLowerCase() === categorySlug.toLowerCase())
   }
 
   // 검색어 하이라이트 함수
@@ -200,7 +200,7 @@ export function SearchClient() {
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
                     {searchResults.map((post) => (
-                      <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="relative aspect-video overflow-hidden">
                           <Image
                             src={post.image || "/placeholder.svg"}
@@ -213,7 +213,7 @@ export function SearchClient() {
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
                             <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                              {post.category}
+                              {post.categoryName}
                             </span>
                             {post.tags && post.tags.length > 0 && (
                               <div className="flex gap-1 flex-wrap">
@@ -254,7 +254,7 @@ export function SearchClient() {
                   <TabsContent key={cat} value={cat} className="mt-6">
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
-                        <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                        <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="relative aspect-video overflow-hidden">
                             <Image
                               src={post.image || "/placeholder.svg"}
@@ -267,7 +267,7 @@ export function SearchClient() {
                           <div className="space-y-2 p-4">
                             <div className="flex items-center gap-2">
                               <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                                {post.category}
+                                {post.categoryName}
                               </span>
                               {post.tags && post.tags.length > 0 && (
                                 <div className="flex gap-1 flex-wrap">
@@ -310,7 +310,7 @@ export function SearchClient() {
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
                 {searchResults.map((post) => (
-                  <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                  <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative aspect-video overflow-hidden">
                       <Image
                         src={post.image || "/placeholder.svg"}
@@ -323,7 +323,7 @@ export function SearchClient() {
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
                         <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {post.category}
+                          {post.categoryName}
                         </span>
                         {post.tags && post.tags.length > 0 && (
                           <div className="flex gap-1 flex-wrap">
