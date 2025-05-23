@@ -2,12 +2,31 @@ import type { Post } from "./models"
 import { getDatabase } from "@/lib/mongodb" // getDatabase 임포트
 import { ObjectId } from 'mongodb'; // ObjectId 임포트
 
+// contentlayer/generated에서 가져오는 allPosts 대신 사용할 모의 데이터
+// const allPosts: Post[] = [
+//   {
+//     title: "Next.js와 MDX로 블로그 만들기",
+//     description: "Next.js와 MDX를 활용하여 최신 블로그를 구축하는 방법을 알아봅니다.",
+//     date: "2023-05-16",
+//     category: "Development",
+//     slug: "nextjs-mdx-blog",
+//     tags: ["Next.js", "MDX", "React", "블로그"],
+//     image: "/placeholder.svg?height=400&width=800",
+//     author: "홍길동",
+//     featured: true,
+//     body: {
+//       code: "export default function MDXContent() { return <div><h1>Next.js와 MDX로 블로그 만들기</h1><p>이 글에서는 Next.js와 MDX를 활용하여 블로그를 만드는 방법을 알아봅니다.</p></div> }",
+//     },
+//     views: 0,
+//     createdAt: new Date(),
+//     updatedAt: new Date(),
+//   },\n//   // 다른 모의 데이터는 생략...
+// ]
 
-
+// 기본 검색 함수 - API 라우트 사용
 export const searchPosts = async (searchTerm: string): Promise<Post[]> => {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
-    const res = await fetch(`${BASE_URL}/api/search?q=${encodeURIComponent(searchTerm)}`, {
+    const res = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?q=${encodeURIComponent(searchTerm)}`, {
       next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
     })
 
@@ -17,9 +36,7 @@ export const searchPosts = async (searchTerm: string): Promise<Post[]> => {
     }
 
     const searchResults = await res.json()
-    // API에서 받아온 results 배열을 사용합니다.
-    return (searchResults.results || []) as Post[];
-
+    return searchResults as Post[]
   } catch (error) {
     console.error("검색 fetch 오류:", error)
     return []
@@ -50,21 +67,17 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     const mongoQuery: any = {};
 
     if (query) {
-      // 검색어 쿼리 (제목, 설명, 내용에서 검색)
-      // 태그 검색은 별도의 find 쿼리로 처리하거나 $text 인덱스 필요. 여기서는 제목, 설명, 내용만 검색
+      // 검색어 쿼리 (제목, 설명, 내용, 태그에서 검색)
       mongoQuery.$or = [
         { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
-        // ReactQuill로 저장된 content는 HTML이므로 $regex 검색 시 주의 필요.
-        // 정확한 텍스트 검색을 위해서는 $text 인덱스를 사용하거나,
-        // 여기서는 HTML 태그를 제거한 텍스트 필드를 별도로 저장하는 것을 고려할 수 있습니다.
-        // 간단하게 현재는 content 포함 검색을 유지하되, 성능이나 정확도는 제한될 수 있습니다.
         { content: { $regex: query, $options: 'i' } },
+        { tags: { $in: [new RegExp(query, 'i')] } }, // 태그 배열 검색
       ];
     }
 
     if (category) {
-      mongoQuery.category = category;
+      mongoQuery.categorySlug = category;
     }
 
     if (tags && tags.length > 0) {
@@ -75,7 +88,6 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     if (dateFrom || dateTo) {
       mongoQuery.date = {};
       if (dateFrom) {
-        // 날짜 문자열을 Date 객체로 변환
         mongoQuery.date.$gte = new Date(dateFrom);
       }
       if (dateTo) {
@@ -98,8 +110,8 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
       sortOptions.views = sortOrder === "asc" ? 1 : -1;
     } else {
       // 관련성 정렬 (기본값 또는 쿼리 있을 때)
-      // MongoDB 텍스트 검색 점수를 사용하거나, 여기서는 단순 날짜 내림차순으로 대체
-      // 정식 텍스트 검색을 사용하려면 Atlas Search 또는 $text 인덱스 필요.
+      // MongoDB 텍스트 검색 점수를 사용하거나, 여기서는 단순 날짜 내림차순 또는 다른 기준으로 대체
+      // 정식 텍스트 검색을 사용하려면 인덱스 필요. 여기서는 날짜 최신순으로 대체
       sortOptions.date = -1;
     }
 
@@ -124,7 +136,6 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
 
   } catch (error) {
     console.error("고급 검색 함수 오류:", error);
-    // 오류 발생 시 빈 결과 반환
     return { results: [], total: 0, pages: 0 };
   }
 };
@@ -132,8 +143,7 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
 // 검색 제안 함수 - API 라우트 사용
 export const getSearchSuggestions = async (query: string): Promise<string[]> => {
     try {
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
-        const res = await fetch(`${BASE_URL}/api/search/suggestions?q=${encodeURIComponent(query)}`, {
+        const res = await fetch(`/api/search/suggestions?q=${encodeURIComponent(query)}`, {
             next: { revalidate: 60 }, // 필요에 따라 캐싱 설정
         })
 
