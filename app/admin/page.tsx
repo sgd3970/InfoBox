@@ -7,7 +7,14 @@ import { Metadata } from "next"
 // 사이트 통계 데이터를 가져오는 함수 (API 라우트 사용)
 async function getSiteStats() {
   try {
-    const res = await fetch(`/api/stats`, {})
+    // 환경 변수 사용 (fallback 포함)
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || '';
+    const res = await fetch(`${apiUrl}/api/stats`, {
+      cache: 'no-store',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
 
     if (!res.ok) {
         console.error("사이트 통계 API 호출 실패:", res.status)

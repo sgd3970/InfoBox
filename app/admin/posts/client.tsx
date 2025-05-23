@@ -58,11 +58,12 @@ export default function AdminPostsClient() {
   }
 
   // 검색 필터링
-  const filteredPosts = posts.filter((post) => {
+  const filteredPosts = posts?.filter((post) => {
+    if (!post) return false; // post가 undefined인 경우 필터링에서 제외
     const searchContent =
       `${post.title} ${post.description} ${post.category} ${post.tags?.join(" ") || ""}`.toLowerCase()
     return searchContent.includes(searchTerm.toLowerCase())
-  })
+  }) || [] // posts가 undefined인 경우 빈 배열 반환
 
   if (loading) {
     return (
