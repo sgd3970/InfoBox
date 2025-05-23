@@ -10,7 +10,7 @@ export async function GET() {
     const posts = await db
       .collection<Post>("posts")
       .find({})
-      .sort({ publishedAt: -1 })
+      .sort({ date: -1 })
       .limit(6)
       .toArray()
       
