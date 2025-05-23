@@ -154,7 +154,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 >
                   {post.category}
                 </Link>
-                {post.tags && post.tags.length > 0 && (
+                {/* {post.tags && post.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap">
                     {post.tags.map((tag) => (
                       <Link
@@ -166,7 +166,7 @@ export default async function PostPage({ params }: PostPageProps) {
                       </Link>
                     ))}
                   </div>
-                )}
+                )} */}
               </div>
               <h1 className="text-4xl font-bold">{post.title}</h1>
             </div>
