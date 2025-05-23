@@ -61,15 +61,16 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
     const fetchCategoriesAndTags = async () => {
       setLoading(true)
       try {
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
         // 카테고리 가져오기
-        const categoriesRes = await fetch("/api/categories")
+        const categoriesRes = await fetch(`${BASE_URL}/api/categories`)
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json()
           setCategories(categoriesData)
         }
 
         // 태그 가져오기
-        const tagsRes = await fetch("/api/tags")
+        const tagsRes = await fetch(`${BASE_URL}/api/tags`)
         if (tagsRes.ok) {
           const tagsData = await tagsRes.json()
           setTags(tagsData)

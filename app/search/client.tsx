@@ -66,7 +66,8 @@ export function SearchClient() {
         params.set("limit", limit.toString())
 
         // 검색 API 호출
-        const res = await fetch(`/api/search?${params.toString()}`, { cache: 'no-store' })
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
+        const res = await fetch(`${BASE_URL}/api/search?${params.toString()}`, { cache: 'no-store' })
 
         if (!res.ok) {
           throw new Error("검색 중 오류가 발생했습니다.")
