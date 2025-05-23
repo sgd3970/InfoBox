@@ -12,13 +12,24 @@ import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
 import { GoogleAd } from "@/components/GoogleAd"
 import { ViewTracker } from "@/components/view-tracker"
-import { MDXRemote } from 'next-mdx-remote/rsc';
 
 interface PostPageProps {
   params: {
     category: string
     slug: string
   }
+}
+
+// HTML 엔티티를 디코딩하는 헬퍼 함수
+function decodeHtmlEntities(html: string) {
+  if (typeof window === 'undefined') {
+    // 서버 환경에서는 간단한 치환만 수행하거나 다른 라이브러리 사용
+    // 여기서는 클라이언트 렌더링을 가정하고 브라우저 API 사용
+    return html;
+  }
+  const textArea = document.createElement('textarea');
+  textArea.innerHTML = html;
+  return textArea.value;
 }
 
 // API 라우트를 사용하여 단일 포스트를 가져오는 함수
@@ -116,6 +127,9 @@ export default async function PostPage({ params }: PostPageProps) {
   // 관련 포스트 찾기 (같은 카테고리의 다른 포스트)
   const relatedPosts = await getRelatedPosts(params.slug, post.category)
 
+  // HTML 엔티티 디코딩
+  const decodedContent = decodeHtmlEntities(post.content);
+
   return (
     <>
       <SEOSchema
@@ -200,7 +214,7 @@ export default async function PostPage({ params }: PostPageProps) {
 
           {/* 본문 내용 */}
           <div className="prose prose-lg dark:prose-invert max-w-none mt-8 [&_table]:w-full [&_table]:border-collapse [&_th]:bg-muted [&_th]:p-4 [&_th]:text-left [&_td]:p-4 [&_td]:border [&_th]:border [&_img]:my-8 [&_img]:rounded-lg [&_img]:shadow-md [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:my-4 [&_ul]:my-4 [&_ol]:my-4 [&_li]:my-2 [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80">
-            <MDXRemote source={post.content} />
+            <div dangerouslySetInnerHTML={{ __html: decodedContent }} />
           </div>
 
           {/* AI 추천 콘텐츠 */}
