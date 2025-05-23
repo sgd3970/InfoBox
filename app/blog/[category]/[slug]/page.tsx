@@ -20,16 +20,11 @@ interface PostPageProps {
   }
 }
 
-// HTML 엔티티를 디코딩하는 헬퍼 함수
-function decodeHtmlEntities(html: string) {
-  if (typeof window === 'undefined') {
-    // 서버 환경에서는 간단한 치환만 수행하거나 다른 라이브러리 사용
-    // 여기서는 클라이언트 렌더링을 가정하고 브라우저 API 사용
-    return html;
-  }
-  const textArea = document.createElement('textarea');
-  textArea.innerHTML = html;
-  return textArea.value;
+// HTML 엔티티를 디코딩하는 헬퍼 함수 (서버/클라이언트 모두 작동하도록 수정)
+function decodeHtmlEntities(html: string): string {
+  if (!html) return '';
+  // 간단하게 주요 HTML 엔티티를 치환합니다. 필요한 경우 더 많은 엔티티를 추가하거나 라이브러리를 사용하세요.
+  return html.replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&amp;/g, '&').replace(/&quot;/g, '"').replace(/&#039;/g, "'");
 }
 
 // API 라우트를 사용하여 단일 포스트를 가져오는 함수
