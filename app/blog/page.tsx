@@ -7,8 +7,11 @@ export const dynamic = "force-dynamic"
 
 async function getPosts() {
   try {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'https://example.com'
     // API 라우트에서 최신 포스트 가져오기
-    const res = await fetch(`/api/posts/latest`, {})
+    const res = await fetch(`${BASE_URL}/api/posts/latest`, {
+      cache: 'no-store'  // 캐시 비활성화
+    })
     
     if (!res.ok) {
       console.error("최신 포스트 API 호출 실패:", res.status)
