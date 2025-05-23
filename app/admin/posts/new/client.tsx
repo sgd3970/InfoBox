@@ -127,23 +127,29 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         description: error.message,
         variant: "destructive",
       });
-      return; // Stop if image upload fails
+      return;
     } finally {
       setIsUploadingImages(false);
+    }
+
+    // ReactQuill content에서 불필요한 article 태그 제거
+    let cleanContent = content;
+    if (content.startsWith('<article>') && content.endsWith('</article>')) {
+      cleanContent = content.slice(9, -10); // <article>와 </article> 제거
     }
 
     const postData = {
       title,
       slug,
       description,
-      content,
+      content: cleanContent, // 정제된 content 사용
       category,
       tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
       date: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       featured: false,
-      images: uploadedUrls, // 업로드된 본문 이미지 URL 목록 추가
-      featuredImage: uploadedFeaturedImageUrl, // 업로드된 대표 이미지 URL 추가
+      images: uploadedUrls,
+      featuredImage: uploadedFeaturedImageUrl,
     }
 
     try {

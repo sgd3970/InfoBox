@@ -20,6 +20,7 @@ export interface Post {
   slug: string
   tags?: string[]
   image?: string
+  images?: string[]  // 추가: 본문 이미지 배열
   featuredImage?: string | null
   author?: string
   authorId?: string

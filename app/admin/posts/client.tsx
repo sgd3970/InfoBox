@@ -48,7 +48,11 @@ export default function AdminPostsClient() {
     }
 
     try {
-      const res = await fetch(`/api/posts/${slug}`, { method: "DELETE", credentials: "include" });
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${BASE_URL}/api/posts/${slug}`, { 
+        method: "DELETE", 
+        credentials: "include" 
+      });
 
       if (!res.ok) {
         const errorData = await res.json()

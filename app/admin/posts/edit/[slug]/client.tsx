@@ -24,6 +24,11 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const [post, setPost] = useState<Post>(initialPost);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
+  const [images, setImages] = useState<File[]>([]);
+  const [featuredImage, setFeaturedImage] = useState<File | null>(null);
+  const [isUploadingImages, setIsUploadingImages] = useState(false);
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -56,33 +61,121 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     setPost({ ...post, [name]: checked });
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setLoading(true);
-
-    try {
-      const res = await fetch(`/api/posts/${post.slug}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(post),
-      });
-
-      if (!res.ok) {
-        const errorData = await res.json();
-        throw new Error(errorData.error || '포스트 수정에 실패했습니다.');
-      }
-
-      toast.success('포스트가 성공적으로 수정되었습니다.');
-      router.push('/admin/posts');
-    } catch (error: any) {
-      console.error('포스트 수정 오류:', error);
-      toast.error(error.message || '포스트 수정 중 오류가 발생했습니다.');
-    } finally {
-      setLoading(false);
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      setImages(Array.from(e.target.files));
     }
   };
+
+  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFeaturedImage(e.target.files[0]);
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+
+    if (!post.category) {
+      toast.error("카테고리를 선택해주세요.");
+      setLoading(false)
+      return
+    }
+
+    setIsUploadingImages(true);
+    let uploadedUrls: string[] = [];
+    let uploadedFeaturedImageUrl: string | null = null;
+
+    try {
+      // 본문 이미지 업로드
+      if (images.length > 0) {
+        const formData = new FormData();
+        images.forEach(file => formData.append('file', file));
+
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json();
+          throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
+        }
+
+        const result: { urls: string[], files: any[] } = await uploadRes.json();
+        uploadedUrls = result.urls;
+        setUploadedImageUrls(uploadedUrls);
+      }
+
+      // 대표 이미지 업로드
+      if (featuredImage) {
+        const formData = new FormData();
+        formData.append('file', featuredImage);
+
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (!uploadRes.ok) {
+          const errorData = await uploadRes.json();
+          throw new Error(errorData.error || '대표 이미지 업로드에 실패했습니다.');
+        }
+
+        const result: { url: string } = await uploadRes.json();
+        uploadedFeaturedImageUrl = result.url;
+        setFeaturedImageUrl(uploadedFeaturedImageUrl);
+      }
+
+    } catch (error: any) {
+      setIsUploadingImages(false);
+      setLoading(false);
+      toast.error(error.message);
+      return;
+    } finally {
+      setIsUploadingImages(false);
+    }
+
+    // ReactQuill content에서 불필요한 article 태그 제거
+    let cleanContent = post.content;
+    if (post.content.startsWith('<article>') && post.content.endsWith('</article>')) {
+      cleanContent = post.content.slice(9, -10); // <article>와 </article> 제거
+    }
+
+    const postData = {
+      ...post,
+      content: cleanContent, // 정제된 content 사용
+      images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
+      featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
+      updatedAt: new Date().toISOString(),
+    }
+
+    try {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${BASE_URL}/api/posts/${post.slug}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(postData),
+      })
+
+      if (!res.ok) {
+        const errorData = await res.json()
+        throw new Error(errorData.error || "포스트 수정에 실패했습니다.")
+      }
+
+      toast.success("포스트가 성공적으로 수정되었습니다.")
+      router.push(`/admin/posts`)
+    } catch (error: any) {
+      toast.error(error.message)
+    } finally {
+      setLoading(false)
+    }
+  }
 
   // ReactQuill 에디터 설정
   const modules = {

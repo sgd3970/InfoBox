@@ -171,41 +171,51 @@ export async function DELETE(
   try {
     const db = await getDatabase()
 
-    const result = await db.collection("posts").deleteOne({ slug })
-
-    if (result.deletedCount === 0) {
+    // 먼저 삭제할 포스트를 찾습니다
+    const postToDelete = await db.collection("posts").findOne({ slug })
+    
+    if (!postToDelete) {
       console.log(`API /api/posts/${slug} DELETE - Post not found for deletion`)
       return NextResponse.json({ error: "삭제할 포스트를 찾을 수 없습니다." }, { status: 404 })
     }
 
+    // 포스트 삭제
+    const result = await db.collection("posts").deleteOne({ slug })
+
+    if (result.deletedCount === 0) {
+      console.log(`API /api/posts/${slug} DELETE - Failed to delete post`)
+      return NextResponse.json({ error: "포스트 삭제에 실패했습니다." }, { status: 500 })
+    }
+
     console.log(`API /api/posts/${slug} DELETE - Post deleted successfully`)
 
-    // Get the deleted post
-    const deletedPost = await db.collection("posts").findOne({ slug })
+    // 태그 정리 로직
+    if (postToDelete.tags && Array.isArray(postToDelete.tags) && postToDelete.tags.length > 0) {
+      // 해당 태그를 사용하는 다른 포스트 찾기
+      const postsUsingTags = await db.collection("posts").find({
+        _id: { $ne: postToDelete._id },
+        tags: { $in: postToDelete.tags }
+      }).toArray()
 
-    // Get the tags from the deleted post
-    const tagsToDelete = deletedPost?.tags;
+      // 다른 포스트에서 사용되지 않는 태그 찾기
+      const tagsUsedByOtherPosts = new Set<string>()
+      postsUsingTags.forEach(post => {
+        if (post.tags && Array.isArray(post.tags)) {
+          post.tags.forEach(tag => tagsUsedByOtherPosts.add(tag.toString()))
+        }
+      })
 
-    // Find all posts that use the tags from the deleted post, excluding the deleted post itself
-    const postsUsingTags = await db.collection("posts").find({
-      _id: { $ne: deletedPost?._id }, // Exclude the deleted post
-      tags: { $in: tagsToDelete }, // Find posts using any of the tags
-    }).toArray();
+      // 사용되지 않는 태그 찾기
+      const orphanedTags = postToDelete.tags.filter(
+        tag => !tagsUsedByOtherPosts.has(tag.toString())
+      )
 
-    // Get all tags used by the remaining posts
-    const tagsUsedByOtherPosts = postsUsingTags.reduce((acc, post) => {
-      post.tags.forEach((tag: string) => acc.add(tag.toString())); // Convert ObjectId to string for comparison
-      return acc;
-    }, new Set<string>());
-
-    // Find tags that are in the deleted post's tags but not used by any other post
-    const orphanedTagIds = tagsToDelete?.filter(
-      (tagId: string) => !tagsUsedByOtherPosts.has(tagId.toString())
-    );
-
-    // Delete the orphaned tags
-    if (orphanedTagIds && orphanedTagIds.length > 0) {
-      await db.collection("tags").deleteMany({ _id: { $in: orphanedTagIds } });
+      // 사용되지 않는 태그 삭제
+      if (orphanedTags.length > 0) {
+        await db.collection("tags").deleteMany({
+          _id: { $in: orphanedTags }
+        })
+      }
     }
 
     return NextResponse.json({ message: "포스트가 성공적으로 삭제되었습니다." })
