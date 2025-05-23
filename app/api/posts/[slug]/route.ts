@@ -24,8 +24,12 @@ export async function GET(
     }
 
     console.log(`API /api/posts/${slug} GET - Post found`)
-    // _id를 문자열로 변환하여 반환 (선택 사항이지만 일관성을 위해 유지)
+    
+    // _id를 문자열로 변환하여 반환 및 content 필드 포함
     const serializablePost = post ? { ...post, _id: post._id.toString() } : null;
+
+    console.log("Post Content:", post?.content); // 원본 post 객체의 content 값 로그 출력
+
     return NextResponse.json(serializablePost)
   } catch (error) {
     console.error("API /api/posts/[slug] GET 오류:", error)
