@@ -82,7 +82,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         const formData = new FormData();
         images.forEach(file => formData.append('file', file));
 
-        const uploadRes = await fetch('/api/upload', {
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -102,7 +103,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         const formData = new FormData();
         formData.append('file', featuredImage);
 
-        const uploadRes = await fetch('/api/upload', {
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
           method: 'POST',
           body: formData,
         });
@@ -145,7 +147,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     }
 
     try {
-      const res = await fetch("/api/posts", {
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const res = await fetch(`${BASE_URL}/api/posts`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -246,7 +249,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
             value={slug} 
             onChange={(e) => setSlug(e.target.value)} 
             required 
-            pattern="[a-z0-9-]+" 
+            pattern="[a-zA-Z0-9-]+"
             title="슬러그는 영문 소문자, 숫자, 하이픈만 포함해야 합니다." 
           />
         </div>
