@@ -206,6 +206,31 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     }
   };
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        setCategoriesLoading(true);
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await fetch(`${BASE_URL}/api/categories`);
+        if (!res.ok) {
+          throw new Error('카테고리를 가져오는데 실패했습니다');
+        }
+        const data = await res.json();
+        setCategories(data);
+      } catch (error) {
+        console.error('카테고리 가져오기 오류:', error);
+        toast({
+          title: "오류",
+          description: "카테고리를 불러오는데 실패했습니다.",
+          variant: "destructive",
+        });
+      } finally {
+        setCategoriesLoading(false);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   return (
     <div className="space-y-6">
       <h2 className="text-2xl font-bold">새 포스트 작성</h2>
@@ -216,7 +241,14 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         </div>
         <div>
           <Label htmlFor="slug">슬러그 (영문 소문자, 하이픈)</Label>
-          <Input id="slug" value={slug} onChange={(e) => setSlug(e.target.value)} required pattern="^[a-z0-9-]+$" title="슬러그는 영문 소문자, 숫자, 하이픈만 포함해야 합니다." />
+          <Input 
+            id="slug" 
+            value={slug} 
+            onChange={(e) => setSlug(e.target.value)} 
+            required 
+            pattern="[a-z0-9-]+" 
+            title="슬러그는 영문 소문자, 숫자, 하이픈만 포함해야 합니다." 
+          />
         </div>
         <div>
           <Label htmlFor="description">요약</Label>

@@ -28,7 +28,8 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
-        const res = await fetch('/api/categories');
+        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+        const res = await fetch(`${BASE_URL}/api/categories`);
         if (!res.ok) {
           throw new Error('카테고리를 가져오는데 실패했습니다');
         }
