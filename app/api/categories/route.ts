@@ -14,7 +14,7 @@ export async function GET() {
     // 각 카테고리별로 postCount 계산
     const categoriesWithCount = await Promise.all(
       categories.map(async (category) => {
-        const count = await db.collection("posts").countDocuments({ category: category.slug })
+        const count = await db.collection("posts").countDocuments({ category: category.name })
         return { ...category, postCount: count }
       })
     )

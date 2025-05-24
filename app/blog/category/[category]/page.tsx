@@ -11,12 +11,17 @@ interface CategoryPageProps {
 }
 
 // Fetch posts for the given category slug
-async function getCategoryPosts(category: string): Promise<Post[]> {
+async function getCategoryPosts(categorySlug: string): Promise<Post[]> {
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?category=${category}`, {
-      next: { revalidate: 3600 }, // 1시간마다 재검증
+    // 먼저 모든 카테고리 정보를 가져옴
+    const categoriesRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, { next: { revalidate: 3600 } });
+    const categories: Category[] = await categoriesRes.json();
+    const categoryInfo = categories.find(cat => cat.slug === categorySlug);
+    if (!categoryInfo) return [];
+    // posts.category(한글)과 categoryInfo.name(한글)로 조회
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}`, {
+      next: { revalidate: 3600 },
     });
-
     if (!searchRes.ok) {
       throw new Error(`HTTP error! status: ${searchRes.status}`);
     }
@@ -77,17 +82,16 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const category = params.category;
-  const [posts, categories] = await Promise.all([
-    getCategoryPosts(category),
+  const categorySlug = params.category;
+  const [categories] = await Promise.all([
     getAllCategories()
   ]);
-
-  const categoryInfo = categories.find(cat => cat.slug === category);
+  const categoryInfo = categories.find(cat => cat.slug === categorySlug);
   if (!categoryInfo) {
     notFound();
   }
-
+  // posts.category(한글)과 categoryInfo.name(한글)로 조회
+  const posts = await getCategoryPosts(categorySlug);
   const formattedCategoryName = categoryInfo.name;
 
   return (
