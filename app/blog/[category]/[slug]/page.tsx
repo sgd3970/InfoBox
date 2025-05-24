@@ -133,7 +133,7 @@ export default async function PostPage({ params }: PostPageProps) {
         description={post.description}
         url={postUrl}
         imageUrl={post.image}
-        publishedTime={post.date}
+        publishedTime={new Date(post.date).toISOString()}
         authorName={post.author}
         keywords={post.tags || []}
       />
@@ -166,7 +166,7 @@ export default async function PostPage({ params }: PostPageProps) {
               <h1 className="text-4xl font-bold">{post.title}</h1>
             </div>
             <div className="flex items-center space-x-2 text-muted-foreground">
-              <time dateTime={post.date}>
+              <time dateTime={new Date(post.date).toISOString()}>
                 {new Date(post.date).toLocaleDateString("ko-KR", {
                   year: "numeric",
                   month: "long",
@@ -215,7 +215,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* AI 추천 콘텐츠 */}
           <AIContentRecommendations
             currentPostSlug={post.slug}
-            currentPostCategory={post.categorySlug}
+            currentPostCategory={post.category}
             currentPostTags={post.tags || []}
           />
 
@@ -236,7 +236,7 @@ export default async function PostPage({ params }: PostPageProps) {
               {relatedPosts.map((relatedPost) => (
                 <Link
                   key={relatedPost._id}
-                  href={`/blog/${relatedPost.categorySlug}/${relatedPost.slug}`}
+                  href={`/blog/${relatedPost.category}/${relatedPost.slug}`}
                   className="group"
                 >
                   <div className="space-y-2">
