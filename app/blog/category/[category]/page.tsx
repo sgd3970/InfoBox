@@ -13,14 +13,19 @@ interface CategoryPageProps {
 // Fetch posts for the given category slug
 async function getCategoryPosts(category: string): Promise<Post[]> {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-    const searchRes = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(category)}&limit=1000`, { cache: 'no-store' });
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/search?category=${category}`, {
+      next: { revalidate: 3600 }, // 1시간마다 재검증
+    });
+
     if (!searchRes.ok) {
-      console.error("카테고리별 포스트 목록 가져오기 실패", searchRes.status);
-      return [];
+      throw new Error(`HTTP error! status: ${searchRes.status}`);
     }
     const searchData = await searchRes.json();
-    return searchData.posts || [];
+    const posts = searchData.posts || [];
+    return posts.map((post: Post) => ({
+      ...post,
+      date: new Date(post.date).toISOString()
+    }));
   } catch (error) {
     console.error("카테고리별 포스트 목록 가져오는 중 오류 발생:", error);
     return [];
@@ -30,16 +35,17 @@ async function getCategoryPosts(category: string): Promise<Post[]> {
 // Fetch all categories to find the category name by slug
 async function getAllCategories(): Promise<Category[]> {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com';
-    const res = await fetch(`${BASE_URL}/api/categories`, { cache: 'no-store' });
-    if (!res.ok) {
-      console.error("카테고리 API 호출 실패:", res.status);
-      return [];
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/categories`, {
+      next: { revalidate: 3600 }, // 1시간마다 재검증
+    });
+
+    if (!searchRes.ok) {
+      throw new Error(`HTTP error! status: ${searchRes.status}`);
     }
-    const categories = await res.json();
-    return categories as Category[];
+    const searchData = await searchRes.json();
+    return searchData.categories || [];
   } catch (error) {
-    console.error("모든 카테고리 fetch 오류:", error);
+    console.error("카테고리 목록 가져오는 중 오류 발생:", error);
     return [];
   }
 }
