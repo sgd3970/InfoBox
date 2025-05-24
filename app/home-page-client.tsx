@@ -127,7 +127,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       <section className="mb-16">
         <h2 className="text-3xl font-bold mb-8">카테고리</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {categories.map((category) => (
+          {categories.filter(category => category.slug).map((category) => (
             <Link
               key={category.slug}
               href={`/blog/category/${category.slug.toLowerCase()}`}
