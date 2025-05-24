@@ -50,18 +50,23 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <h1 className="text-2xl font-bold mb-6">카테고리: {params.category}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="block">
+          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
             <div className="rounded-lg border shadow-sm overflow-hidden">
               {post.image && (
                 <Image
                   src={post.image}
                   alt={post.title}
-                  width={800}
-                  height={400}
+                  width={400}
+                  height={200}
                   className="w-full h-48 object-cover"
                 />
               )}
               <div className="p-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-xs font-medium px-2 py-1 bg-primary/10 text-primary rounded-full">
+                    {post.category}
+                  </span>
+                </div>
                 <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{post.description}</p>
                 <div className="text-xs text-gray-500 dark:text-gray-400">

@@ -39,7 +39,7 @@ export default async function BlogPage() {
       {featuredPost && (
         <div className="mb-12">
           <h2 className="text-2xl font-semibold mb-6">주요 게시물</h2>
-          <Link key={featuredPost.slug} href={`/blog/${featuredPost.categorySlug}/${featuredPost.slug}`} className="group">
+          <Link key={featuredPost.slug} href={`/blog/${featuredPost.category}/${featuredPost.slug}`} className="group">
             <div className="grid md:grid-cols-2 gap-6 items-center">
               <div className="relative aspect-video overflow-hidden rounded-lg">
                 <Image
@@ -54,7 +54,7 @@ export default async function BlogPage() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {featuredPost.categoryName}
+                    {featuredPost.category}
                   </span>
                   <h3 className="text-3xl font-bold group-hover:text-primary transition-colors">
                     {featuredPost.title}
@@ -81,7 +81,7 @@ export default async function BlogPage() {
         <h2 className="text-2xl font-semibold mb-6">최근 게시물</h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {recentPosts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group">
+            <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
@@ -94,7 +94,7 @@ export default async function BlogPage() {
                 </div>
                 <div className="space-y-2">
                   <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {post.categoryName}
+                    {post.category}
                   </span>
                   <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                 </div>

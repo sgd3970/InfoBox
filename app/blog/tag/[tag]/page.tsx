@@ -60,17 +60,20 @@ export default async function TagPage({ params }: TagPageProps) {
       {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group">
+            <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
-                    src={post.image || "/placeholder.svg?height=200&width=400"}
+                    src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
                     alt={post.title}
                     fill
                     className="object-cover transition-transform group-hover:scale-105"
                   />
                 </div>
                 <div className="space-y-2">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    {post.category}
+                  </span>
                   <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                 </div>
                 <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
