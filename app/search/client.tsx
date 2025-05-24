@@ -84,9 +84,12 @@ export function SearchClient() {
         console.log("Current searchResults state before update:", searchResults)
 
         const results = (data.results || []) as Post[]
-        setSearchResults(results)
-        setTotal(data.total || 0)
-        setPages(data.pages || 0)
+        // 상태 업데이트를 Promise.all로 묶어서 한 번에 처리
+        await Promise.all([
+          setSearchResults(results),
+          setTotal(data.total || 0),
+          setPages(data.pages || 0)
+        ])
 
         // Update categories with type assertion
         const categorySet = new Set(results.map((post: Post) => post.category.toLowerCase()))
@@ -138,7 +141,7 @@ export function SearchClient() {
     if (post.image && typeof post.image === "string" && post.image.trim() !== "") {
       return post.image;
     }
-    return "/placeholder.svg?height=200&width=400";
+    return "/images/placeholder.svg";
   };
 
   return (
@@ -226,14 +229,14 @@ export function SearchClient() {
 
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
-                    {Array.isArray(filteredPosts) && filteredPosts.map((post) => {
+                    {Array.isArray(filteredPosts) && filteredPosts.map((post, index) => {
                       console.log('Search page post:', post);
                       if (!post || !post.slug) {
                         console.warn('Invalid post in search page:', post);
                         return null;
                       }
                       return (
-                        <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                        <Link key={`${post.slug}-${index}`} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="space-y-4">
                             <div className="relative aspect-video overflow-hidden rounded-lg">
                               <Image
