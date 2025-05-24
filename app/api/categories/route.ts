@@ -10,13 +10,9 @@ export async function GET() {
   try {
     const db = await getDatabase()
     const categories = await db.collection<Category>("categories").find({}).toArray()
-
-    // 카테고리 이름(name)만 추출하여 문자열 배열로 반환
-    const categoryNames = categories.map(category => category.name);
-    return NextResponse.json(categoryNames)
+    return NextResponse.json(categories)
   } catch (error) {
     console.error("카테고리 API 오류:", error)
-    // 오류 발생 시에도 빈 배열로 응답하여 페이지가 깨지지 않도록 함
     return NextResponse.json([], { status: 200 })
   }
 }
