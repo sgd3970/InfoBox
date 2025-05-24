@@ -42,8 +42,9 @@ async function getAllCategories(): Promise<Category[]> {
     if (!searchRes.ok) {
       throw new Error(`HTTP error! status: ${searchRes.status}`);
     }
-    const searchData = await searchRes.json();
-    return searchData.categories || [];
+    // 바로 배열로 반환
+    const categories = await searchRes.json();
+    return categories;
   } catch (error) {
     console.error("카테고리 목록 가져오는 중 오류 발생:", error);
     return [];
