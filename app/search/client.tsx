@@ -34,6 +34,11 @@ export function SearchClient() {
   const [categories, setCategories] = useState<string[]>([])
   const [selectedCategory, setSelectedCategory] = useState("all")
 
+  // Calculate unique categories from search results
+  const uniqueCategories = useMemo(() => {
+    return ["all", ...new Set(searchResults.map((post: Post) => post.category.toLowerCase()))]
+  }, [searchResults])
+
   // Effect to update state when search params change
   useEffect(() => {
     setQuery(searchParams?.get("q") || "")
@@ -78,18 +83,14 @@ export function SearchClient() {
         console.log("Search results fetched successfully:", data)
         console.log("Current searchResults state before update:", searchResults)
 
-        setSearchResults(data.results || [])
+        const results = (data.results || []) as Post[]
+        setSearchResults(results)
         setTotal(data.total || 0)
         setPages(data.pages || 0)
 
-        // Calculate and set categories here
-        const uniqueCategories = useMemo(() => {
-          return ["all", ...new Set(
-            (data.results || []).map((post: Post) => post.category.toLowerCase())
-          )]
-        }, [data.results])
-
-        setCategories(uniqueCategories)
+        // Update categories with type assertion
+        const categorySet = new Set(results.map((post: Post) => post.category.toLowerCase()))
+        setCategories(["all", ...Array.from(categorySet)])
 
       } catch (error) {
         console.error("검색 오류:", error)
