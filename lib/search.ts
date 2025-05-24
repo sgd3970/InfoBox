@@ -72,18 +72,17 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
         { title: { $regex: query, $options: 'i' } },
         { description: { $regex: query, $options: 'i' } },
         { content: { $regex: query, $options: 'i' } },
-        { tags: { $in: [new RegExp(query, 'i')] } }, // 태그 배열 검색
+        { tags: { $regex: query, $options: 'i' } }, // 태그 배열 내에서 regex 검색
       ];
     }
 
     if (category) {
-      mongoQuery.categorySlug = category;
+      mongoQuery.category = category; // category 필드로 변경
     }
 
     if (tags && tags.length > 0) {
       // 태그 배열에 하나라도 포함되는 포스트 검색
-      const cleanTags = tags.map(tag => tag.replace(/^#/, '').toLowerCase()); // # 제거 및 소문자 변환
-      mongoQuery.tags = { $in: cleanTags };
+      mongoQuery.tags = { $in: tags }; // 태그 이름 자체 사용
     }
 
     if (dateFrom || dateTo) {

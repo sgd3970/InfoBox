@@ -11,18 +11,9 @@ export async function GET() {
     const db = await getDatabase()
     const categories = await db.collection<Category>("categories").find({}).toArray()
 
-    // 각 카테고리의 포스트 개수를 가져옵니다.
-    const categoriesWithPostCount = await Promise.all(categories.map(async (category) => {
-      // postCount를 셀 때 categorySlug 필드를 기준으로 합니다.
-      const postCount = await db.collection("posts").countDocuments({ categorySlug: category.slug })
-      return {
-        ...category,
-        _id: category._id.toString(),
-        postCount,
-      }
-    }))
-
-    return NextResponse.json(categoriesWithPostCount)
+    // 카테고리 이름(name)만 추출하여 문자열 배열로 반환
+    const categoryNames = categories.map(category => category.name);
+    return NextResponse.json(categoryNames)
   } catch (error) {
     console.error("카테고리 API 오류:", error)
     // 오류 발생 시에도 빈 배열로 응답하여 페이지가 깨지지 않도록 함

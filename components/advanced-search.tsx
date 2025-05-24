@@ -33,8 +33,8 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
   const [sortOrder, setSortOrder] = useState<string>("desc")
 
   // 카테고리 및 태그 목록
-  const [categories, setCategories] = useState<{ name: string; slug: string }[]>([])
-  const [tags, setTags] = useState<{ name: string; slug: string }[]>([])
+  const [categories, setCategories] = useState<string[]>([])
+  const [tags, setTags] = useState<{ _id: string; name: string; postCount: number }[]>([])
   const [loading, setLoading] = useState(false)
 
   // URL 파라미터에서 초기 값 설정
@@ -66,14 +66,14 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
         const categoriesRes = await fetch(`${BASE_URL}/api/categories`)
         if (categoriesRes.ok) {
           const categoriesData = await categoriesRes.json()
-          setCategories(categoriesData)
+          setCategories(categoriesData as string[])
         }
 
         // 태그 가져오기
         const tagsRes = await fetch(`${BASE_URL}/api/tags`)
         if (tagsRes.ok) {
           const tagsData = await tagsRes.json()
-          setTags(tagsData)
+          setTags(tagsData as { _id: string; name: string; postCount: number }[])
         }
       } catch (error) {
         console.error("카테고리 및 태그 가져오기 오류:", error)
@@ -145,9 +145,9 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">모든 카테고리</SelectItem>
-              {categories.map((cat) => (
-                <SelectItem key={cat.slug} value={cat.slug}>
-                  {cat.name}
+              {categories.map((catName) => (
+                <SelectItem key={catName} value={catName}>
+                  {catName}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -219,9 +219,9 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
               <div className="text-sm text-muted-foreground">로딩 중...</div>
             ) : tags.length > 0 ? (
               tags.map((tag) => (
-                <label key={tag.slug} className="flex items-center space-x-2 cursor-pointer">
-                  <Checkbox checked={selectedTags.includes(tag.slug)} onCheckedChange={() => toggleTag(tag.slug)} />
-                  <span className="text-sm">{tag.name}</span>
+                <label key={tag._id} className="flex items-center space-x-2 cursor-pointer">
+                  <Checkbox checked={selectedTags.includes(tag.name)} onCheckedChange={() => toggleTag(tag.name)} />
+                  <span className="text-sm">{tag.name} ({tag.postCount})</span>
                 </label>
               ))
             ) : (

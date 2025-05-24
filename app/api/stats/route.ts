@@ -23,7 +23,11 @@ export async function GET() {
     const totalViews = viewsResult.length > 0 ? viewsResult[0].totalViews : 0
 
     // 최근 포스트 가져오기
-    const recentPosts = await db.collection("posts").find().sort({ date: -1 }).limit(5).toArray()
+    const recentPosts = await db.collection("posts").find()
+      .sort({ date: -1 })
+      .limit(5)
+      .project({ title: 1, date: 1, slug: 1, category: 1 })
+      .toArray()
 
     // 페이지뷰 추이 데이터 가져오기
     const today = new Date()

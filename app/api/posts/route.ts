@@ -140,12 +140,8 @@ export async function POST(request: Request) {
 
     // 포스트 데이터 준비 및 날짜 필드를 Date 객체로 명시적으로 변환
     // category 대신 categorySlug와 categoryName을 저장
-    const { category, ...restPostData } = postData; // 기존 category 필드는 분리
-
     const newPost = {
-      ...restPostData,
-      categorySlug: postData.categorySlug, // 새 필드 저장
-      categoryName: postData.categoryName, // 새 필드 저장
+      ...postData,
       author: session.user.name || session.user.email || "관리자", // 세션에서 작성자 정보 가져오기
       views: 0,
       date: new Date(postData.date || Date.now()), // 클라이언트에서 보낸 날짜 사용 또는 현재 시간 (Date 객체)
@@ -161,17 +157,15 @@ export async function POST(request: Request) {
     // 태그 컬렉션 업데이트 로직 추가 (categorySlug 기준)
     if (newPost.tags && Array.isArray(newPost.tags)) {
       for (const tagName of newPost.tags) {
-        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        if (!tagSlug) continue;
-
+        // 태그 이름 자체를 _id로 사용하여 tags 컬렉션 업데이트
         await db.collection("tags").updateOne(
-          { slug: tagSlug },
+          { _id: tagName }, // 태그 이름을 _id로 사용
           { 
-            $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() },
-            $inc: { postCount: 1 },
-            $set: { updatedAt: new Date() }
+            $setOnInsert: { name: tagName, createdAt: new Date() }, // 새 태그일 경우 name 필드도 저장
+            $inc: { postCount: 1 }, // postCount 1 증가
+            $set: { updatedAt: new Date() } // 업데이트 시간 설정
           },
-          { upsert: true }
+          { upsert: true } // 문서가 없으면 새로 생성
         );
       }
     }

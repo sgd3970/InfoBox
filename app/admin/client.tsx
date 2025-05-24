@@ -135,7 +135,7 @@ export default function AdminDashboardClient({ siteStats }: AdminDashboardClient
                 </div>
                 <div className="flex gap-2">
                   <Link
-                    href={`/blog/${post.category.toLowerCase()}/${post.slug}`}
+                    href={`/blog/${post.category}/${post.slug}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-sm text-primary hover:underline"

@@ -1,6 +1,5 @@
 import { NextResponse } from "next/server"
 import { getDatabase } from "@/lib/mongodb"
-import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 
@@ -162,18 +161,7 @@ export async function PUT(
     // ——————————————————————————————
 
     // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
-    // categorySlug와 categoryName을 명시적으로 추출하여 업데이트에 포함
-    const { _id, category, ...fieldsToUpdate } = updatedPostData; // 기존 category 필드는 분리
-    
-    const fieldsToSet: any = { ...fieldsToUpdate };
-
-    // categorySlug와 categoryName이 요청에 포함되어 있으면 업데이트 필드에 추가
-    if (updatedPostData.categorySlug !== undefined) {
-        fieldsToSet.categorySlug = updatedPostData.categorySlug;
-    }
-    if (updatedPostData.categoryName !== undefined) {
-        fieldsToSet.categoryName = updatedPostData.categoryName;
-    }
+    const { _id, ...fieldsToSet } = updatedPostData; // _id 필드 분리, 나머지 필드 사용
 
     // 날짜 필드를 업데이트할 경우 Date 객체로 변환 (클라이언트에서 문자열로 보낼 경우 대비)
     if (fieldsToSet.date) fieldsToSet.date = new Date(fieldsToSet.date);
@@ -203,13 +191,11 @@ export async function PUT(
       console.log(`PUT /api/posts/${slug}: Added tags`, addedTags);
 
       for (const tagName of addedTags) {
-        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        console.log(`PUT /api/posts/${slug}: Processing added tag`, { tagName, tagSlug });
-
-        if (!tagSlug) continue;
+        // 태그 이름 자체를 _id로 사용하여 tags 컬렉션 업데이트
+        if (!tagName) continue; // 빈 태그 이름 스킵
         await db.collection("tags").updateOne(
-          { slug: tagSlug },
-          { $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() }, $inc: { postCount: 1 }, $set: { updatedAt: new Date() } },
+          { _id: tagName as any }, // 태그 이름을 _id로 사용 (타입 문제 임시 해결)
+          { $setOnInsert: { name: tagName, createdAt: new Date() }, $inc: { postCount: 1 }, $set: { updatedAt: new Date() } },
           { upsert: true }
         );
       }
@@ -219,13 +205,11 @@ export async function PUT(
       console.log(`PUT /api/posts/${slug}: Removed tags`, removedTags);
 
       for (const tagName of removedTags) {
-        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
-        console.log(`PUT /api/posts/${slug}: Processing removed tag`, { tagName, tagSlug });
-
-        if (!tagSlug) continue;
+        // 태그 이름 자체를 _id로 사용하여 tags 컬렉션 업데이트
+        if (!tagName) continue; // 빈 태그 이름 스킵
         // postCount를 1 감소시키고, 0보다 작아지지 않도록 합니다.
         await db.collection("tags").updateOne(
-          { slug: tagSlug },
+          { _id: tagName as any }, // 태그 이름을 _id로 사용 (타입 문제 임시 해결)
           { $inc: { postCount: -1 }, $set: { updatedAt: new Date() } },
           { 
             // postCount가 0 이하가 되지 않도록 조건을 추가할 수 있지만, $inc가 이를 처리합니다.
@@ -303,15 +287,15 @@ export async function DELETE(
         }
       })
 
-      // 사용되지 않는 태그 찾기
+      // 사용되지 않는 태그 찾기 (태그 이름 기준)
       const orphanedTags = postToDelete.tags.filter(
-        tag => !tagsUsedByOtherPosts.has(tag.toString())
+        tag => !tagsUsedByOtherPosts.has(tag) // 태그 이름(문자열)으로 비교
       )
 
-      // 사용되지 않는 태그 삭제
+      // 사용되지 않는 태그 삭제 (_id 기준으로 삭제)
       if (orphanedTags.length > 0) {
         await db.collection("tags").deleteMany({
-          _id: { $in: orphanedTags }
+          _id: { $in: orphanedTags as any[] } // 태그 이름(문자열) 배열로 삭제 (_id 기준)
         })
       }
     }

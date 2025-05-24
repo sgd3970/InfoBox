@@ -15,11 +15,10 @@ export interface Post {
   title: string
   description: string
   content: string
-  date: string
-  categorySlug: string
-  categoryName: string
+  date: Date
+  category: string
   slug: string
-  tags?: string[]
+  tags: string[]
   image?: string
   images?: string[]  // 추가: 본문 이미지 배열
   featuredImage?: string | null
