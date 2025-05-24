@@ -90,7 +90,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.categorySlug}/${post.slug}`} className="group">
+            <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
                   <Image
@@ -101,17 +101,9 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                   />
                 </div>
                 <div className="space-y-2">
-                  {/* 포스트 카드에 표시되는 카테고리 이름도 슬러그가 아닌 이름을 찾아서 표시해야 할 수 있습니다. */}
-                  {/* 현재 Post 타입에는 category 필드만 있고 name 필드는 없으므로, 필요시 이 부분 수정 필요. */}
-                  {/* 간단하게 여기서는 post 객체에 categoryName 필드가 있다고 가정하거나, 아니면 category slug를 표시합니다. */}
-                  {/* 여기서는 일단 post.category (슬러그)를 그대로 표시합니다. 필요시 name을 가져오는 로직 추가 필요 */}
-                  {/* <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {post.categoryName || post.category}
-                  </span> */}
                   <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                    {category.name} {/* 해당 페이지의 메인 카테고리 이름을 사용 */}
+                    {post.category}
                   </span>
-
                   <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                 </div>
                 <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>

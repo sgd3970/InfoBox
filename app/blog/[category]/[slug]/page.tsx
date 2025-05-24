@@ -78,7 +78,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const ogUrl = new URL(`/api/og`, BASE_URL)
   ogUrl.searchParams.set("title", post.title)
-  ogUrl.searchParams.set("category", post.categoryName || '')
+  ogUrl.searchParams.set("category", post.category)
 
   return {
     title: post.title,
@@ -144,10 +144,10 @@ export default async function PostPage({ params }: PostPageProps) {
             <div className="space-y-2">
               <div className="flex items-center gap-2">
                 <Link
-                  href={`/blog/category/${encodeURIComponent(post.categorySlug)}`}
+                  href={`/blog/category/${encodeURIComponent(post.category)}`}
                   className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
                 >
-                  {post.categoryName}
+                  {post.category}
                 </Link>
                 {post.tags && post.tags.length > 0 && (
                   <div className="flex gap-1 flex-wrap">

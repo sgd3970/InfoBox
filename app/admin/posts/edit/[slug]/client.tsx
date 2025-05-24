@@ -43,10 +43,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         const data = await res.json();
         setCategories(data);
         
-        const initialCategory = data.find((cat: Category) => cat.slug === initialPost.categorySlug);
-        if (initialCategory) {
-          setCategory(initialCategory.slug);
-        }
+        setCategory(initialPost.category);
 
       } catch (error) {
         console.error('카테고리 가져오기 오류:', error);
@@ -54,7 +51,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       }
     };
     fetchCategories();
-  }, [initialPost.categorySlug]);
+  }, [initialPost.category]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
