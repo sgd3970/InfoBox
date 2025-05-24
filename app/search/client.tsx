@@ -115,11 +115,12 @@ export function SearchClient() {
   }
 
   const filteredPosts = useMemo(() => {
+    if (!Array.isArray(searchResults)) return [];
     if (selectedCategory === "all") {
-      return searchResults
+      return searchResults;
     }
-    return searchResults.filter((post) => post.category.toLowerCase() === selectedCategory.toLowerCase())
-  }, [searchResults, selectedCategory])
+    return searchResults.filter((post) => post && post.category && post.category.toLowerCase() === selectedCategory.toLowerCase());
+  }, [searchResults, selectedCategory]);
 
   // 검색어 하이라이트 함수
   const highlightText = (text: string) => {
@@ -214,43 +215,45 @@ export function SearchClient() {
 
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
-                    {filteredPosts.map((post) => (
-                      <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="space-y-4">
-                          <div className="relative aspect-video overflow-hidden rounded-lg">
-                            <Image
-                              src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
-                              alt={post.title}
-                              fill
-                              className="object-cover transition-transform group-hover:scale-105"
-                            />
-                          </div>
-                          <div className="p-4 space-y-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                              {post.category}
-                            </span>
-                            <h3
-                              className="text-xl font-bold group-hover:text-primary transition-colors"
-                              dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                            />
-                            <p
-                              className="text-muted-foreground line-clamp-2"
-                              dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                            />
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <time dateTime={post.date}>
-                                {new Date(post.date).toLocaleDateString("ko-KR", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </time>
-                              <span className="mx-2">•</span>
-                              <span>{post.views.toLocaleString()} 조회</span>
+                    {Array.isArray(filteredPosts) && filteredPosts.map((post) => (
+                      post && (
+                        <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                          <div className="space-y-4">
+                            <div className="relative aspect-video overflow-hidden rounded-lg">
+                              <Image
+                                src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                                alt={post.title}
+                                fill
+                                className="object-cover transition-transform group-hover:scale-105"
+                              />
+                            </div>
+                            <div className="p-4 space-y-2">
+                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                                {post.category}
+                              </span>
+                              <h3
+                                className="text-xl font-bold group-hover:text-primary transition-colors"
+                                dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                              />
+                              <p
+                                className="text-muted-foreground line-clamp-2"
+                                dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                              />
+                              <div className="flex items-center text-xs text-muted-foreground">
+                                <time dateTime={post.date}>
+                                  {new Date(post.date).toLocaleDateString("ko-KR", {
+                                    year: "numeric",
+                                    month: "long",
+                                    day: "numeric",
+                                  })}
+                                </time>
+                                <span className="mx-2">•</span>
+                                <span>{post.views.toLocaleString()} 조회</span>
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </Link>
+                        </Link>
+                      )
                     ))}
                   </div>
                 </TabsContent>
@@ -307,43 +310,45 @@ export function SearchClient() {
 
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
-                {filteredPosts.map((post) => (
-                  <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="space-y-4">
-                      <div className="relative aspect-video overflow-hidden rounded-lg">
-                        <Image
-                          src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
-                          alt={post.title}
-                          fill
-                          className="object-cover transition-transform group-hover:scale-105"
-                        />
-                      </div>
-                      <div className="p-4 space-y-2">
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {post.category}
-                        </span>
-                        <h3
-                          className="text-xl font-bold group-hover:text-primary transition-colors"
-                          dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                        />
-                        <p
-                          className="text-muted-foreground line-clamp-2"
-                          dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                        />
-                        <div className="flex items-center text-xs text-muted-foreground">
-                          <time dateTime={post.date}>
-                            {new Date(post.date).toLocaleDateString("ko-KR", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </time>
-                          <span className="mx-2">•</span>
-                          <span>{post.views.toLocaleString()} 조회</span>
+                {Array.isArray(filteredPosts) && filteredPosts.map((post) => (
+                  post && (
+                    <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                      <div className="space-y-4">
+                        <div className="relative aspect-video overflow-hidden rounded-lg">
+                          <Image
+                            src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                            alt={post.title}
+                            fill
+                            className="object-cover transition-transform group-hover:scale-105"
+                          />
+                        </div>
+                        <div className="p-4 space-y-2">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                            {post.category}
+                          </span>
+                          <h3
+                            className="text-xl font-bold group-hover:text-primary transition-colors"
+                            dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                          />
+                          <p
+                            className="text-muted-foreground line-clamp-2"
+                            dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                          />
+                          <div className="flex items-center text-xs text-muted-foreground">
+                            <time dateTime={post.date}>
+                              {new Date(post.date).toLocaleDateString("ko-KR", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                            </time>
+                            <span className="mx-2">•</span>
+                            <span>{post.views.toLocaleString()} 조회</span>
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  )
                 ))}
               </div>
             )}
