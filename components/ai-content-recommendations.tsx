@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Loader2 } from "lucide-react"
@@ -72,7 +72,7 @@ export function AIContentRecommendations({
         let score = 0
 
         // 같은 카테고리면 점수 추가
-        if (post.categorySlug?.toLowerCase() === currentPostCategory.toLowerCase()) {
+        if (post.category?.toLowerCase() === currentPostCategory.toLowerCase()) {
           score += 3
         }
 
@@ -97,7 +97,7 @@ export function AIContentRecommendations({
         .map((item: PostWithScore) => ({
           title: item.post.title,
           description: item.post.description || "",
-          url: `/blog/${item.post.categorySlug}/${item.post.slug}`,
+          url: `/blog/${item.post.category}/${item.post.slug}`,
         }))
 
       setRecommendations(recommendedPosts)

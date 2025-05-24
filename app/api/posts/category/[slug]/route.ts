@@ -9,13 +9,13 @@ export async function GET(
   { params }: { params: { slug: string } }
 ) {
   try {
-    const categorySlug = params.slug
+    const category = params.slug
     const db = await getDatabase()
     
     const posts = await db
       .collection<Post>("posts")
       .find({
-        category: { $regex: new RegExp(`^${categorySlug}$`, 'i') }
+        category: { $regex: new RegExp(`^${category}$`, 'i') }
       })
       .sort({ publishedAt: -1 })
       .toArray()

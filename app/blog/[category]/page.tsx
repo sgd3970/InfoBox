@@ -72,7 +72,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
-                  <span>{post.categoryName}</span>
+                  <span>{post.category}</span>
                   {/* 태그 표시 추가 */}
                   {post.tags && post.tags.length > 0 && (
                       <>

@@ -59,7 +59,7 @@ export default async function TagPage({ params }: TagPageProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
-                  <span>{post.categoryName}</span>
+                  <span>{post.category}</span>
                   {post.tags && post.tags.length > 0 && (
                       <>
                         <span className="mx-2">•</span>

@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
 import type { Post, Category } from "@/lib/models"
+import { Metadata } from "next"
 
 interface CategoryPageProps {
   params: {
@@ -10,23 +11,19 @@ interface CategoryPageProps {
 }
 
 // Fetch posts for the given category slug
-async function getCategoryPosts(categorySlug: string): Promise<Post[]> {
+async function getCategoryPosts(category: string): Promise<Post[]> {
   try {
-    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'; // 절대 경로 사용
-    const searchRes = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(categorySlug)}&limit=1000`, { cache: 'no-store' });
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      // API 응답 구조에 따라 결과 접근 방식이 다를 수 있습니다.
-      // 만약 searchData가 { results: Post[], total: number, pages: number } 형태라면 searchData.results를 사용해야 합니다.
-      // 이전 수정사항에 따라 advancedSearch는 { results: Post[], ... } 형태를 반환합니다.
-      return searchData.results || [];
-    } else {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+    const searchRes = await fetch(`${BASE_URL}/api/search?category=${encodeURIComponent(category)}&limit=1000`, { cache: 'no-store' });
+    if (!searchRes.ok) {
       console.error("카테고리별 포스트 목록 가져오기 실패", searchRes.status);
       return [];
     }
+    const searchData = await searchRes.json();
+    return searchData.posts || [];
   } catch (error) {
-    console.error("카테고리 포스트 가져오기 오류:", error)
-    return []
+    console.error("카테고리별 포스트 목록 가져오는 중 오류 발생:", error);
+    return [];
   }
 }
 
@@ -47,44 +44,50 @@ async function getAllCategories(): Promise<Category[]> {
   }
 }
 
-export async function generateMetadata({ params }: CategoryPageProps) {
-  const categorySlug = params.category;
-  const categories = await getAllCategories();
-  const category = categories.find(cat => cat.slug === categorySlug);
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+  const category = params.category;
 
-  const formattedCategoryName = category ? category.name : decodeURIComponent(categorySlug).charAt(0).toUpperCase() + decodeURIComponent(categorySlug).slice(1);
+  // 카테고리 정보 가져오기
+  const categories = await getAllCategories();
+  const categoryInfo = categories.find(cat => cat.slug === category);
+
+  const formattedCategoryName = categoryInfo ? categoryInfo.name : decodeURIComponent(category).charAt(0).toUpperCase() + decodeURIComponent(category).slice(1);
 
   return {
     title: `${formattedCategoryName} | 블로그`,
-    description: `${formattedCategoryName} 카테고리의 모든 게시물을 확인하세요.`, // description도 카테고리 이름 사용
+    description: `${formattedCategoryName} 카테고리의 모든 게시물을 확인하세요.`,
+    openGraph: {
+      title: `${formattedCategoryName} | 블로그`,
+      description: `${formattedCategoryName} 카테고리의 모든 게시물을 확인하세요.`,
+      type: "website",
+      url: `${BASE_URL}/blog/${category}`,
+    },
+    alternates: {
+      canonical: `${BASE_URL}/blog/${category}`,
+    },
   }
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const categorySlug = params.category; // category slug
-  
-  // 카테고리 정보 및 포스트 목록을 병렬로 가져옵니다.
-  const [categories, posts] = await Promise.all([
-    getAllCategories(),
-    getCategoryPosts(categorySlug)
+  const category = params.category;
+  const [posts, categories] = await Promise.all([
+    getCategoryPosts(category),
+    getAllCategories()
   ]);
 
-  const category = categories.find(cat => cat.slug === categorySlug);
-
-  // 유효한 카테고리가 없으면 404 페이지 표시
-  if (!category) {
-      notFound();
+  const categoryInfo = categories.find(cat => cat.slug === category);
+  if (!categoryInfo) {
+    notFound();
   }
 
-  const formattedCategoryName = category.name; // 카테고리 이름 (한글) 사용
+  const formattedCategoryName = categoryInfo.name;
 
   return (
     <div className="container py-10">
       <div className="mb-8">
         <h1 className="text-4xl font-bold">{formattedCategoryName}</h1>
-        {/* 포스트 개수는 getCategoryPosts 결과의 길이를 사용 */}
-        {category && <p className="text-muted-foreground mt-2">{category.postCount}개의 게시물이 있습니다.</p>}
-        
+        <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
       </div>
 
       {posts.length > 0 ? (

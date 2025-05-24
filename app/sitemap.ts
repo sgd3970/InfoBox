@@ -69,16 +69,16 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const posts = await getAllPostsForSitemap()
 
   const postEntries = posts.map((post) => ({
-    url: `${BASE_URL}/blog/${post.categorySlug}/${post.slug}`,
+    url: `${BASE_URL}/blog/${post.category}/${post.slug}`,
     lastModified: new Date(post.date).toISOString(),
     changeFrequency: "weekly" as const,
     priority: 0.8,
   }))
 
   // 카테고리 페이지
-  const categories = [...new Set(posts.map((post) => post.categorySlug.toLowerCase()))]
+  const categories = [...new Set(posts.map((post) => post.category.toLowerCase()))]
   const categoryPages = categories.map((category) => ({
-    url: `${BASE_URL}/blog/category/${category}`,
+    url: `${BASE_URL}/blog/${category}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,
     priority: 0.7,

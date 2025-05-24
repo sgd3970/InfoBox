@@ -22,11 +22,10 @@ interface AdminNewPostClientProps {}
 export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [title, setTitle] = useState("")
   const [slug, setSlug] = useState("")
+  const [category, setCategory] = useState("")
   const [description, setDescription] = useState("")
   const [content, setContent] = useState("")
-  const [categorySlug, setCategorySlug] = useState("")
-  const [categoryName, setCategoryName] = useState("")
-  const [tags, setTags] = useState("")
+  const [tags, setTags] = useState<string[]>([])
   const [images, setImages] = useState<File[]>([]) // 본문 이미지 파일 목록
   const [featuredImage, setFeaturedImage] = useState<File | null>(null) // 대표 이미지 파일
   const [isUploadingImages, setIsUploadingImages] = useState(false) // 이미지 업로드 중 상태
@@ -61,139 +60,39 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
-
-    if (!categorySlug) {
-      toast({
-        title: "포스트 생성 오류",
-        description: "카테고리를 선택해주세요.",
-        variant: "destructive",
-      })
-      setLoading(false)
+    if (!title || !slug || !category) {
+      toast.error("제목, 슬러그, 카테고리는 필수 입력 항목입니다.")
       return
     }
 
-    setIsUploadingImages(true);
-    let uploadedUrls: string[] = [];
-    let uploadedFeaturedImageUrl: string | null = null;
-
+    setLoading(true)
     try {
-      // 본문 이미지 업로드
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(file => formData.append('file', file));
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { urls: string[], files: any[] } = await uploadRes.json();
-        uploadedUrls = result.urls;
-        setUploadedImageUrls(uploadedUrls);
-      }
-
-      // 대표 이미지 업로드
-      if (featuredImage) {
-        const formData = new FormData();
-        formData.append('file', featuredImage);
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '대표 이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { url: string } = await uploadRes.json();
-        uploadedFeaturedImageUrl = result.url;
-        setFeaturedImageUrl(uploadedFeaturedImageUrl);
-      }
-
-    } catch (error: any) {
-      setIsUploadingImages(false);
-      setLoading(false);
-      toast({
-        title: "업로드 오류",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    } finally {
-      setIsUploadingImages(false);
-    }
-
-    // ReactQuill content에서 불필요한 article 태그 제거
-    let cleanContent = content;
-    if (content.startsWith('<article>') && content.endsWith('</article>')) {
-      cleanContent = content.slice(9, -10); // <article>와 </article> 제거
-    }
-
-    // 1) content 중 <article> 태그 제거
-    let cleanedContent = content.replace(/<\/?article>/g, '');
-    // 2) 혹시 들어있는 HTML 엔티티(&lt;, &gt;, &amp;, &nbsp; 등)도 해제
-    cleanedContent = cleanedContent
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/&nbsp;/g, ' '); // &nbsp; 추가
-    // 3) 앞뒤 공백\u00b7개행 잘라내기
-    cleanedContent = cleanedContent.trim();
-
-    const postData = {
-      title,
-      slug,
-      description,
-      content: cleanedContent, // 정제된 content 사용
-      categorySlug,
-      categoryName,
-      tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
-      date: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
-      featured: false,
-      images: uploadedUrls,
-      featuredImage: uploadedFeaturedImageUrl,
-    }
-
-    try {
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-      const res = await fetch(`${BASE_URL}/api/posts`, {
+      const response = await fetch("/api/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(postData),
+        body: JSON.stringify({
+          title,
+          slug,
+          category,
+          description,
+          content,
+          tags,
+          image: featuredImageUrl,
+          date: new Date().toISOString(),
+        }),
       })
 
-      if (!res.ok) {
-        const errorData = await res.json()
-        throw new Error(errorData.error || "포스트 생성에 실패했습니다.")
+      if (!response.ok) {
+        throw new Error("포스트 생성 실패")
       }
 
-      const result = await res.json()
-      toast({
-        title: "포스트 생성 성공",
-        description: "새 포스트가 성공적으로 생성되었습니다.",
-      })
-      router.push(`/admin/posts`)
-    } catch (error: any) {
-      toast({
-        title: "포스트 생성 오류",
-        description: error.message,
-        variant: "destructive",
-      })
+      toast.success("포스트가 생성되었습니다.")
+      router.push("/admin/posts")
+    } catch (error) {
+      console.error("포스트 생성 오류:", error)
+      toast.error("포스트 생성 중 오류가 발생했습니다.")
     } finally {
       setLoading(false)
     }
@@ -229,6 +128,10 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       textarea.setSelectionRange(start + markdown.length, start + markdown.length);
     }
   };
+
+  const handleCategoryChange = (selectedCategory: string) => {
+    setCategory(selectedCategory);
+  }
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -342,21 +245,14 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
           </CardContent>
         </Card>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="category">카테고리</Label>
-          <Select onValueChange={(slug) => {
-              setCategorySlug(slug);
-              const selectedCategory = categories.find(c => c.slug === slug);
-              if (selectedCategory) {
-                setCategoryName(selectedCategory.name);
-              } else {
-                setCategoryName(""); // 못 찾았을 경우 빈 문자열
-              }
-            }} 
-            value={categorySlug}
-            disabled={categoriesLoading || loading}
+          <Select
+            value={category}
+            onValueChange={handleCategoryChange}
+            disabled={categoriesLoading}
           >
-            <SelectTrigger id="category">
+            <SelectTrigger>
               <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
             <SelectContent>
@@ -370,11 +266,10 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         </div>
         <div>
           <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
-          <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="예: react, nextjs, 개발" />
+          <Input id="tags" value={tags.join(",")} onChange={(e) => setTags(e.target.value.split(","))} placeholder="예: react, nextjs, 개발" />
         </div>
-        <Button type="submit" disabled={loading || categoriesLoading || !categorySlug || isUploadingImages}>
-          {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {isUploadingImages ? "이미지 업로드 중..." : "포스트 생성"}
+        <Button type="submit" disabled={loading || categoriesLoading || !category || isUploadingImages}>
+          {loading ? "생성 중..." : "포스트 생성"}
         </Button>
       </form>
     </div>
