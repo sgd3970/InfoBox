@@ -130,6 +130,17 @@ export function SearchClient() {
     return text.replace(regex, '<mark class="bg-yellow-200 dark:bg-yellow-800">$1</mark>')
   }
 
+  // 이미지 src 방어 함수
+  const getValidImageSrc = (post: Post) => {
+    if (post.featuredImage && typeof post.featuredImage === "string" && post.featuredImage.trim() !== "") {
+      return post.featuredImage;
+    }
+    if (post.image && typeof post.image === "string" && post.image.trim() !== "") {
+      return post.image;
+    }
+    return "/placeholder.svg?height=200&width=400";
+  };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-[300px_1fr] gap-8">
       {/* 검색 사이드바 */}
@@ -216,18 +227,12 @@ export function SearchClient() {
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
                     {Array.isArray(filteredPosts) && filteredPosts.map((post) => (
-                      post && (
+                      post && typeof post === 'object' && post.slug ? (
                         <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="space-y-4">
                             <div className="relative aspect-video overflow-hidden rounded-lg">
                               <Image
-                                src={
-                                  post.featuredImage && post.featuredImage !== ""
-                                    ? post.featuredImage
-                                    : post.image && post.image !== ""
-                                    ? post.image
-                                    : "/placeholder.svg?height=200&width=400"
-                                }
+                                src={getValidImageSrc(post)}
                                 alt={post.title}
                                 fill
                                 className="object-cover transition-transform group-hover:scale-105"
@@ -259,7 +264,7 @@ export function SearchClient() {
                             </div>
                           </div>
                         </Link>
-                      )
+                      ) : null
                     ))}
                   </div>
                 </TabsContent>
@@ -270,48 +275,44 @@ export function SearchClient() {
                     <TabsContent key={cat} value={cat} className="mt-6">
                       <div className="space-y-6">
                         {filteredResults.map((post) => (
-                          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                            <div className="space-y-4">
-                              <div className="relative aspect-video overflow-hidden rounded-lg">
-                                <Image
-                                  src={
-                                    post.featuredImage && post.featuredImage !== ""
-                                      ? post.featuredImage
-                                      : post.image && post.image !== ""
-                                      ? post.image
-                                      : "/placeholder.svg?height=200&width=400"
-                                  }
-                                  alt={post.title}
-                                  fill
-                                  className="object-cover transition-transform group-hover:scale-105"
-                                />
-                              </div>
-                              <div className="p-4 space-y-2">
-                                <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                                  {post.category}
-                                </span>
-                                <h3
-                                  className="text-xl font-bold group-hover:text-primary transition-colors"
-                                  dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                                />
-                                <p
-                                  className="text-muted-foreground line-clamp-2"
-                                  dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                                />
-                                <div className="flex items-center text-xs text-muted-foreground">
-                                  <time dateTime={post.date}>
-                                    {new Date(post.date).toLocaleDateString("ko-KR", {
-                                      year: "numeric",
-                                      month: "long",
-                                      day: "numeric",
-                                    })}
-                                  </time>
-                                  <span className="mx-2">•</span>
-                                  <span>{post.views?.toLocaleString() || 0} 조회</span>
+                          post && typeof post === 'object' && post.slug ? (
+                            <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                              <div className="space-y-4">
+                                <div className="relative aspect-video overflow-hidden rounded-lg">
+                                  <Image
+                                    src={getValidImageSrc(post)}
+                                    alt={post.title}
+                                    fill
+                                    className="object-cover transition-transform group-hover:scale-105"
+                                  />
+                                </div>
+                                <div className="p-4 space-y-2">
+                                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                                    {post.category}
+                                  </span>
+                                  <h3
+                                    className="text-xl font-bold group-hover:text-primary transition-colors"
+                                    dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                                  />
+                                  <p
+                                    className="text-muted-foreground line-clamp-2"
+                                    dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                                  />
+                                  <div className="flex items-center text-xs text-muted-foreground">
+                                    <time dateTime={post.date}>
+                                      {new Date(post.date).toLocaleDateString("ko-KR", {
+                                        year: "numeric",
+                                        month: "long",
+                                        day: "numeric",
+                                      })}
+                                    </time>
+                                    <span className="mx-2">•</span>
+                                    <span>{post.views?.toLocaleString() || 0} 조회</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          </Link>
+                            </Link>
+                          ) : null
                         ))}
                       </div>
                     </TabsContent>
@@ -323,18 +324,12 @@ export function SearchClient() {
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
                 {Array.isArray(filteredPosts) && filteredPosts.map((post) => (
-                  post && (
+                  post && typeof post === 'object' && post.slug ? (
                     <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                       <div className="space-y-4">
                         <div className="relative aspect-video overflow-hidden rounded-lg">
                           <Image
-                            src={
-                              post.featuredImage && post.featuredImage !== ""
-                                ? post.featuredImage
-                                : post.image && post.image !== ""
-                                ? post.image
-                                : "/placeholder.svg?height=200&width=400"
-                            }
+                            src={getValidImageSrc(post)}
                             alt={post.title}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
@@ -366,7 +361,7 @@ export function SearchClient() {
                         </div>
                       </div>
                     </Link>
-                  )
+                  ) : null
                 ))}
               </div>
             )}
