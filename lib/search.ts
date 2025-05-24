@@ -82,7 +82,8 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
 
     if (tags && tags.length > 0) {
       // 태그 배열에 하나라도 포함되는 포스트 검색
-      mongoQuery.tags = { $in: tags };
+      const cleanTags = tags.map(tag => tag.replace(/^#/, '').toLowerCase()); // # 제거 및 소문자 변환
+      mongoQuery.tags = { $in: cleanTags };
     }
 
     if (dateFrom || dateTo) {

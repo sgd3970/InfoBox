@@ -32,7 +32,7 @@ export default async function TagsPage() {
     const searchRes = await fetch(url, {})
     if (searchRes.ok) {
       const searchData = await searchRes.json();
-      allPosts = searchData.posts || [];
+      allPosts = searchData.results || [];
     } else {
       console.error("포스트 목록 가져오기 실패", searchRes.status);
     }
@@ -47,7 +47,7 @@ export default async function TagsPage() {
   allPosts.forEach((post: Post) => {
     if (post.tags) {
       post.tags.forEach((tag: string) => {
-        const normalizedTag = tag.toLowerCase()
+        const normalizedTag = tag.replace(/^#/, '').toLowerCase()
         tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
       })
     }
