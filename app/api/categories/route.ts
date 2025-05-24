@@ -10,7 +10,16 @@ export async function GET() {
   try {
     const db = await getDatabase()
     const categories = await db.collection<Category>("categories").find({}).toArray()
-    return NextResponse.json(categories)
+
+    // 각 카테고리별로 postCount 계산
+    const categoriesWithCount = await Promise.all(
+      categories.map(async (category) => {
+        const count = await db.collection("posts").countDocuments({ category: category.slug })
+        return { ...category, postCount: count }
+      })
+    )
+
+    return NextResponse.json(categoriesWithCount)
   } catch (error) {
     console.error("카테고리 API 오류:", error)
     return NextResponse.json([], { status: 200 })
