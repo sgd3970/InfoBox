@@ -61,7 +61,11 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!title || !slug || !category) {
-      toast.error("제목, 슬러그, 카테고리는 필수 입력 항목입니다.")
+      toast({
+        variant: "destructive",
+        title: "입력 오류",
+        description: "제목, 슬러그, 카테고리는 필수 입력 항목입니다."
+      })
       return
     }
 
@@ -88,11 +92,18 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         throw new Error("포스트 생성 실패")
       }
 
-      toast.success("포스트가 생성되었습니다.")
+      toast({
+        title: "성공",
+        description: "포스트가 생성되었습니다."
+      })
       router.push("/admin/posts")
     } catch (error) {
       console.error("포스트 생성 오류:", error)
-      toast.error("포스트 생성 중 오류가 발생했습니다.")
+      toast({
+        variant: "destructive",
+        title: "오류",
+        description: "포스트 생성 중 오류가 발생했습니다."
+      })
     } finally {
       setLoading(false)
     }
