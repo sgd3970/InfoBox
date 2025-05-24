@@ -221,7 +221,13 @@ export function SearchClient() {
                           <div className="space-y-4">
                             <div className="relative aspect-video overflow-hidden rounded-lg">
                               <Image
-                                src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                                src={
+                                  post.featuredImage && post.featuredImage !== ""
+                                    ? post.featuredImage
+                                    : post.image && post.image !== ""
+                                    ? post.image
+                                    : "/placeholder.svg?height=200&width=400"
+                                }
                                 alt={post.title}
                                 fill
                                 className="object-cover transition-transform group-hover:scale-105"
@@ -268,7 +274,13 @@ export function SearchClient() {
                             <div className="space-y-4">
                               <div className="relative aspect-video overflow-hidden rounded-lg">
                                 <Image
-                                  src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                                  src={
+                                    post.featuredImage && post.featuredImage !== ""
+                                      ? post.featuredImage
+                                      : post.image && post.image !== ""
+                                      ? post.image
+                                      : "/placeholder.svg?height=200&width=400"
+                                  }
                                   alt={post.title}
                                   fill
                                   className="object-cover transition-transform group-hover:scale-105"
@@ -316,7 +328,13 @@ export function SearchClient() {
                       <div className="space-y-4">
                         <div className="relative aspect-video overflow-hidden rounded-lg">
                           <Image
-                            src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                            src={
+                              post.featuredImage && post.featuredImage !== ""
+                                ? post.featuredImage
+                                : post.image && post.image !== ""
+                                ? post.image
+                                : "/placeholder.svg?height=200&width=400"
+                            }
                             alt={post.title}
                             fill
                             className="object-cover transition-transform group-hover:scale-105"
