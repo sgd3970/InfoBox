@@ -105,10 +105,10 @@ export function SearchClient() {
   }, [query, category, tags, dateFrom, dateTo, sortBy, sortOrder, page, limit])
 
   // 카테고리별 결과 필터링
-  const filterByCategory = (category: string) => {
+  const filterByCategory = (category: string): Post[] => {
     if (category === "all") {
       setSelectedCategory("all")
-      return
+      return searchResults
     }
     setSelectedCategory(category)
     return searchResults.filter((post) => post.category.toLowerCase() === category.toLowerCase())
@@ -202,11 +202,14 @@ export function SearchClient() {
               <Tabs defaultValue="all" value={activeTab} onValueChange={setActiveTab} className="mb-8">
                 <TabsList>
                   <TabsTrigger value="all">전체 ({searchResults.length})</TabsTrigger>
-                  {categories.map((cat) => (
-                    <TabsTrigger key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)} ({filterByCategory(cat).length})
-                    </TabsTrigger>
-                  ))}
+                  {categories.map((cat) => {
+                    const filteredResults = filterByCategory(cat);
+                    return (
+                      <TabsTrigger key={cat} value={cat}>
+                        {cat.charAt(0).toUpperCase() + cat.slice(1)} ({filteredResults.length})
+                      </TabsTrigger>
+                    );
+                  })}
                 </TabsList>
 
                 <TabsContent value="all" className="mt-6">
@@ -252,50 +255,53 @@ export function SearchClient() {
                   </div>
                 </TabsContent>
 
-                {categories.map((cat) => (
-                  <TabsContent key={cat} value={cat} className="mt-6">
-                    <div className="space-y-6">
-                      {filterByCategory(cat).map((post) => (
-                        <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                          <div className="space-y-4">
-                            <div className="relative aspect-video overflow-hidden rounded-lg">
-                              <Image
-                                src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
-                                alt={post.title}
-                                fill
-                                className="object-cover transition-transform group-hover:scale-105"
-                              />
-                            </div>
-                            <div className="p-4 space-y-2">
-                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                                {post.category}
-                              </span>
-                              <h3
-                                className="text-xl font-bold group-hover:text-primary transition-colors"
-                                dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                              />
-                              <p
-                                className="text-muted-foreground line-clamp-2"
-                                dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                              />
-                              <div className="flex items-center text-xs text-muted-foreground">
-                                <time dateTime={post.date}>
-                                  {new Date(post.date).toLocaleDateString("ko-KR", {
-                                    year: "numeric",
-                                    month: "long",
-                                    day: "numeric",
-                                  })}
-                                </time>
-                                <span className="mx-2">•</span>
-                                <span>{post.views?.toLocaleString() || 0} 조회</span>
+                {categories.map((cat) => {
+                  const filteredResults = filterByCategory(cat);
+                  return (
+                    <TabsContent key={cat} value={cat} className="mt-6">
+                      <div className="space-y-6">
+                        {filteredResults.map((post) => (
+                          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
+                            <div className="space-y-4">
+                              <div className="relative aspect-video overflow-hidden rounded-lg">
+                                <Image
+                                  src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                                  alt={post.title}
+                                  fill
+                                  className="object-cover transition-transform group-hover:scale-105"
+                                />
+                              </div>
+                              <div className="p-4 space-y-2">
+                                <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                                  {post.category}
+                                </span>
+                                <h3
+                                  className="text-xl font-bold group-hover:text-primary transition-colors"
+                                  dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
+                                />
+                                <p
+                                  className="text-muted-foreground line-clamp-2"
+                                  dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
+                                />
+                                <div className="flex items-center text-xs text-muted-foreground">
+                                  <time dateTime={post.date}>
+                                    {new Date(post.date).toLocaleDateString("ko-KR", {
+                                      year: "numeric",
+                                      month: "long",
+                                      day: "numeric",
+                                    })}
+                                  </time>
+                                  <span className="mx-2">•</span>
+                                  <span>{post.views?.toLocaleString() || 0} 조회</span>
+                                </div>
                               </div>
                             </div>
-                          </div>
-                        </Link>
-                      ))}
-                    </div>
-                  </TabsContent>
-                ))}
+                          </Link>
+                        ))}
+                      </div>
+                    </TabsContent>
+                  );
+                })}
               </Tabs>
             )}
 
