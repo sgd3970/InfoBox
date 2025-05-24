@@ -226,8 +226,13 @@ export function SearchClient() {
 
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
-                    {Array.isArray(filteredPosts) && filteredPosts.map((post) => (
-                      post && typeof post === 'object' && post.slug ? (
+                    {Array.isArray(filteredPosts) && filteredPosts.map((post) => {
+                      console.log('Search page post:', post);
+                      if (!post || !post.slug) {
+                        console.warn('Invalid post in search page:', post);
+                        return null;
+                      }
+                      return (
                         <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="space-y-4">
                             <div className="relative aspect-video overflow-hidden rounded-lg">
@@ -264,8 +269,8 @@ export function SearchClient() {
                             </div>
                           </div>
                         </Link>
-                      ) : null
-                    ))}
+                      )
+                    })}
                   </div>
                 </TabsContent>
 
