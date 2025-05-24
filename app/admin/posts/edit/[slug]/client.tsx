@@ -23,12 +23,11 @@ interface PostEditClientProps {
 export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const router = useRouter();
   const [post, setPost] = useState<Post>(initialPost);
-  const [categorySlug, setCategorySlug] = useState(initialPost.categorySlug || "");
-  const [categoryName, setCategoryName] = useState(initialPost.categoryName || "");
-  const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [images, setImages] = useState<File[]>([]);
   const [featuredImage, setFeaturedImage] = useState<File | null>(null);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [category, setCategory] = useState(initialPost.category);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
@@ -46,7 +45,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         
         const initialCategory = data.find((cat: Category) => cat.slug === initialPost.categorySlug);
         if (initialCategory) {
-          setCategoryName(initialCategory.name);
+          setCategory(initialCategory.slug);
         }
 
       } catch (error) {
@@ -62,14 +61,9 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     setPost({ ...post, [name]: value });
   };
 
-  const handleCategoryChange = (slug: string) => {
-    setCategorySlug(slug);
-    const selectedCategory = categories.find(c => c.slug === slug);
-    if (selectedCategory) {
-      setCategoryName(selectedCategory.name);
-    } else {
-      setCategoryName("");
-    }
+  const handleCategoryChange = (value: string) => {
+    setCategory(value);
+    setPost({ ...post, category: value });
   };
 
   const handleSelectChange = (name: string, value: string) => {
@@ -100,7 +94,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     e.preventDefault()
     setLoading(true)
 
-    if (!categorySlug) {
+    if (!category) {
       toast.error("카테고리를 선택해주세요.");
       setLoading(false)
       return
@@ -169,8 +163,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     const postData = {
       ...post,
       content: cleanContent,
-      categorySlug: categorySlug,
-      categoryName: categoryName,
+      category: category,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),
@@ -250,7 +243,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
-          <Select onValueChange={handleCategoryChange} value={categorySlug} disabled={categories.length === 0 || loading}>
+          <Select onValueChange={handleCategoryChange} value={category} disabled={categories.length === 0 || loading}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
@@ -262,7 +255,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
               ))}
             </SelectContent>
           </Select>
-          {categoryName && <p className="text-sm text-muted-foreground mt-1">선택된 카테고리: {categoryName}</p>}
         </div>
         <div>
           <label htmlFor="tags" className="block text-sm font-medium text-gray-700">태그 (쉼표로 구분)</label>
@@ -280,7 +272,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           <Checkbox id="featured" name="featured" checked={post.featured || false} onCheckedChange={(checked) => handleCheckboxChange('featured', !!checked)} />
           <label htmlFor="featured" className="text-sm font-medium leading-none">추천 포스트</label>
         </div>
-        <Button type="submit" disabled={loading || categories.length === 0 || !categorySlug || isUploadingImages}>
+        <Button type="submit" disabled={loading || categories.length === 0 || !category || isUploadingImages}>
           {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
           {isUploadingImages ? "이미지 업로드 중..." : "포스트 수정"}
         </Button>

@@ -71,7 +71,7 @@ export default function AdminPostsClient() {
   const filteredPosts = posts?.filter((post) => {
     if (!post) return false; // post가 undefined인 경우 필터링에서 제외
     const searchContent =
-      `${post.title} ${post.description} ${post.categoryName} ${post.tags?.join(" ") || ""}`.toLowerCase()
+      `${post.title} ${post.description} ${post.category} ${post.tags?.join(" ") || ""}`.toLowerCase()
     return searchContent.includes(searchTerm.toLowerCase())
   }) || [] // posts가 undefined인 경우 빈 배열 반환
 
@@ -122,7 +122,7 @@ export default function AdminPostsClient() {
             {filteredPosts.map((post) => (
               <TableRow key={post._id}>
                 <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell>{post.categoryName}</TableCell>
+                <TableCell>{post.category}</TableCell>
                 <TableCell>
                   {new Date(post.date).toLocaleDateString("ko-KR", {
                     year: "numeric",
@@ -136,7 +136,7 @@ export default function AdminPostsClient() {
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
                       <Link
-                        href={`/blog/${post.categorySlug}/${post.slug}`}
+                        href={`/blog/${post.category}/${post.slug}`}
                         target="_blank"
                         rel="noopener noreferrer"
                       >

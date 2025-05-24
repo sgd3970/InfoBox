@@ -116,8 +116,8 @@ export async function POST(request: Request) {
     }
     // ——————————————————————————————
 
-    // 필수 필드 검증: category 대신 categorySlug와 categoryName 검증
-    const requiredFields = ["title", "slug", "description", "content", "categorySlug", "categoryName"]
+    // 필수 필드 검증
+    const requiredFields = ["title", "slug", "description", "content", "category"]
     for (const field of requiredFields) {
       if (!postData[field]) {
         return NextResponse.json(
@@ -139,7 +139,6 @@ export async function POST(request: Request) {
     }
 
     // 포스트 데이터 준비 및 날짜 필드를 Date 객체로 명시적으로 변환
-    // category 대신 categorySlug와 categoryName을 저장
     const newPost = {
       ...postData,
       author: session.user.name || session.user.email || "관리자", // 세션에서 작성자 정보 가져오기
