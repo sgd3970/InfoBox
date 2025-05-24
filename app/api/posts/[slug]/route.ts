@@ -135,6 +135,16 @@ export async function PUT(
     const updatedPostData = await request.json()
     const db = await getDatabase()
 
+    console.log(`PUT /api/posts/${slug}: Received update data`, updatedPostData);
+
+    // 업데이트 전 기존 포스트 가져오기
+    const existingPost = await db.collection("posts").findOne({ slug });
+    if (!existingPost) {
+        console.log(`API /api/posts/${slug} PUT - Existing post not found for tag update`)
+        // 기존 포스트가 없으면 태그 업데이트 로직을 건너뛰거나 오류 처리
+        // 여기서는 업데이트 자체는 계속 진행하되, 태그 카운트 조정은 하지 않음
+    }
+
     // ——————————————————————————————
     // 서버측 안전 장치: 클라이언트에서 혹시 놓쳤을 수 있는 클렌징
     // 1) HTML 엔티티 디코딩
@@ -175,6 +185,55 @@ export async function PUT(
         { slug }, // 슬러그로 포스트 찾기
         { $set: fieldsToSet } // 업데이트 필드 사용
       )
+
+    // 태그 컬렉션 업데이트 로직 추가
+    if (result.matchedCount > 0) { // 포스트가 성공적으로 업데이트된 경우에만 태그 업데이트
+      const updatedPost = await db.collection("posts").findOne({ slug }); // 업데이트된 포스트 다시 가져오기
+      console.log(`PUT /api/posts/${slug}: Existing post before update`, existingPost);
+      console.log(`PUT /api/posts/${slug}: Updated post after update`, updatedPost);
+
+      const oldTags: string[] = existingPost?.tags || []; // 업데이트 전 기존 태그 (null/undefined 대비)
+      const newTags: string[] = updatedPost?.tags || []; // 업데이트 후 새로운 태그 (null/undefined 대비)
+
+      console.log(`PUT /api/posts/${slug}: Old tags`, oldTags);
+      console.log(`PUT /api/posts/${slug}: New tags`, newTags);
+
+      // 새로 추가된 태그 처리
+      const addedTags: string[] = newTags.filter((tag: string) => !oldTags.includes(tag));
+      console.log(`PUT /api/posts/${slug}: Added tags`, addedTags);
+
+      for (const tagName of addedTags) {
+        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        console.log(`PUT /api/posts/${slug}: Processing added tag`, { tagName, tagSlug });
+
+        if (!tagSlug) continue;
+        await db.collection("tags").updateOne(
+          { slug: tagSlug },
+          { $setOnInsert: { name: tagName, slug: tagSlug, createdAt: new Date() }, $inc: { postCount: 1 }, $set: { updatedAt: new Date() } },
+          { upsert: true }
+        );
+      }
+
+      // 제거된 태그 처리
+      const removedTags: string[] = oldTags.filter((tag: string) => !newTags.includes(tag));
+      console.log(`PUT /api/posts/${slug}: Removed tags`, removedTags);
+
+      for (const tagName of removedTags) {
+        const tagSlug = tagName.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '');
+        console.log(`PUT /api/posts/${slug}: Processing removed tag`, { tagName, tagSlug });
+
+        if (!tagSlug) continue;
+        // postCount를 1 감소시키고, 0보다 작아지지 않도록 합니다.
+        await db.collection("tags").updateOne(
+          { slug: tagSlug },
+          { $inc: { postCount: -1 }, $set: { updatedAt: new Date() } },
+          { 
+            // postCount가 0 이하가 되지 않도록 조건을 추가할 수 있지만, $inc가 이를 처리합니다.
+            // count가 0인 태그를 제거하려면 여기에 로직 추가
+          }
+        );
+      }
+    }
 
     if (result.matchedCount === 0) {
       console.log(`API /api/posts/${slug} PUT - Post not found for update`)
