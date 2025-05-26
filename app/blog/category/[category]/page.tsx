@@ -34,7 +34,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
   // 2. name으로 게시물 검색
   const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}&limit=1000`, { cache: 'no-store' });
   const searchData = searchRes.ok ? await searchRes.json() : { posts: [] };
-  const posts = searchData.posts || [];
+  const posts = searchData.posts || searchData.results || [];
 
   return (
     <div className="container py-10">
