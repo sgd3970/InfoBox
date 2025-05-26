@@ -31,8 +31,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     return <div>존재하지 않는 카테고리입니다.</div>;
   }
 
-  // 2. name으로 게시물 검색
-  const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}&limit=1000`, { cache: 'no-store' });
+  console.log("categoryInfo:", categoryInfo); // name이 '주거'인지 확인
+  const searchCategory = categoryInfo.name;
+  console.log("searchCategory (should be name):", searchCategory);
+  const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(searchCategory)}&limit=1000`, { cache: 'no-store' });
   const searchData = searchRes.ok ? await searchRes.json() : { posts: [] };
   const posts = searchData.posts || searchData.results || [];
 
