@@ -16,7 +16,7 @@ export async function GET() {
       categories.map(async (category) => {
         // 카테고리 이름으로 게시물 개수 계산 (대소문자 구분 없이)
         const postCount = await db.collection("posts").countDocuments({
-          category: { $regex: new RegExp(`^${category.name}$`, 'i') }
+          category: category.name // 정확한 카테고리 이름으로 매칭
         })
 
         return {

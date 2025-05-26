@@ -1,7 +1,7 @@
 import Link from "next/link"
 import Image from "next/image"
 import { notFound } from "next/navigation"
-import type { Post } from "@/lib/models"
+import type { Post, Category } from "@/lib/models"
 
 interface CategoryPageProps {
   params: {
@@ -11,7 +11,22 @@ interface CategoryPageProps {
 
 async function getCategoryPosts(category: string): Promise<Post[]> {
   try {
-    const searchRes = await fetch(`/api/search?category=${encodeURIComponent(category)}&limit=1000`, { cache: 'no-store' });
+    // 먼저 카테고리 정보를 가져와서 정확한 카테고리 이름을 찾습니다
+    const categoryRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, { cache: 'no-store' });
+    if (!categoryRes.ok) {
+      console.error("카테고리 정보 가져오기 실패", categoryRes.status);
+      return [];
+    }
+    const categories = await categoryRes.json();
+    const categoryInfo = categories.find((c: Category) => c.slug === category);
+    
+    if (!categoryInfo) {
+      console.error("카테고리를 찾을 수 없음:", category);
+      return [];
+    }
+
+    // 카테고리 이름으로 게시물 검색
+    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}&limit=1000`, { cache: 'no-store' });
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       return searchData.posts || [];
@@ -46,7 +61,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <div className="mb-8">
         <h1 className="text-4xl font-bold">{formattedCategory}</h1>
         <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
-        
       </div>
 
       {posts.length > 0 ? (
