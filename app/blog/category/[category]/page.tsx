@@ -9,37 +9,6 @@ interface CategoryPageProps {
   }
 }
 
-async function getCategoryPosts(category: string): Promise<Post[]> {
-  try {
-    // 먼저 카테고리 정보를 가져와서 정확한 카테고리 이름을 찾습니다
-    const categoryRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, { cache: 'no-store' });
-    if (!categoryRes.ok) {
-      console.error("카테고리 정보 가져오기 실패", categoryRes.status);
-      return [];
-    }
-    const categories = await categoryRes.json();
-    const categoryInfo = categories.find((c: Category) => c.slug === category);
-    
-    if (!categoryInfo) {
-      console.error("카테고리를 찾을 수 없음:", category);
-      return [];
-    }
-
-    // 카테고리 이름으로 게시물 검색
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}&limit=1000`, { cache: 'no-store' });
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      return searchData.posts || [];
-    } else {
-      console.error("카테고리별 포스트 목록 가져오기 실패", searchRes.status);
-      return [];
-    }
-  } catch (error) {
-    console.error("카테고리 포스트 가져오기 오류:", error)
-    return []
-  }
-}
-
 export async function generateMetadata({ params }: CategoryPageProps) {
   const category = decodeURIComponent(params.category)
   const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1)
@@ -51,21 +20,32 @@ export async function generateMetadata({ params }: CategoryPageProps) {
 }
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
-  const category = decodeURIComponent(params.category)
-  const formattedCategory = category.charAt(0).toUpperCase() + category.slice(1)
+  const slug = decodeURIComponent(params.category);
 
-  const posts = await getCategoryPosts(formattedCategory)
+  // 1. 카테고리 정보에서 slug로 정확히 찾기
+  const categoryRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/categories`, { cache: 'no-store' });
+  const categories = await categoryRes.json();
+  const categoryInfo = categories.find((c: Category) => c.slug === slug);
+
+  if (!categoryInfo) {
+    return <div>존재하지 않는 카테고리입니다.</div>;
+  }
+
+  // 2. name으로 게시물 검색
+  const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?category=${encodeURIComponent(categoryInfo.name)}&limit=1000`, { cache: 'no-store' });
+  const searchData = searchRes.ok ? await searchRes.json() : { posts: [] };
+  const posts = searchData.posts || [];
 
   return (
     <div className="container py-10">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">{formattedCategory}</h1>
+        <h1 className="text-4xl font-bold">{categoryInfo.name}</h1>
         <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
       </div>
 
       {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {posts.map((post) => (
+          {(posts as Post[]).map((post) => (
             <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
