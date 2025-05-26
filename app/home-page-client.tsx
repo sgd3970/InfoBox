@@ -131,7 +131,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
           {categories.map((category) => (
             <Link
               key={category.slug}
-              href={`/blog/category/${category.slug.toLowerCase()}`}
+              href={`/blog/category/${category.slug}`}
               className="group relative overflow-hidden rounded-lg bg-muted p-6 transition-colors hover:bg-muted/80"
             >
               <div className="flex flex-col justify-between h-full">
