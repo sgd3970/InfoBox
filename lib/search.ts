@@ -1,4 +1,5 @@
 import type { Post } from "./models"
+import { getDatabase } from "./mongodb"
 
 // contentlayer/generated에서 가져오는 allPosts 대신 사용할 모의 데이터
 // const allPosts: Post[] = [
