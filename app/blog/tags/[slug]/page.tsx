@@ -34,7 +34,9 @@ export default async function TagPage({ params }: TagPageProps) {
 
   return (
     <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-6">태그: {params.slug}</h1>
+      <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold mb-4 md:mb-6">
+        <span className="text-muted-foreground">태그:</span> {params.slug}
+      </h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
           <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
