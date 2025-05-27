@@ -28,7 +28,7 @@ export default function AboutPage() {
     <main className="relative min-h-screen bg-gradient-to-br from-indigo-400 to-purple-500 overflow-x-hidden">
       {/* Hero Section */}
       <section className="hero-section relative min-h-screen flex items-center">
-        <div className="absolute inset-0 w-full h-full animate-float opacity-60 pointer-events-none">
+        <div className="absolute inset-0 w-full h-full opacity-60 pointer-events-none" style={{ animation: 'float 20s ease-in-out infinite' }}>
           {/* SVG Grid BG */}
           <svg width="100%" height="100%" viewBox="0 0 100 100" className="w-full h-full">
             <defs>
@@ -41,12 +41,12 @@ export default function AboutPage() {
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="text-center text-white">
-            <h1 className="hero-title text-5xl md:text-7xl font-extrabold mb-4 drop-shadow-lg animate-slideInUp">InfoBox</h1>
-            <p className="hero-subtitle text-xl md:text-2xl mb-6 opacity-90 animate-slideInUp delay-200">대한민국 국민을 위한 필수 정보 허브</p>
-            <p className="hero-description text-base md:text-lg max-w-xl mx-auto mb-10 opacity-80 animate-slideInUp delay-400">
+            <h1 className="hero-title text-5xl md:text-7xl font-extrabold mb-4 drop-shadow-lg">InfoBox</h1>
+            <p className="hero-subtitle text-xl md:text-2xl mb-6 opacity-90">대한민국 국민을 위한 필수 정보 허브</p>
+            <p className="hero-description text-base md:text-lg max-w-xl mx-auto mb-10 opacity-80">
               정부지원금, 각종 혜택, 세금 신고 등 놓치기 쉬운 중요한 정보들을 한 곳에서 쉽고 빠르게 확인하세요. 복잡한 행정 절차도 InfoBox와 함께라면 간단해집니다.
             </p>
-            <a href="#features" className="cta-button inline-block bg-white/20 backdrop-blur px-10 py-4 rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all animate-slideInUp delay-600">지금 시작하기</a>
+            <a href="#features" className="cta-button inline-block bg-white/20 backdrop-blur px-10 py-4 rounded-full font-semibold text-lg border-2 border-white/30 hover:bg-white/30 transition-all">지금 시작하기</a>
           </div>
         </div>
         <div className="scroll-indicator absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce text-white text-3xl opacity-70">↓</div>
@@ -139,28 +139,6 @@ export default function AboutPage() {
           </div>
         </div>
       </section>
-
-      <style jsx global>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px) rotate(0deg); }
-          50% { transform: translateY(-20px) rotate(2deg); }
-        }
-        .animate-float { animation: float 20s ease-in-out infinite; }
-        @keyframes slideInUp {
-          from { opacity: 0; transform: translateY(30px); }
-          to { opacity: 1; transform: translateY(0); }
-        }
-        .animate-slideInUp { animation: slideInUp 1s ease-out; }
-        .animate-slideInUp.delay-200 { animation-delay: 0.2s; }
-        .animate-slideInUp.delay-400 { animation-delay: 0.4s; }
-        .animate-slideInUp.delay-600 { animation-delay: 0.6s; }
-        .scroll-indicator { animation: bounce 2s infinite; }
-        @keyframes bounce {
-          0%, 20%, 50%, 80%, 100% { transform: translateX(-50%) translateY(0); }
-          40% { transform: translateX(-50%) translateY(-10px); }
-          60% { transform: translateX(-50%) translateY(-5px); }
-        }
-      `}</style>
     </main>
   );
 }
