@@ -218,8 +218,8 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
               <div className="text-sm text-muted-foreground">로딩 중...</div>
             ) : tags.length > 0 ? (
               tags.map((tag) => (
-                <label key={tag.slug} className="flex items-center space-x-2 cursor-pointer">
-                  <Checkbox checked={selectedTags.includes(tag.slug)} onCheckedChange={() => toggleTag(tag.slug)} />
+                <label key={tag.name} className="flex items-center space-x-2 cursor-pointer">
+                  <Checkbox checked={selectedTags.includes(tag.name)} onCheckedChange={() => toggleTag(tag.name)} />
                   <span className="text-sm">{tag.name}</span>
                 </label>
               ))

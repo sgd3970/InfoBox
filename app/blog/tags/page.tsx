@@ -32,7 +32,7 @@ export default async function TagsPage() {
     const searchRes = await fetch(url, {})
     if (searchRes.ok) {
       const searchData = await searchRes.json();
-      allPosts = searchData.posts || [];
+      allPosts = searchData.results || [];
     } else {
       console.error("포스트 목록 가져오기 실패", searchRes.status);
     }
