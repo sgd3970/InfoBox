@@ -68,8 +68,6 @@ export default async function TagsPage() {
 
   return (
     <div className="container py-10">
-      <h1 className="text-4xl font-bold mb-8">태그</h1>
-
       <Suspense
         fallback={
           <div className="flex flex-wrap gap-4">
