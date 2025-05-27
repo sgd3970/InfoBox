@@ -46,10 +46,10 @@ export function CategoriesContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+    <div className="min-h-screen bg-background">
       <div className="container py-12">
         <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+          <h1 className="text-4xl font-bold mb-4">
             카테고리
           </h1>
           <p className="text-muted-foreground text-lg">
@@ -65,9 +65,9 @@ export function CategoriesContent() {
               className="block transform transition-all duration-300 hover:scale-105"
               style={{ animationDelay: `${index * 100}ms` }}
             >
-              <Card className="h-full bg-white/80 backdrop-blur-sm border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+              <Card className="h-full bg-card hover:bg-accent/5 transition-all duration-300 hover:shadow-lg">
                 <CardHeader>
-                  <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                  <CardTitle className="text-2xl font-bold">
                     {category.name}
                   </CardTitle>
                   {category.description && (
@@ -80,7 +80,7 @@ export function CategoriesContent() {
                   {'postCount' in category && category.postCount !== undefined && (
                     <div className="flex items-center gap-2 text-muted-foreground">
                       <span className="text-sm font-medium">포스트 수:</span>
-                      <span className="text-lg font-bold text-primary">{category.postCount}</span>
+                      <span className="text-lg font-bold">{category.postCount}</span>
                     </div>
                   )}
                 </CardContent>
