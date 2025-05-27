@@ -20,7 +20,7 @@ export function CategoriesContent() {
         setCategories(data);
       } catch (error) {
         console.error('카테고리 데이터 가져오기 오류:', error);
-        setCategories([]); // 오류 발생 시 빈 배열로 설정하여 UI가 깨지지 않도록 처리
+        setCategories([]);
       } finally {
         setLoading(false);
       }
@@ -46,26 +46,48 @@ export function CategoriesContent() {
   }
 
   return (
-    <div className="container py-8">
-      <h1 className="text-2xl font-bold mb-6">카테고리</h1>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {categories.map((category) => (
-          <Link key={category.slug} href={`/blog/category/${category.slug}`} className="block">
-            <Card className="hover:shadow-md transition-shadow">
-              <CardHeader>
-                <CardTitle>{category.name}</CardTitle>
-                {/* 카테고리 설명 및 포스트 수 표시 추가 */}
-                {category.description && <CardDescription>{category.description}</CardDescription>}
-              </CardHeader>
-              <CardContent>
-                {/* postCount가 있다면 표시 */}
-                {'postCount' in category && category.postCount !== undefined && (
-                    <p className="text-sm text-muted-foreground">포스트 수: {category.postCount}</p>
-                )}
-              </CardContent>
-            </Card>
-          </Link>
-        ))}
+    <div className="min-h-screen bg-gradient-to-br from-indigo-50 to-purple-50">
+      <div className="container py-12">
+        <div className="text-center mb-12">
+          <h1 className="text-4xl font-bold mb-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            카테고리
+          </h1>
+          <p className="text-muted-foreground text-lg">
+            관심 있는 주제를 선택하여 관련 콘텐츠를 탐색하세요
+          </p>
+        </div>
+
+        <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {categories.map((category, index) => (
+            <Link 
+              key={category.slug} 
+              href={`/blog/category/${category.slug}`} 
+              className="block transform transition-all duration-300 hover:scale-105"
+              style={{ animationDelay: `${index * 100}ms` }}
+            >
+              <Card className="h-full bg-white/80 backdrop-blur-sm border-2 hover:border-primary/50 transition-all duration-300 hover:shadow-xl">
+                <CardHeader>
+                  <CardTitle className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+                    {category.name}
+                  </CardTitle>
+                  {category.description && (
+                    <CardDescription className="text-base mt-2">
+                      {category.description}
+                    </CardDescription>
+                  )}
+                </CardHeader>
+                <CardContent>
+                  {'postCount' in category && category.postCount !== undefined && (
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <span className="text-sm font-medium">포스트 수:</span>
+                      <span className="text-lg font-bold text-primary">{category.postCount}</span>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </Link>
+          ))}
+        </div>
       </div>
     </div>
   );
