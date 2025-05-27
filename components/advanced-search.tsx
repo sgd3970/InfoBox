@@ -145,7 +145,7 @@ export function AdvancedSearch({ className }: AdvancedSearchProps) {
             <SelectContent>
               <SelectItem value="all">모든 카테고리</SelectItem>
               {categories.map((cat) => (
-                <SelectItem key={cat.slug} value={cat.slug}>
+                <SelectItem key={cat.slug} value={cat.name}>
                   {cat.name}
                 </SelectItem>
               ))}
