@@ -16,23 +16,10 @@ interface GoogleAdProps {
 
 export const GoogleAd = ({ slot, style, className }: GoogleAdProps) => {
   const adRef = useRef<HTMLDivElement>(null)
-  const [isMobile, setIsMobile] = useState(false)
   const [isAdLoaded, setIsAdLoaded] = useState(false)
 
   useEffect(() => {
-    // 모바일 환경 감지
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
-    
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
-
-  useEffect(() => {
-    if (!isMobile && !isAdLoaded && typeof window !== "undefined" && window.adsbygoogle && adRef.current) {
+    if (!isAdLoaded && typeof window !== "undefined" && window.adsbygoogle && adRef.current) {
       try {
         window.adsbygoogle.push({})
         setIsAdLoaded(true)
@@ -40,12 +27,7 @@ export const GoogleAd = ({ slot, style, className }: GoogleAdProps) => {
         console.error("AdSense 로딩 실패", e)
       }
     }
-  }, [slot, isMobile, isAdLoaded])
-
-  // 모바일 환경에서는 광고를 표시하지 않음
-  if (isMobile) {
-    return null
-  }
+  }, [slot, isAdLoaded])
 
   return (
     <div 
