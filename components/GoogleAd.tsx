@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, useState } from "react"
 
 declare global {
   interface Window {
@@ -16,25 +16,55 @@ interface GoogleAdProps {
 
 export const GoogleAd = ({ slot, style, className }: GoogleAdProps) => {
   const adRef = useRef<HTMLDivElement>(null)
+  const [isMobile, setIsMobile] = useState(false)
+  const [isAdLoaded, setIsAdLoaded] = useState(false)
 
   useEffect(() => {
-    try {
-      // window.adsbygoogle가 로드되었는지 확인 후 push
-      if (typeof window !== "undefined" && window.adsbygoogle && adRef.current) {
-        // 기존 광고 초기화 코드는 layout.tsx로 옮겼으므로, 여기서는 push만 호출
-        // (window.adsbygoogle = window.adsbygoogle || []).push({}); // 이 부분은 layout.tsx에서 처리
-        window.adsbygoogle.push({});
-      }
-    } catch (e) {
-      console.error("AdSense 로딩 실패", e)
+    // 모바일 환경 감지
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768)
     }
-  }, [slot]) // slot이 변경될 때마다 useEffect 재실행
+    
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+
+  useEffect(() => {
+    if (!isMobile && !isAdLoaded && typeof window !== "undefined" && window.adsbygoogle && adRef.current) {
+      try {
+        window.adsbygoogle.push({})
+        setIsAdLoaded(true)
+      } catch (e) {
+        console.error("AdSense 로딩 실패", e)
+      }
+    }
+  }, [slot, isMobile, isAdLoaded])
+
+  // 모바일 환경에서는 광고를 표시하지 않음
+  if (isMobile) {
+    return null
+  }
 
   return (
-    <div style={{ textAlign: "center", minHeight: 100, ...style }} ref={adRef} className={className}>
+    <div 
+      style={{ 
+        textAlign: "center", 
+        minHeight: 100,
+        margin: "1rem 0",
+        ...style 
+      }} 
+      ref={adRef} 
+      className={className}
+    >
       <ins
         className="adsbygoogle"
-        style={{ display: "block" }}
+        style={{ 
+          display: "block",
+          width: "100%",
+          height: "100%"
+        }}
         data-ad-client="ca-pub-8478624096187058"
         data-ad-slot={slot}
         data-ad-format="auto"
