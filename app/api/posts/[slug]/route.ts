@@ -3,6 +3,7 @@ import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import type { Db } from "mongodb"
 
 export const dynamic = "force-dynamic"
 
@@ -49,6 +50,26 @@ export async function GET(
       { error: "포스트를 가져오는 중 오류가 발생했습니다." },
       { status: 500 }
     )
+  }
+}
+
+// --- [추가] 태그 동기화 유틸 함수 ---
+async function syncTagsCollection(db: Db, allTags: string[]) {
+  // 현재 tags 컬렉션의 모든 태그 이름을 가져옴
+  const existingTags = await db.collection("tags").find({}, { projection: { name: 1 } }).toArray();
+  const existingTagNames = new Set((existingTags as any[]).map((t) => t.name));
+  const allTagSet = new Set(allTags);
+
+  // 추가해야 할 태그: posts.tags에는 있지만 tags 컬렉션에는 없는 것
+  const tagsToAdd = Array.from(allTagSet).filter((tag) => !existingTagNames.has(tag));
+  if (tagsToAdd.length > 0) {
+    await db.collection("tags").insertMany(tagsToAdd.map((tag) => ({ name: tag })));
+  }
+
+  // 삭제해야 할 태그: tags 컬렉션에는 있지만 posts.tags에는 없는 것
+  const tagsToRemove = Array.from(existingTagNames).filter((tag) => !allTagSet.has(tag));
+  if (tagsToRemove.length > 0) {
+    await db.collection("tags").deleteMany({ name: { $in: tagsToRemove } });
   }
 }
 
@@ -101,6 +122,11 @@ export async function POST(request: Request) {
 
     // 데이터베이스에 포스트 삽입
     const result = await db.collection("posts").insertOne(newPost)
+
+    // [추가] 태그 동기화
+    const allPosts = await db.collection("posts").find({}, { projection: { tags: 1 } }).toArray();
+    const allTags = Array.from(new Set(allPosts.flatMap(p => p.tags || [])));
+    await syncTagsCollection(db, allTags);
 
     console.log("API /api/posts POST - Post created successfully")
     return NextResponse.json(
@@ -170,6 +196,11 @@ export async function PUT(
       return NextResponse.json({ error: "수정할 포스트를 찾을 수 없습니다." }, { status: 404 })
     }
 
+    // [추가] 태그 동기화
+    const allPostsPut = await db.collection("posts").find({}, { projection: { tags: 1 } }).toArray();
+    const allTagsPut = Array.from(new Set(allPostsPut.flatMap(p => p.tags || [])));
+    await syncTagsCollection(db, allTagsPut);
+
     console.log(`API /api/posts/${slug} PUT - Post updated successfully`)
     return NextResponse.json({ message: "포스트가 성공적으로 수정되었습니다." })
   } catch (error) {
@@ -215,37 +246,12 @@ export async function DELETE(
       return NextResponse.json({ error: "포스트 삭제에 실패했습니다." }, { status: 500 })
     }
 
+    // 포스트 삭제 후 태그 동기화
+    const allPostsDel = await db.collection("posts").find({}, { projection: { tags: 1 } }).toArray();
+    const allTagsDel = Array.from(new Set(allPostsDel.flatMap(p => p.tags || [])));
+    await syncTagsCollection(db, allTagsDel);
+
     console.log(`API /api/posts/${slug} DELETE - Post deleted successfully`)
-
-    // 태그 정리 로직
-    if (postToDelete.tags && Array.isArray(postToDelete.tags) && postToDelete.tags.length > 0) {
-      // 해당 태그를 사용하는 다른 포스트 찾기
-      const postsUsingTags = await db.collection("posts").find({
-        _id: { $ne: postToDelete._id },
-        tags: { $in: postToDelete.tags }
-      }).toArray()
-
-      // 다른 포스트에서 사용되지 않는 태그 찾기
-      const tagsUsedByOtherPosts = new Set<string>()
-      postsUsingTags.forEach(post => {
-        if (post.tags && Array.isArray(post.tags)) {
-          post.tags.forEach(tag => tagsUsedByOtherPosts.add(tag.toString()))
-        }
-      })
-
-      // 사용되지 않는 태그 찾기
-      const orphanedTags = postToDelete.tags.filter(
-        tag => !tagsUsedByOtherPosts.has(tag.toString())
-      )
-
-      // 사용되지 않는 태그 삭제
-      if (orphanedTags.length > 0) {
-        await db.collection("tags").deleteMany({
-          _id: { $in: orphanedTags }
-        })
-      }
-    }
-
     return NextResponse.json({ message: "포스트가 성공적으로 삭제되었습니다." })
   } catch (error) {
     console.error("API /api/posts/[slug] DELETE 오류:", error)
