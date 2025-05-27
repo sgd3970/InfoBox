@@ -26,38 +26,43 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       {/* 히어로 섹션 */}
       <section className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary/20 via-primary/5 to-background mb-16">
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(to_bottom,white,transparent)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-primary/10 via-transparent to-background/80" />
         <div className="relative grid lg:grid-cols-2 gap-8 items-center p-8 lg:p-12">
           <div className="space-y-6">
-            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight animate-fade-in">
               최신 정보와 트렌드를 <br />
-              <span className="text-primary">InfoBox</span>에서 만나보세요
+              <span className="text-primary relative">
+                InfoBox
+                <span className="absolute -bottom-2 left-0 w-full h-1 bg-primary/20 rounded-full" />
+              </span>
+              에서 만나보세요
             </h1>
-            <p className="text-xl text-muted-foreground">
+            <p className="text-xl text-muted-foreground animate-fade-in delay-200">
               기술, 디자인, 비즈니스 등 다양한 분야의 유용한 정보를 제공하는 블로그 플랫폼입니다.
             </p>
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex flex-col sm:flex-row gap-4 animate-fade-in delay-300">
               <Link
                 href="/blog"
-                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-all hover:bg-primary/90 hover:scale-105 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 블로그 보기
               </Link>
               <Link
                 href="/about"
-                className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-all hover:bg-accent hover:text-accent-foreground hover:scale-105 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
               >
                 소개 페이지
               </Link>
             </div>
           </div>
           <div className="relative aspect-square w-full max-w-md mx-auto lg:mx-0">
-            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-primary-foreground opacity-20 blur-3xl" />
+            <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-primary to-primary-foreground opacity-20 blur-3xl animate-pulse" />
             <Image
               src={theme === 'dark' ? '/darkmode.png' : '/lightmode.png'}
               alt="InfoBox 로고"
               width={600}
               height={600}
-              className="relative z-10"
+              className="relative z-10 animate-float"
               priority
             />
           </div>
@@ -67,8 +72,11 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       {/* 최신 포스트 섹션 */}
       <section className="mb-16">
         <div className="flex justify-between items-center mb-8">
-          <h2 className="text-3xl font-bold">최신 포스트</h2>
-          <Link href="/blog" className="text-primary hover:underline font-medium flex items-center gap-1">
+          <h2 className="text-3xl font-bold relative">
+            최신 포스트
+            <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-primary/20 rounded-full" />
+          </h2>
+          <Link href="/blog" className="text-primary hover:text-primary/80 font-medium flex items-center gap-1 transition-colors">
             모두 보기
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -80,6 +88,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="transition-transform group-hover:translate-x-1"
             >
               <path d="m9 18 6-6-6-6" />
             </svg>
@@ -94,24 +103,23 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                     <div className="relative overflow-hidden rounded-lg">
                       <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
                     </div>
-                    <div className="space-y-2"></div>
-                    <p className="text-muted-foreground text-sm line-clamp-2 break-words min-w-0"></p>
                   </div>
                 </div>
               )}
               <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full min-w-0">
                 <div className="space-y-4 w-full">
-                  <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                     <Image
                       src={post.image || "/placeholder.svg"}
                       alt={post.title}
                       width={400}
                       height={200}
-                      className="object-cover transition-transform group-hover:scale-105"
+                      className="object-cover transition-all duration-300 group-hover:scale-110"
                     />
                   </div>
                   <div className="space-y-2">
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                       {post.category}
                     </span>
                     <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
@@ -126,16 +134,20 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
 
       {/* 카테고리 섹션 */}
       <section className="mb-16">
-        <h2 className="text-3xl font-bold mb-8">카테고리</h2>
+        <h2 className="text-3xl font-bold mb-8 relative">
+          카테고리
+          <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-primary/20 rounded-full" />
+        </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {categories.map((category) => (
             <Link
               key={category.slug}
               href={`/blog/category/${category.slug}`}
-              className="group relative overflow-hidden rounded-lg bg-muted p-6 transition-colors hover:bg-muted/80"
+              className="group relative overflow-hidden rounded-lg bg-muted p-6 transition-all hover:bg-muted/80 hover:scale-105"
             >
-              <div className="flex flex-col justify-between h-full">
-                <h3 className="text-xl font-bold mb-2">{category.name}</h3>
+              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+              <div className="relative flex flex-col justify-between h-full">
+                <h3 className="text-xl font-bold mb-2 group-hover:text-primary transition-colors">{category.name}</h3>
                 <p className="text-muted-foreground">{category.postCount}개의 포스트</p>
               </div>
             </Link>
@@ -147,6 +159,25 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
       <div className="container mx-auto px-4 flex justify-center mb-16">
         <GoogleAd slot="8571709253" className="h-auto min-h-[100px] lg:h-[150px] w-full" />
       </div>
+
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% { transform: translateY(0px); }
+          50% { transform: translateY(-10px); }
+        }
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out forwards;
+        }
+        .delay-200 { animation-delay: 200ms; }
+        .delay-300 { animation-delay: 300ms; }
+      `}</style>
     </div>
   )
 } 

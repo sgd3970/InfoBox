@@ -33,27 +33,34 @@ export default async function BlogPage() {
 
   return (
     <div className="container py-10">
-      <h1 className="text-4xl font-bold mb-8">블로그</h1>
+      <h1 className="text-4xl font-bold mb-8 relative">
+        블로그
+        <span className="absolute -bottom-2 left-0 w-1/3 h-1 bg-primary/20 rounded-full" />
+      </h1>
 
       {/* 주요 게시물 */}
       {featuredPost && (
         <div className="mb-12">
-          <h2 className="text-2xl font-semibold mb-6">주요 게시물</h2>
+          <h2 className="text-2xl font-semibold mb-6 relative">
+            주요 게시물
+            <span className="absolute -bottom-1 left-0 w-1/4 h-0.5 bg-primary/20 rounded-full" />
+          </h2>
           <Link href={`/blog/${featuredPost.category.toLowerCase()}/${featuredPost.slug}`} className="group">
             <div className="grid md:grid-cols-2 gap-6 items-center">
-              <div className="relative aspect-video overflow-hidden rounded-lg">
+              <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <Image
                   src={featuredPost.featuredImage || featuredPost.image || "/placeholder.svg?height=400&width=800"}
                   alt={featuredPost.title}
                   width={800}
                   height={400}
-                  className="object-cover transition-transform group-hover:scale-105"
+                  className="object-cover transition-all duration-300 group-hover:scale-110"
                   priority
                 />
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                     {featuredPost.category}
                   </span>
                   <h3 className="text-3xl font-bold group-hover:text-primary transition-colors">
@@ -78,22 +85,26 @@ export default async function BlogPage() {
 
       {/* 최근 게시물 */}
       <div>
-        <h2 className="text-2xl font-semibold mb-6">최근 게시물</h2>
+        <h2 className="text-2xl font-semibold mb-6 relative">
+          최근 게시물
+          <span className="absolute -bottom-1 left-0 w-1/4 h-0.5 bg-primary/20 rounded-full" />
+        </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {recentPosts.map((post) => (
             <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
               <div className="space-y-4">
-                <div className="relative aspect-video overflow-hidden rounded-lg">
+                <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                   <Image
                     src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
                     alt={post.title}
                     width={400}
                     height={200}
-                    className="object-cover transition-transform group-hover:scale-105"
+                    className="object-cover transition-all duration-300 group-hover:scale-110"
                   />
                 </div>
                 <div className="space-y-2">
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
                     {post.category}
                   </span>
                   <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
@@ -113,6 +124,16 @@ export default async function BlogPage() {
           ))}
         </div>
       </div>
+
+      <style jsx global>{`
+        @keyframes fade-in {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+          animation: fade-in 0.5s ease-out forwards;
+        }
+      `}</style>
     </div>
   )
 }
