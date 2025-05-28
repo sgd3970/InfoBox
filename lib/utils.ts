@@ -207,8 +207,7 @@ export function cleanHtml(input: string): string {
     exclusiveFilter: (frame: { tag: string; text: string }) => frame.tag === 'p' && !frame.text.trim(),
     parser: {
       lowerCaseTags: true,
-      recognizeSelfClosing: true,
-      decodeEntities: false
+      recognizeSelfClosing: true
     }
   });
   console.log('[cleanHtml] after sanitizeHtml:', html);
