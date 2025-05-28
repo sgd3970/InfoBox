@@ -172,7 +172,17 @@ export function cleanHtml(input: string): string {
   );
   // 0b) 블록 레벨 닫힘 태그(</div>, </table> 등) 직후의 잘못된 <p> 제거
   html = html.replace(
-    /(<\/(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)>)\s*<p>/gi,
+    /(<\/(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)>)[ \t\r\n]*<p>/gi,
+    '$1'
+  );
+  // 0c) 블록 레벨 열림 태그(<div>, <table> 등) 직후의 잘못된 </p> 제거
+  html = html.replace(
+    /(<(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)[^>]*>)[ \t\r\n]*<\/p>/gi,
+    '$1'
+  );
+  // 0d) 블록 레벨 닫힘 태그(</div>, </table> 등) 직전의 잘못된 <p> 제거
+  html = html.replace(
+    /<p>[ \t\r\n]*(<\/(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)>)/gi,
     '$1'
   );
   console.log('[cleanHtml] after removing incorrect p tags:', html);
