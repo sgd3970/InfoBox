@@ -10,6 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
 import Editor from '@/components/Editor';
+import he from 'he';
+import { cleanHtml } from '@/lib/utils';
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -137,7 +139,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
 
     const postData = {
       ...post,
-      content: post.content,
+      content: cleanHtml(he.decode(post.content)),
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),

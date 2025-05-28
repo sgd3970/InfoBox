@@ -13,6 +13,7 @@ import type { Category } from "@/lib/models"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cleanHtml } from '@/lib/utils';
 import Editor from '@/components/Editor';
+import he from 'he';
 
 interface AdminNewPostClientProps {}
 
@@ -109,7 +110,9 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       setIsUploadingImages(false);
     }
 
-    const cleanedHtml = cleanHtml(content);
+    // 저장 직전
+    const decoded = he.decode(content);
+    const cleanedHtml = cleanHtml(decoded);
     const postData = {
       title,
       slug,
