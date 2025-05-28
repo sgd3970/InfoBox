@@ -5,6 +5,7 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import type { Db } from "mongodb"
 import sanitizeHtml from "sanitize-html"
+import { cleanHtml } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
@@ -192,42 +193,63 @@ export async function PUT(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
-  const { slug } = params
-  console.log(`API /api/posts/${slug} PUT - Attempting to update post with slug: ${slug}`)
-
   const session = await getServerSession(authOptions)
 
   if (!session || session.user?.role !== "admin") {
-    console.log(`API /api/posts/${slug} PUT - Authentication failed or not admin`)
+    console.log("API /api/posts/[slug] PUT - Authentication failed or not admin")
     return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 })
   }
 
   try {
-    const updatedPostData = await request.json()
+    const postData = await request.json()
     const db = await getDatabase()
 
     // HTML 정제
-    if (updatedPostData.content) {
-      updatedPostData.content = cleanHtml(updatedPostData.content)
+    if (typeof postData.content === "string") {
+      postData.content = cleanHtml(postData.content)
     }
 
-    // MongoDB에서 _id는 변경하지 않으므로 업데이트 데이터에서 제거
-    const { _id, ...fieldsToUpdate } = updatedPostData;
+    // 필수 필드 검증
+    const requiredFields = ["title", "slug", "description", "content", "category"]
+    for (const field of requiredFields) {
+      if (!postData[field]) {
+        return NextResponse.json(
+          { error: `${field} 필드는 필수입니다.` },
+          { status: 400 }
+        )
+      }
+    }
 
-    // 날짜 필드를 업데이트할 경우 Date 객체로 변환 (클라이언트에서 문자열로 보낼 경우 대비)
-    if (fieldsToUpdate.date) fieldsToUpdate.date = new Date(fieldsToUpdate.date);
-    fieldsToUpdate.updatedAt = new Date(); // 업데이트 시간은 항상 현재 시간으로 설정 (Date 객체)
-
-    const result = await db
-      .collection("posts")
-      .updateOne(
-        { slug }, // 슬러그로 포스트 찾기
-        { $set: fieldsToUpdate } // _id를 제외한 필드 업데이트
+    // 슬러그 중복 검사 (자기 자신 제외)
+    const existingPost = await db.collection("posts").findOne({
+      slug: postData.slug,
+      _id: { $ne: postData._id },
+    })
+    if (existingPost) {
+      return NextResponse.json(
+        { error: `슬러그 '${postData.slug}'는 이미 존재합니다.` },
+        { status: 400 }
       )
+    }
+
+    // 포스트 데이터 준비 및 날짜 필드를 Date 객체로 명시적으로 변환
+    const updatedPost = {
+      ...postData,
+      updatedAt: new Date(), // 업데이트 시간 (Date 객체)
+      tags: Array.isArray(postData.tags) ? postData.tags : [], // tags가 배열인지 확인
+    }
+
+    // 데이터베이스에서 포스트 업데이트
+    const result = await db.collection("posts").updateOne(
+      { _id: postData._id },
+      { $set: updatedPost }
+    )
 
     if (result.matchedCount === 0) {
-      console.log(`API /api/posts/${slug} PUT - Post not found for update`)
-      return NextResponse.json({ error: "수정할 포스트를 찾을 수 없습니다." }, { status: 404 })
+      return NextResponse.json(
+        { error: "포스트를 찾을 수 없습니다." },
+        { status: 404 }
+      )
     }
 
     // [추가] 태그 동기화
@@ -235,12 +257,15 @@ export async function PUT(
     const allTagsPut = Array.from(new Set(allPostsPut.flatMap(p => p.tags || [])));
     await syncTagsCollection(db, allTagsPut);
 
-    console.log(`API /api/posts/${slug} PUT - Post updated successfully`)
-    return NextResponse.json({ message: "포스트가 성공적으로 수정되었습니다." })
+    console.log("API /api/posts/[slug] PUT - Post updated successfully")
+    return NextResponse.json(
+      { message: "포스트가 성공적으로 업데이트되었습니다." },
+      { status: 200 }
+    )
   } catch (error) {
     console.error("API /api/posts/[slug] PUT 오류:", error)
     return NextResponse.json(
-      { error: "포스트 수정 중 오류가 발생했습니다." },
+      { error: "포스트 업데이트 중 오류가 발생했습니다." },
       { status: 500 }
     )
   }

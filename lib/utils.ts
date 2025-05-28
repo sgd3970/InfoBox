@@ -50,6 +50,14 @@ export function cleanHtml(html: string): string {
     .replace(/<p>\s*(<(?:h[1-6]|div|table|ul|ol|blockquote|pre)[\s\S]+?>)\s*<\/p>/g, '$1')
     .replace(/(<\/(?:h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1');
 
+  // 5. 테이블 관련 태그 정리
+  safe = safe
+    .replace(/<p>(\s*<(?:td|th)[^>]*>[\s\S]*?<\/(?:td|th)>)<\/p>/g, '$1')
+    .replace(/<p>(\s*<(?:tr|thead|tbody|tfoot)[^>]*>[\s\S]*?<\/(?:tr|thead|tbody|tfoot)>)<\/p>/g, '$1');
+
+  // 6. 연속된 줄바꿈 제거
+  safe = safe.replace(/\n\s*\n/g, '\n');
+
   return safe.trim();
 }
 

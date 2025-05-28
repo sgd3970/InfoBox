@@ -4,6 +4,8 @@ import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import sanitizeHtml from "sanitize-html"
+import { prisma } from '@/lib/prisma'
+import { cleanHtml } from '@/lib/utils'
 
 export const dynamic = "force-dynamic"
 
@@ -132,7 +134,7 @@ export async function POST(request: Request) {
   try {
     const postData = await request.json()
     const db = await getDatabase()
-
+    
     // HTML 정제
     if (typeof postData.content === "string") {
       postData.content = cleanHtml(postData.content)
@@ -194,7 +196,7 @@ export async function PUT(
   { params }: { params: { slug: string } }
 ) {
   // 이 PUT 함수는 /api/posts/[slug]/route.ts로 이동되었거나 사용되지 않음
-    return NextResponse.json({ error: "메소드가 허용되지 않습니다." }, { status: 405 });
+  return NextResponse.json({ error: "메소드가 허용되지 않습니다." }, { status: 405 });
 }
 
 export async function DELETE(request: Request) {
