@@ -1,6 +1,9 @@
 import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import sanitizeHtml from 'sanitize-html';
+import { parseDocument } from 'htmlparser2';
+import { Element } from 'domhandler';
+import { render } from 'dom-serializer';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -58,7 +61,8 @@ export function cleanHtml(html: string): string {
   // 6. 연속된 줄바꿈 제거
   safe = safe.replace(/\n\s*\n/g, '\n');
 
-  return safe.trim();
+  // 마지막에 잘못된 p 언랩
+  return cleanBrokenP(safe)
 }
 
 export function cleanQuillHtml(html: string) {
@@ -70,4 +74,32 @@ export function cleanQuillHtml(html: string) {
     // 여러 연속 p 태그 정리
     .replace(/(<\/p>\s*){2,}/g, '</p>')
     .trim()
+}
+
+// <p><li>...</li></p> → <li>...</li> 등 잘못된 p 언랩
+export function cleanBrokenP(html: string): string {
+  const dom = parseDocument(html)
+
+  function unwrapInvalidP(elem: Element) {
+    if (elem.name === 'p' && elem.children.length === 1) {
+      const child = elem.children[0]
+      if (
+        child.type === 'tag' &&
+        ['li', 'th', 'td'].includes(child.name)
+      ) {
+        Object.assign(elem, child) // unwrap
+      }
+    }
+    if ('children' in elem && Array.isArray(elem.children)) {
+      elem.children.forEach((c: any) => {
+        if (c.type === 'tag') unwrapInvalidP(c)
+      })
+    }
+  }
+
+  dom.children.forEach((c: any) => {
+    if (c.type === 'tag') unwrapInvalidP(c)
+  })
+
+  return render(dom)
 }
