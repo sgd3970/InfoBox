@@ -38,9 +38,22 @@ function unwrapPInTable(html: string): string {
   );
 }
 
+// <p><tr>...</tr></p> 등 테이블 태그를 먼저 언랩
+function unwrapPTableTags(html: string): string {
+  // <p><tr>...</tr></p> → <tr>...</tr>
+  html = html.replace(/<p>\s*(<(tr|thead|tbody|tfoot)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+  // <p><th>...</th></p> → <th>...</th>
+  html = html.replace(/<p>\s*(<(th|td)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+  return html;
+}
+
 export function cleanHtml(html: string): string {
+  // 0. sanitize-html 전에 <p>로 감싸진 테이블 태그 언랩
+  let preUnwrap = unwrapPTableTags(html);
+  console.log('[cleanHtml] after unwrapPTableTags:', preUnwrap);
+
   // 1. 엔티티 복원
-  const decoded = decodeHtmlEntities(html);
+  const decoded = decodeHtmlEntities(preUnwrap);
   console.log('[cleanHtml] decoded:', decoded);
 
   // 2. sanitize-html로 1차 정제
