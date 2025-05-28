@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -11,15 +11,8 @@ import { useToast } from "@/components/ui/use-toast"
 import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
-import dynamic from 'next/dynamic'
-import { Editor as ToastEditor } from '@toast-ui/react-editor';
-import '@toast-ui/editor/dist/toastui-editor.css';
 import { cleanHtml } from '@/lib/utils';
 import LexicalEditor from '@/components/LexicalEditor';
-
-// ReactQuill 에디터를 클라이언트 사이드에서만 로드
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
-import 'react-quill/dist/quill.snow.css'
 
 interface AdminNewPostClientProps {}
 
@@ -30,11 +23,11 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState("")
-  const [images, setImages] = useState<File[]>([]) // 본문 이미지 파일 목록
-  const [featuredImage, setFeaturedImage] = useState<File | null>(null) // 대표 이미지 파일
-  const [isUploadingImages, setIsUploadingImages] = useState(false) // 이미지 업로드 중 상태
-  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]) // 업로드된 본문 이미지 URL 목록
-  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null) // 업로드된 대표 이미지 URL
+  const [images, setImages] = useState<File[]>([])
+  const [featuredImage, setFeaturedImage] = useState<File | null>(null)
+  const [isUploadingImages, setIsUploadingImages] = useState(false)
+  const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
+  const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
@@ -116,8 +109,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       setIsUploadingImages(false);
     }
 
-    const html = (editorRef.current as any).getInstance().getHTML();
-    const cleanedHtml = cleanHtml(html);
+    const cleanedHtml = cleanHtml(content);
     const postData = {
       title,
       slug,

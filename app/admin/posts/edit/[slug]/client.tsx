@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,11 +9,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
-import dynamic from 'next/dynamic';
-import '@toast-ui/editor/dist/toastui-editor.css';
-import { Editor as ToastEditor } from '@toast-ui/react-editor';
-// @ts-ignore
-import sanitizeHtml from "sanitize-html";
 import { cleanHtml } from '@/lib/utils';
 import LexicalEditor from '@/components/LexicalEditor';
 
@@ -49,12 +44,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     };
     fetchCategories();
   }, []);
-
-  useEffect(() => {
-    if (editorRef.current) {
-      (editorRef.current as any).getInstance().setHTML(initialPost.content || '');
-    }
-  }, [initialPost.content]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -147,8 +136,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       setIsUploadingImages(false);
     }
 
-    const html = (editorRef.current as any).getInstance().getHTML();
-    const cleanedHtml = cleanHtml(html);
+    const cleanedHtml = cleanHtml(post.content || '');
     const postData = {
       ...post,
       content: cleanedHtml,
@@ -199,7 +187,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (HTML)</label>
-          <LexicalEditor onHtmlChange={html => setPost(post => ({ ...post, content: html }))} />
+          <LexicalEditor onHtmlChange={(html: string) => setPost(post => ({ ...post, content: html }))} />
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
