@@ -22,8 +22,8 @@ function cleanHtml(html: string) {
   // 1. HTML 엔티티 복원
   const decodedHtml = decodeHtmlEntities(html)
   
-  // 2. sanitize-html로 정제
-  const cleanedHtml = sanitizeHtml(decodedHtml, {
+  // 2. sanitize-html로 기본 정제
+  const safeHtml = sanitizeHtml(decodedHtml, {
     allowedTags: [
       'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
       'p', 'br', 'hr',
@@ -38,22 +38,22 @@ function cleanHtml(html: string) {
       '*': ['class', 'style'],
       'a': ['href', 'target', 'rel'],
       'img': ['src', 'alt', 'width', 'height']
-    },
-    transformTags: {
-      // 불필요한 p 태그 제거
-      'p': (tagName: string, attribs: Record<string, string>, content: string | undefined) => {
-        // content가 undefined이거나 빈 문자열인 경우 제거
-        if (!content || !content.trim()) return ''
-        // 블록 요소를 감싸는 p 태그 제거
-        if (/<(h[1-6]|div|table|ul|ol|blockquote|pre)[^>]*>/.test(content)) {
-          return content
-        }
-        return { tagName, attribs, content }
-      }
     }
   })
 
-  return cleanedHtml
+  // 3. 블록 요소를 감싸는 p 태그만 언랩
+  const unwrappedHtml = safeHtml
+    // 빈 p 태그 제거
+    .replace(/<p>\s*<\/p>/g, '')
+    // 블록 요소를 감싸는 p 태그 언랩
+    .replace(/<p>\s*(<(?:h[1-6]|div|table|ul|ol|blockquote|pre)[\s\S]+?>)/g, '$1')
+    .replace(/(<\/(?:h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1')
+    // 연속된 줄바꿈 정리
+    .replace(/\n\s*\n/g, '\n')
+    // 앞뒤 공백 제거
+    .trim()
+
+  return unwrappedHtml
 }
 
 export async function GET(request: Request) {
