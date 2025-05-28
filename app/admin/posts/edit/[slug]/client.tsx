@@ -147,25 +147,9 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
 
     const html = (editorRef.current as any).getInstance().getHTML();
-    // 불필요한 p 태그 제거 및 HTML 정제
-    const cleaned = html
-      // 빈 p 태그 제거
-      .replace(/<p>\s*<\/p>/g, '')
-      // 블록 요소를 감싸는 p 태그 제거
-      .replace(/<p>\s*(<(h[1-6]|div|table|ul|ol|blockquote|pre)[^>]*>)/g, '$1')
-      .replace(/(<\/(h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1')
-      // 연속된 줄바꿈 정리
-      .replace(/\n\s*\n/g, '\n')
-      // 앞뒤 공백 제거
-      .trim();
-    
-    const sanitized = sanitizeHtml(cleaned, {
-      allowedTags: false,
-      allowedAttributes: false,
-    });
     const postData = {
       ...post,
-      content: sanitized,
+      content: html,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),

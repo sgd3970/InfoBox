@@ -3,19 +3,57 @@ import { getDatabase } from "@/lib/mongodb"
 import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
+import sanitizeHtml from "sanitize-html"
 
 export const dynamic = "force-dynamic"
 
 // HTML 엔티티를 디코딩하는 헬퍼 함수
 function decodeHtmlEntities(html: string) {
-  if (!html) return '';
-  return html
-    .replace(/&lt;/g, "<")
-    .replace(/&gt;/g, ">")
-    .replace(/&amp;/g, "&")
+  return html.replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
-    .replace(/&#039;/g, "'")
-    .replace(/&nbsp;/g, " ");
+    .replace(/&#39;/g, "'")
+    .replace(/&nbsp;/g, ' ')
+}
+
+// HTML 정제 함수
+function cleanHtml(html: string) {
+  // 1. HTML 엔티티 복원
+  const decodedHtml = decodeHtmlEntities(html)
+  
+  // 2. sanitize-html로 정제
+  const cleanedHtml = sanitizeHtml(decodedHtml, {
+    allowedTags: [
+      'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+      'p', 'br', 'hr',
+      'ul', 'ol', 'li',
+      'strong', 'em', 'u', 's', 'code',
+      'a', 'img',
+      'blockquote', 'pre',
+      'table', 'thead', 'tbody', 'tr', 'th', 'td',
+      'div', 'span'
+    ],
+    allowedAttributes: {
+      '*': ['class', 'style'],
+      'a': ['href', 'target', 'rel'],
+      'img': ['src', 'alt', 'width', 'height']
+    },
+    transformTags: {
+      // 불필요한 p 태그 제거
+      'p': (tagName: string, attribs: Record<string, string>, content: string) => {
+        // 빈 p 태그 제거
+        if (!content.trim()) return ''
+        // 블록 요소를 감싸는 p 태그 제거
+        if (/<(h[1-6]|div|table|ul|ol|blockquote|pre)[^>]*>/.test(content)) {
+          return content
+        }
+        return { tagName, attribs, content }
+      }
+    }
+  })
+
+  return cleanedHtml
 }
 
 export async function GET(request: Request) {
@@ -86,21 +124,10 @@ export async function POST(request: Request) {
     const postData = await request.json()
     const db = await getDatabase()
 
-    // ——————————————————————————————
-    // 서버측 안전 장치: 클라이언트에서 혹시 놓쳤을 수 있는 클렌징
-    // 1) HTML 엔티티 디코딩
+    // HTML 정제
     if (typeof postData.content === "string") {
-      postData.content = decodeHtmlEntities(postData.content)
+      postData.content = cleanHtml(postData.content)
     }
-    // 2) 혹시 남아 있는 <article> 태그 제거
-    if (typeof postData.content === "string") {
-      postData.content = postData.content.replace(/<\/?article>/g, "")
-    }
-    // 3) 앞뒤 공백\u00b7개행 제거
-    if (typeof postData.content === "string") {
-       postData.content = postData.content.trim()
-    }
-    // ——————————————————————————————
 
     // 필수 필드 검증
     const requiredFields = ["title", "slug", "description", "content", "category"]
