@@ -18,12 +18,15 @@ const ALLOWED_TAGS = [
 ];
 
 function decodeHtmlEntities(html: string) {
-  return html.replace(/&amp;/g, '&')
+  return html
+    .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
-    .replace(/&nbsp;/g, ' ');
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec));
 }
 
 // <table>...</table> 내부의 <p> 태그를 모두 언랩
@@ -54,26 +57,36 @@ function unwrapPBlockTags(html: string): string {
     prev = html;
     // 1. 중첩된 <p> 태그 언랩: <p><p>...</p></p> → <p>...</p>
     html = html.replace(/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi, '<p>$1</p>');
+    
     // 2. 제목 태그와 블록 요소 언랩: <p><hN>...</hN></p> → <hN>...</hN>
     html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    
     // 3. <p>로 감싼 ul/ol/li 반복 언랩
     html = html.replace(/<p>\s*(<(ul|ol|li)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    
     // 4. <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
     html = html.replace(/<ul>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ul>/gi, '<ul>$2</ul>');
+    
     // 5. <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
     html = html.replace(/<ol>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ol>/gi, '<ol>$2</ol>');
+    
     // 6. <p><li>...</li></p> → <li>...</li>
     html = html.replace(/<p>\s*(<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
+    
     // 7. <p><ul>...</ul></p> → <ul>...</ul>
     html = html.replace(/<p>\s*(<(ul|ol)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
-    // 8. <p><pre>...</pre></p> → <pre>...</pre>
-    html = html.replace(/<p>\s*(<pre[\s\S]*?<\/pre>)\s*<\/p>/gi, '$1');
-    // 9. <p><div>...</div></p> → <div>...</div>
-    html = html.replace(/<p>\s*(<div[\s\S]*?<\/div>)\s*<\/p>/gi, '$1');
-    // 10. <p><table>...</table></p> → <table>...</table>
-    html = html.replace(/<p>\s*(<table[\s\S]*?<\/table>)\s*<\/p>/gi, '$1');
-    // 11. <p> 내부에 여러 블록 태그가 있을 때도 언랩
+
+    // 8. <p><h3>...</h3></p> → <h3>...</h3>
+    html = html.replace(/<p>\s*(<h3[\s\S]*?<\/h3>)\s*<\/p>/gi, '$1');
+    
+    // 9. <p><h4>...</h4></p> → <h4>...</h4>
+    html = html.replace(/<p>\s*(<h4[\s\S]*?<\/h4>)\s*<\/p>/gi, '$1');
+
+    // 10. <p> 내부에 여러 블록 태그가 있을 때도 언랩
     html = html.replace(/<p>(\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[^>]*>[\s\S]*?<\/\3>\s*)+)<\/p>/gi, '$1');
+
+    // 11. <p> 내부에 단일 블록 태그가 있을 때 언랩
+    html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[^>]*>[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
   } while (html !== prev);
   return html;
 }
@@ -100,6 +113,13 @@ export function cleanHtml(html: string): string {
       // <p> 내부가 공백, &nbsp;, <br>만 있으면 제거
       const text = (frame.text || '').replace(/&nbsp;|\s|<br\s*\/?\>/gi, '');
       return frame.tag === 'p' && !text;
+    },
+    // 특수문자와 이모지 보존을 위한 설정
+    textFilter: (text: string) => text,
+    parser: {
+      lowerCaseTags: true,
+      recognizeSelfClosing: true,
+      decodeEntities: false // HTML 엔티티 디코딩 비활성화 (이미 위에서 처리했으므로)
     }
   });
   console.log('[cleanHtml] after sanitizeHtml:', safe);
