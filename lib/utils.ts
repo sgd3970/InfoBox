@@ -29,6 +29,7 @@ function decodeHtmlEntities(html: string) {
 export function cleanHtml(html: string): string {
   // 1. 엔티티 복원
   const decoded = decodeHtmlEntities(html);
+  console.log('[cleanHtml] decoded:', decoded);
 
   // 2. sanitize-html로 1차 정제
   let safe = sanitizeHtml(decoded, {
@@ -40,13 +41,14 @@ export function cleanHtml(html: string): string {
     },
     exclusiveFilter(frame: { tag: string; text: string }) {
       // <p> 내부가 공백, &nbsp;, <br>만 있으면 제거
-      const text = (frame.text || '').replace(/&nbsp;|\s|<br\s*\/?>/gi, '');
+      const text = (frame.text || '').replace(/&nbsp;|\s|<br\s*\/?\>/gi, '');
       return frame.tag === 'p' && !text;
     }
   });
+  console.log('[cleanHtml] after sanitizeHtml:', safe);
 
   // 3. sanitize-html로도 안 지워지는 <p><br></p> 등 후처리
-  safe = safe.replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '');
+  safe = safe.replace(/<p>(\s|&nbsp;|<br\s*\/?\>)*<\/p>/gi, '');
 
   // 4. 블록요소만 단독으로 감싼 <p> 언랩
   safe = safe
@@ -62,7 +64,9 @@ export function cleanHtml(html: string): string {
   safe = safe.replace(/\n\s*\n/g, '\n');
 
   // 마지막에 잘못된 p 언랩
-  return cleanBrokenP(safe)
+  const cleaned = cleanBrokenP(safe);
+  console.log('[cleanHtml] after cleanBrokenP:', cleaned);
+  return cleaned;
 }
 
 export function cleanQuillHtml(html: string) {
@@ -79,6 +83,7 @@ export function cleanQuillHtml(html: string) {
 // <p><li>...</li></p> → <li>...</li> 등 잘못된 p 언랩
 export function cleanBrokenP(html: string): string {
   const dom = parseDocument(html)
+  console.log('[cleanBrokenP] dom before:', render(dom));
 
   function unwrapInvalidP(elem: Element) {
     // <p>가 블록/테이블 태그 하나만 자식으로 가질 때 언랩
@@ -117,5 +122,7 @@ export function cleanBrokenP(html: string): string {
     if (c.type === 'tag') unwrapInvalidP(c)
   })
 
-  return render(dom)
+  const result = render(dom)
+  console.log('[cleanBrokenP] dom after:', result);
+  return result
 }
