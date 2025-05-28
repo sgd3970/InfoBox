@@ -41,9 +41,9 @@ function cleanHtml(html: string) {
     },
     transformTags: {
       // 불필요한 p 태그 제거
-      'p': (tagName: string, attribs: Record<string, string>, content: string) => {
-        // 빈 p 태그 제거
-        if (!content.trim()) return ''
+      'p': (tagName: string, attribs: Record<string, string>, content: string | undefined) => {
+        // content가 undefined이거나 빈 문자열인 경우 제거
+        if (!content || !content.trim()) return ''
         // 블록 요소를 감싸는 p 태그 제거
         if (/<(h[1-6]|div|table|ul|ol|blockquote|pre)[^>]*>/.test(content)) {
           return content
