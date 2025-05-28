@@ -38,13 +38,22 @@ function cleanHtml(html: string) {
       '*': ['class', 'style'],
       'a': ['href', 'target', 'rel'],
       'img': ['src', 'alt', 'width', 'height']
+    },
+    // 빈 태그는 무조건 제거
+    allowedEmptyTags: [],
+    // 텍스트가 전혀 없는 p 태그 필터링
+    exclusiveFilter: (frame: { tag: string; text: string }) => {
+      return frame.tag === 'p' && !frame.text.trim()
+    },
+    // 텍스트 노드 사이의 빈 줄들로 p 생성하는 동작 방지
+    parser: {
+      lowerCaseTags: true,
+      recognizeSelfClosing: true
     }
   })
 
   // 3. 블록 요소를 감싸는 p 태그만 언랩
   const unwrappedHtml = safeHtml
-    // 빈 p 태그 제거
-    .replace(/<p>\s*<\/p>/g, '')
     // 블록 요소를 감싸는 p 태그 언랩
     .replace(/<p>\s*(<(?:h[1-6]|div|table|ul|ol|blockquote|pre)[\s\S]+?>)/g, '$1')
     .replace(/(<\/(?:h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1')
