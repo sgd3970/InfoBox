@@ -81,11 +81,15 @@ export function cleanBrokenP(html: string): string {
   const dom = parseDocument(html)
 
   function unwrapInvalidP(elem: Element) {
+    // <p>가 블록/테이블 태그 하나만 자식으로 가질 때 언랩
     if (elem.name === 'p' && elem.children.length === 1) {
       const child = elem.children[0]
       if (
         child.type === 'tag' &&
-        ['li', 'tr', 'th', 'td', 'thead', 'tbody', 'tfoot'].includes(child.name)
+        [
+          'li', 'tr', 'th', 'td', 'thead', 'tbody', 'tfoot',
+          // 필요시 블록 태그 추가
+        ].includes(child.name)
       ) {
         // 부모 요소의 자식 배열에서 p를 찾아서 child로 교체
         if (elem.parent && 'children' in elem.parent) {
@@ -94,10 +98,14 @@ export function cleanBrokenP(html: string): string {
           if (index !== -1) {
             parent.children[index] = child
             child.parent = parent
+            // 언랩된 자식도 재귀적으로 검사
+            if (child.type === 'tag') unwrapInvalidP(child)
+            return // 교체 후 더 진행하지 않음
           }
         }
       }
     }
+    // 자식이 있으면 재귀적으로 검사
     if ('children' in elem && Array.isArray(elem.children)) {
       elem.children.forEach((c: any) => {
         if (c.type === 'tag') unwrapInvalidP(c)
