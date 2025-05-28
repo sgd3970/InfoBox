@@ -1,12 +1,15 @@
-import { DecoratorNode, LexicalNode, NodeKey, SerializedLexicalNode } from "lexical"
+import { DecoratorNode, EditorConfig, LexicalEditor, NodeKey, SerializedLexicalNode, Spread } from "lexical"
 import * as React from "react"
 
-export type SerializedImageNode = {
-  altText: string
-  src: string
-  type: "image"
-  version: 1
-} & SerializedLexicalNode
+export type SerializedImageNode = Spread<
+  {
+    src: string
+    altText: string
+    type: "image"
+    version: 1
+  },
+  SerializedLexicalNode
+>
 
 function ImageComponent({ src, alt }: { src: string; alt: string }) {
   return (
@@ -16,11 +19,11 @@ function ImageComponent({ src, alt }: { src: string; alt: string }) {
   )
 }
 
-export class ImageNode extends DecoratorNode<JSX.Element> {
+export class ImageNode extends DecoratorNode<React.ReactElement> {
   __src: string
   __altText: string
 
-  static getType() {
+  static getType(): string {
     return "image"
   }
 
@@ -34,41 +37,60 @@ export class ImageNode extends DecoratorNode<JSX.Element> {
     this.__altText = altText
   }
 
-  createDOM(): HTMLElement {
-    return document.createElement("div")
+  createDOM(config: EditorConfig): HTMLElement {
+    const span = document.createElement("span")
+    const theme = config.theme
+    const className = theme.image
+    if (className !== undefined) {
+      span.className = className
+    }
+    return span
   }
 
   updateDOM(): false {
     return false
   }
 
-  decorate(): JSX.Element {
+  getSrc(): string {
+    return this.__src
+  }
+
+  getAltText(): string {
+    return this.__altText
+  }
+
+  decorate(): React.ReactElement {
     return <ImageComponent src={this.__src} alt={this.__altText} />
+  }
+
+  isIsolated(): boolean {
+    return true
   }
 
   static importJSON(serializedNode: SerializedImageNode): ImageNode {
     const { src, altText } = serializedNode
-    return new ImageNode(src, altText)
+    const node = $createImageNode(src, altText)
+    return node
   }
 
   exportJSON(): SerializedImageNode {
     return {
+      altText: this.getAltText(),
+      src: this.getSrc(),
       type: "image",
       version: 1,
-      src: this.__src,
-      altText: this.__altText,
     }
   }
 
   isInline(): boolean {
     return false
   }
-} 
+}
 
-export function $createImageNode(src: string, altText = ""): ImageNode {
+export function $createImageNode(src: string, altText: string): ImageNode {
   return new ImageNode(src, altText)
 }
 
-export function $isImageNode(node: LexicalNode | null | undefined): node is ImageNode {
+export function $isImageNode(node: any): node is ImageNode {
   return node instanceof ImageNode
 } 
