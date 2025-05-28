@@ -145,6 +145,7 @@ function unwrapPBlockTags(html: string): string {
   let prev;
   do {
     prev = html;
+    
     // 1. 중첩된 <p> 태그 언랩: <p><p>...</p></p> → <p>...</p>
     html = html.replace(/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi, '<p>$1</p>');
     
@@ -177,6 +178,17 @@ function unwrapPBlockTags(html: string): string {
 
     // 11. <p> 내부에 단일 블록 태그가 있을 때 언랩
     html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[^>]*>[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+
+    // 12. <p> 내부의 ul/ol/li 태그를 더 강력하게 처리
+    html = html.replace(/<p>(\s*<(ul|ol)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    html = html.replace(/<p>(\s*<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
+    
+    // 13. <p> 내부의 h3/h4 태그를 더 강력하게 처리
+    html = html.replace(/<p>(\s*<h3[\s\S]*?<\/h3>)\s*<\/p>/gi, '$1');
+    html = html.replace(/<p>(\s*<h4[\s\S]*?<\/h4>)\s*<\/p>/gi, '$1');
+
+    // 14. <p> 내부의 중첩된 ul/ol/li 구조 처리
+    html = html.replace(/<p>(\s*<(ul|ol)>(\s*<li[\s\S]*?<\/li>\s*)+<\/\2>)\s*<\/p>/gi, '$1');
   } while (html !== prev);
   return html;
 }
