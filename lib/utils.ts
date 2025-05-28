@@ -142,20 +142,42 @@ export function cleanBrokenP(html: string): string {
   const dom = parseDocument(html)
   console.log('[cleanBrokenP] dom before:', render(dom));
 
+  // 블록 태그 목록
+  const blockTags = [
+    'li', 'tr', 'th', 'td', 'thead', 'tbody', 'tfoot',
+    'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
+    'div', 'ul', 'ol', 'blockquote', 'pre', 'table'
+  ];
+
   function unwrapInvalidP(elem: Element) {
-    // <p> 태그가 블록/테이블 태그 하나만 자식으로 가질 때 언랩
+    // <p>가 블록 태그만 자식으로 여러 개를 가질 때도 언랩
+    if (elem.name === 'p') {
+      const children = elem.children.filter((c: any) => c.type === 'tag');
+      if (
+        children.length > 0 &&
+        children.every((c: any) => blockTags.includes(c.name))
+      ) {
+        // 부모의 자식 배열에서 p를 children로 교체
+        if (elem.parent && 'children' in elem.parent) {
+          const parent = elem.parent as Element;
+          const index = parent.children.indexOf(elem);
+          if (index !== -1) {
+            // children를 parent에 삽입
+            parent.children.splice(index, 1, ...children);
+            children.forEach((c: any) => (c.parent = parent));
+            // 각 children도 재귀적으로 검사
+            children.forEach((c: any) => unwrapInvalidP(c));
+            return;
+          }
+        }
+      }
+    }
+    // 기존: <p> 태그가 블록/테이블 태그 하나만 자식으로 가질 때 반복 언랩
     while (
       elem.name === 'p' &&
       elem.children.length === 1 &&
       elem.children[0].type === 'tag' &&
-      [
-        // 테이블 관련 태그
-        'li', 'tr', 'th', 'td', 'thead', 'tbody', 'tfoot',
-        // 제목 태그
-        'h1', 'h2', 'h3', 'h4', 'h5', 'h6',
-        // 블록 요소
-        'div', 'ul', 'ol', 'blockquote', 'pre', 'table'
-      ].includes(elem.children[0].name)
+      blockTags.includes(elem.children[0].name)
     ) {
       const child = elem.children[0] as Element;
       if (elem.parent && 'children' in elem.parent) {
