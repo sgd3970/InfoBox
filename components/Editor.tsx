@@ -1,5 +1,6 @@
 import dynamic from 'next/dynamic'
 import 'react-quill/dist/quill.snow.css'
+import { cleanQuillHtml } from '@/lib/utils'
 
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
 
@@ -25,7 +26,7 @@ export default function Editor({ value, onChange }: { value: string, onChange: (
     <ReactQuill
       theme="snow"
       value={value}
-      onChange={onChange}
+      onChange={(html) => onChange(cleanQuillHtml(html))}
       modules={modules}
       formats={formats}
       style={{ minHeight: '300px' }}

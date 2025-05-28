@@ -1,4 +1,4 @@
-import { clsx, type ClassValue } from "clsx"
+import { type ClassValue, clsx } from "clsx"
 import { twMerge } from "tailwind-merge"
 import sanitizeHtml from 'sanitize-html';
 
@@ -51,4 +51,15 @@ export function cleanHtml(html: string): string {
     .replace(/(<\/(?:h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1');
 
   return safe.trim();
+}
+
+export function cleanQuillHtml(html: string) {
+  return html
+    // 빈 p 제거
+    .replace(/<p><br><\/p>/g, '')
+    // 이미지 태그를 감싸는 p 제거
+    .replace(/<p>(<img[^>]+>)<\/p>/g, '$1')
+    // 여러 연속 p 태그 정리
+    .replace(/(<\/p>\s*){2,}/g, '</p>')
+    .trim()
 }
