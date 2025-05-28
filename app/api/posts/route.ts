@@ -4,8 +4,6 @@ import { ObjectId } from "mongodb"
 import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import sanitizeHtml from "sanitize-html"
-import { prisma } from '@/lib/prisma'
-import { cleanHtml } from '@/lib/utils'
 
 export const dynamic = "force-dynamic"
 

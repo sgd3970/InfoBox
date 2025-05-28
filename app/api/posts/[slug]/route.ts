@@ -5,7 +5,6 @@ import { getServerSession } from "next-auth"
 import { authOptions } from "@/lib/auth"
 import type { Db } from "mongodb"
 import sanitizeHtml from "sanitize-html"
-import { cleanHtml } from "@/lib/utils"
 
 export const dynamic = "force-dynamic"
 
