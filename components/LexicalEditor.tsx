@@ -11,7 +11,6 @@ import { AutoFocusPlugin } from "@lexical/react/LexicalAutoFocusPlugin"
 import { $getRoot, $getSelection } from "lexical"
 import { useCallback } from "react"
 import { LexicalTypeaheadMenuPlugin } from "@lexical/react/LexicalTypeaheadMenuPlugin"
-import { INSERT_IMAGE_COMMAND } from "./plugins/ImagePlugin"
 import ImagePlugin from "./plugins/ImagePlugin"
 
 const editorConfig = {
