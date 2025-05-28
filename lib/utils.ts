@@ -85,9 +85,17 @@ export function cleanBrokenP(html: string): string {
       const child = elem.children[0]
       if (
         child.type === 'tag' &&
-        ['li', 'th', 'td'].includes(child.name)
+        ['li', 'tr', 'th', 'td', 'thead', 'tbody', 'tfoot'].includes(child.name)
       ) {
-        Object.assign(elem, child) // unwrap
+        // 부모 요소의 자식 배열에서 p를 찾아서 child로 교체
+        if (elem.parent && 'children' in elem.parent) {
+          const parent = elem.parent as Element
+          const index = parent.children.indexOf(elem)
+          if (index !== -1) {
+            parent.children[index] = child
+            child.parent = parent
+          }
+        }
       }
     }
     if ('children' in elem && Array.isArray(elem.children)) {
