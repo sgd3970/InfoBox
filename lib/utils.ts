@@ -201,6 +201,10 @@ export function cleanHtml(input: string): string {
   html = cleanBrokenP(html);
   console.log('[cleanHtml] after cleanBrokenP:', html);
 
+  // 6) numeric entity가 남아있다면 모두 실제 문자로 복원
+  html = decodeHtmlEntities(html);
+  console.log('[cleanHtml] final decode:', html);
+
   return html.trim();
 }
 
@@ -217,7 +221,12 @@ export function cleanQuillHtml(html: string) {
 
 // <p><li>...</li></p> → <li>...</li> 등 잘못된 p 언랩
 export function cleanBrokenP(html: string): string {
-  const dom = parseDocument(html)
+  // parseDocument에선 그대로 numeric entity 유지
+  const dom = parseDocument(html, {
+    lowerCaseTags: true,
+    recognizeSelfClosing: true,
+    decodeEntities: false,  // numeric entity를 풀지 않도록
+  });
   console.log('[cleanBrokenP] dom before:', render(dom));
 
   // 블록 태그 목록
@@ -284,7 +293,8 @@ export function cleanBrokenP(html: string): string {
     if (c.type === 'tag') unwrapInvalidP(c)
   })
 
-  const result = render(dom)
+  // render 할 때 numeric entity → 문자로 디코딩
+  const result = render(dom, { decodeEntities: true });
   console.log('[cleanBrokenP] dom after:', result);
-  return result
+  return result;
 }
