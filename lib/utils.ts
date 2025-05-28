@@ -17,16 +17,106 @@ const ALLOWED_TAGS = [
   'div','span'
 ];
 
-function decodeHtmlEntities(html: string) {
-  return html
+function decodeHtmlEntities(text: string): string {
+  if (!text) return text;
+  
+  // First pass: Handle basic HTML entities
+  let decoded = text
     .replace(/&amp;/g, '&')
     .replace(/&lt;/g, '<')
     .replace(/&gt;/g, '>')
     .replace(/&quot;/g, '"')
     .replace(/&#39;/g, "'")
     .replace(/&nbsp;/g, ' ')
-    .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCharCode(parseInt(hex, 16)))
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec));
+    .replace(/&apos;/g, "'")
+    .replace(/&mdash;/g, '—')
+    .replace(/&ndash;/g, '–')
+    .replace(/&hellip;/g, '…')
+    .replace(/&copy;/g, '©')
+    .replace(/&reg;/g, '®')
+    .replace(/&trade;/g, '™')
+    .replace(/&euro;/g, '€')
+    .replace(/&pound;/g, '£')
+    .replace(/&yen;/g, '¥')
+    .replace(/&cent;/g, '¢')
+    .replace(/&sect;/g, '§')
+    .replace(/&deg;/g, '°')
+    .replace(/&plusmn;/g, '±')
+    .replace(/&times;/g, '×')
+    .replace(/&divide;/g, '÷')
+    .replace(/&micro;/g, 'µ')
+    .replace(/&para;/g, '¶')
+    .replace(/&middot;/g, '·')
+    .replace(/&bull;/g, '•')
+    .replace(/&dagger;/g, '†')
+    .replace(/&Dagger;/g, '‡')
+    .replace(/&larr;/g, '←')
+    .replace(/&uarr;/g, '↑')
+    .replace(/&rarr;/g, '→')
+    .replace(/&darr;/g, '↓')
+    .replace(/&harr;/g, '↔')
+    .replace(/&crarr;/g, '↵')
+    .replace(/&lceil;/g, '⌈')
+    .replace(/&rceil;/g, '⌉')
+    .replace(/&lfloor;/g, '⌊')
+    .replace(/&rfloor;/g, '⌋')
+    .replace(/&loz;/g, '◊')
+    .replace(/&spades;/g, '♠')
+    .replace(/&clubs;/g, '♣')
+    .replace(/&hearts;/g, '♥')
+    .replace(/&diams;/g, '♦');
+
+  // Second pass: Handle hex entities
+  decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
+    return String.fromCharCode(parseInt(hex, 16));
+  });
+
+  // Third pass: Handle decimal entities
+  decoded = decoded.replace(/&#(\d+);/g, (_, dec) => {
+    return String.fromCharCode(parseInt(dec, 10));
+  });
+
+  // Fourth pass: Handle named entities
+  const entities: { [key: string]: string } = {
+    '&Aacute;': 'Á', '&aacute;': 'á',
+    '&Acirc;': 'Â', '&acirc;': 'â',
+    '&AElig;': 'Æ', '&aelig;': 'æ',
+    '&Agrave;': 'À', '&agrave;': 'à',
+    '&Aring;': 'Å', '&aring;': 'å',
+    '&Atilde;': 'Ã', '&atilde;': 'ã',
+    '&Auml;': 'Ä', '&auml;': 'ä',
+    '&Ccedil;': 'Ç', '&ccedil;': 'ç',
+    '&Eacute;': 'É', '&eacute;': 'é',
+    '&Ecirc;': 'Ê', '&ecirc;': 'ê',
+    '&Egrave;': 'È', '&egrave;': 'è',
+    '&ETH;': 'Ð', '&eth;': 'ð',
+    '&Euml;': 'Ë', '&euml;': 'ë',
+    '&Iacute;': 'Í', '&iacute;': 'í',
+    '&Icirc;': 'Î', '&icirc;': 'î',
+    '&Igrave;': 'Ì', '&igrave;': 'ì',
+    '&Iuml;': 'Ï', '&iuml;': 'ï',
+    '&Ntilde;': 'Ñ', '&ntilde;': 'ñ',
+    '&Oacute;': 'Ó', '&oacute;': 'ó',
+    '&Ocirc;': 'Ô', '&ocirc;': 'ô',
+    '&Ograve;': 'Ò', '&ograve;': 'ò',
+    '&Oslash;': 'Ø', '&oslash;': 'ø',
+    '&Otilde;': 'Õ', '&otilde;': 'õ',
+    '&Ouml;': 'Ö', '&ouml;': 'ö',
+    '&THORN;': 'Þ', '&thorn;': 'þ',
+    '&Uacute;': 'Ú', '&uacute;': 'ú',
+    '&Ucirc;': 'Û', '&ucirc;': 'û',
+    '&Ugrave;': 'Ù', '&ugrave;': 'ù',
+    '&Uuml;': 'Ü', '&uuml;': 'ü',
+    '&Yacute;': 'Ý', '&yacute;': 'ý',
+    '&Yuml;': 'Ÿ', '&yuml;': 'ÿ',
+    '&szlig;': 'ß'
+  };
+
+  Object.entries(entities).forEach(([entity, char]) => {
+    decoded = decoded.replace(new RegExp(entity, 'g'), char);
+  });
+
+  return decoded;
 }
 
 // <table>...</table> 내부의 <p> 태그를 모두 언랩
