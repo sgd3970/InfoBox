@@ -68,12 +68,12 @@ function decodeHtmlEntities(text: string): string {
 
   // Second pass: Handle hex entities
   decoded = decoded.replace(/&#x([0-9a-f]+);/gi, (_, hex) => {
-    return String.fromCharCode(parseInt(hex, 16));
+    return String.fromCodePoint(parseInt(hex, 16));
   });
 
   // Third pass: Handle decimal entities
   decoded = decoded.replace(/&#(\d+);/g, (_, dec) => {
-    return String.fromCharCode(parseInt(dec, 10));
+    return String.fromCodePoint(parseInt(dec, 10));
   });
 
   // Fourth pass: Handle named entities
