@@ -15,6 +15,7 @@ import { Editor as ToastEditor } from '@toast-ui/react-editor';
 // @ts-ignore
 import sanitizeHtml from "sanitize-html";
 import { cleanHtml } from '@/lib/utils';
+import LexicalEditor from '@/components/LexicalEditor';
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -30,7 +31,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
-  const editorRef = useRef<ToastEditor>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -199,14 +199,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (HTML)</label>
-          <ToastEditor
-            ref={editorRef}
-            initialValue={initialPost.content || ''}
-            previewStyle="vertical"
-            height="600px"
-            initialEditType="wysiwyg"
-            useCommandShortcut={true}
-          />
+          <LexicalEditor onHtmlChange={html => setPost(post => ({ ...post, content: html }))} />
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>

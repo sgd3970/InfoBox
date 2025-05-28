@@ -15,6 +15,7 @@ import dynamic from 'next/dynamic'
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { cleanHtml } from '@/lib/utils';
+import LexicalEditor from '@/components/LexicalEditor';
 
 // ReactQuill 에디터를 클라이언트 사이드에서만 로드
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
@@ -37,7 +38,6 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
-  const editorRef = useRef<ToastEditor>(null);
 
   const router = useRouter()
   const { toast } = useToast()
@@ -245,14 +245,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         </div>
         <div>
           <Label htmlFor="content">내용 (HTML)</Label>
-          <ToastEditor
-            ref={editorRef}
-            initialValue={content || ''}
-            previewStyle="vertical"
-            height="600px"
-            initialEditType="wysiwyg"
-            useCommandShortcut={true}
-          />
+          <LexicalEditor onHtmlChange={setContent} />
         </div>
 
         {/* 이미지 업로드 섹션 */}
