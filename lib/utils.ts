@@ -163,8 +163,22 @@ function unwrapPInTable(html: string): string {
 }
 
 export function cleanHtml(input: string): string {
+  let html = input;
+
+  // 0a) 블록 레벨 열림 태그(<div>, <table> 등) 직전의 잘못된 </p> 제거
+  html = html.replace(
+    /<\/p>\s*(<(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)[^>]*>)/gi,
+    '$1'
+  );
+  // 0b) 블록 레벨 닫힘 태그(</div>, </table> 등) 직후의 잘못된 <p> 제거
+  html = html.replace(
+    /(<\/(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)>)\s*<p>/gi,
+    '$1'
+  );
+  console.log('[cleanHtml] after removing incorrect p tags:', html);
+
   // 0) 테이블/블록 태그 앞뒤 <p> 해제 (pre)
-  let html = unwrapPTableTags(input);
+  html = unwrapPTableTags(html);
   html = unwrapPBlockTags(html);
   console.log('[cleanHtml] after pre-unwrapping:', html);
 
