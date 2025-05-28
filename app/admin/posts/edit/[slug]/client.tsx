@@ -9,8 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
-import { cleanHtml } from '@/lib/utils';
-import LexicalEditor from '@/components/LexicalEditor';
+import Editor from '@/components/Editor';
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -136,10 +135,9 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       setIsUploadingImages(false);
     }
 
-    const cleanedHtml = cleanHtml(post.content || '');
     const postData = {
       ...post,
-      content: cleanedHtml,
+      content: post.content,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),
@@ -187,7 +185,13 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (HTML)</label>
-          <LexicalEditor onHtmlChange={(html: string) => setPost(post => ({ ...post, content: html }))} />
+          <Editor
+            value={post.content || ''}
+            onChange={(newContent) => {
+              const cleanedContent = newContent.replace(/<p><br><\/p>/g, '')
+              setPost(post => ({ ...post, content: cleanedContent }))
+            }}
+          />
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
