@@ -12,7 +12,7 @@ import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import { cleanHtml } from '@/lib/utils';
-import LexicalEditor from '@/components/LexicalEditor';
+import Editor from '@/components/Editor';
 
 interface AdminNewPostClientProps {}
 
@@ -237,7 +237,14 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         </div>
         <div>
           <Label htmlFor="content">내용 (HTML)</Label>
-          <LexicalEditor onHtmlChange={setContent} />
+          <Editor
+            value={content}
+            onChange={(newContent) => {
+              // 불필요한 <p> 태그 제거
+              const cleanedContent = newContent.replace(/<p><br><\/p>/g, '')
+              setContent(cleanedContent)
+            }}
+          />
         </div>
 
         {/* 이미지 업로드 섹션 */}
