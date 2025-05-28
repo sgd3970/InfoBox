@@ -14,6 +14,7 @@ import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 // @ts-ignore
 import sanitizeHtml from "sanitize-html";
+import { cleanHtml } from '@/lib/utils';
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -147,9 +148,10 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
 
     const html = (editorRef.current as any).getInstance().getHTML();
+    const cleanedHtml = cleanHtml(html);
     const postData = {
       ...post,
-      content: html,
+      content: cleanedHtml,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),

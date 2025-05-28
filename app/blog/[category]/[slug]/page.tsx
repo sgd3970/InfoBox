@@ -122,9 +122,6 @@ export default async function PostPage({ params }: PostPageProps) {
   // 관련 포스트 찾기 (같은 카테고리의 다른 포스트)
   const relatedPosts = await getRelatedPosts(params.slug, post.category)
 
-  // HTML 엔티티 디코딩
-  const decodedContent = decodeHtmlEntities(post.content);
-
   return (
     <>
       <SEOSchema
@@ -208,9 +205,7 @@ export default async function PostPage({ params }: PostPageProps) {
           {/* <AIContentSummary content={post.description} /> */}
 
           {/* 본문 내용 */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mt-8 [&_table]:w-full [&_table]:border-collapse [&_th]:bg-muted [&_th]:p-4 [&_th]:text-left [&_td]:p-4 [&_td]:border [&_th]:border [&_img]:my-8 [&_img]:rounded-lg [&_img]:shadow-md [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:my-4 [&_ul]:my-4 [&_ol]:my-4 [&_li]:my-2 [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80">
-            <div dangerouslySetInnerHTML={{ __html: post.content }} />
-          </div>
+          <div className="prose prose-lg dark:prose-invert max-w-none mt-8 [&_table]:w-full [&_table]:border-collapse [&_th]:bg-muted [&_th]:p-4 [&_th]:text-left [&_td]:p-4 [&_td]:border [&_th]:border [&_img]:my-8 [&_img]:rounded-lg [&_img]:shadow-md [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:my-4 [&_ul]:my-4 [&_ol]:my-4 [&_li]:my-2 [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80" dangerouslySetInnerHTML={{ __html: post.content }} />
 
           {/* AI 추천 콘텐츠 */}
           <AIContentRecommendations

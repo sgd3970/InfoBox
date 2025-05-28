@@ -14,8 +14,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import dynamic from 'next/dynamic'
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
 import '@toast-ui/editor/dist/toastui-editor.css';
-// @ts-ignore
-import sanitizeHtml from "sanitize-html";
+import { cleanHtml } from '@/lib/utils';
 
 // ReactQuill 에디터를 클라이언트 사이드에서만 로드
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
@@ -118,11 +117,12 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     }
 
     const html = (editorRef.current as any).getInstance().getHTML();
+    const cleanedHtml = cleanHtml(html);
     const postData = {
       title,
       slug,
       description,
-      content: html,
+      content: cleanedHtml,
       category,
       tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
       date: new Date().toISOString(),
