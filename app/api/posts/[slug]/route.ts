@@ -247,9 +247,10 @@ export async function PUT(
       )
     }
 
-    // 포스트 데이터 준비 및 날짜 필드를 Date 객체로 명시적으로 변환
+    // _id를 $set에서 제외
+    const { _id, ...fieldsToUpdate } = postData;
     const updatedPost = {
-      ...postData,
+      ...fieldsToUpdate,
       updatedAt: new Date(), // 업데이트 시간 (Date 객체)
       tags: Array.isArray(postData.tags) ? postData.tags : [], // tags가 배열인지 확인
     }
