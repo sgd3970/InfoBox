@@ -49,14 +49,22 @@ function unwrapPTableTags(html: string): string {
 
 // <p><hN>...</hN></p> 등 블록 태그와 리스트 구조 언랩
 function unwrapPBlockTags(html: string): string {
-  // <p><hN>...</hN></p> → <hN>...</hN>
+  // 1. 중첩 <p> 언랩: <p><p>...</p></p> → <p>...</p>
+  while (/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi.test(html)) {
+    html = html.replace(/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi, '<p>$1</p>');
+  }
+  // 2. <p><hN>...</hN></p> → <hN>...</hN>
   html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|blockquote|pre)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
-  // <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
+  // 3. <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
   html = html.replace(/<ul>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ul>/gi, '<ul>$2</ul>');
-  // <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
+  // 4. <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
   html = html.replace(/<ol>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ol>/gi, '<ol>$2</ol>');
-  // <p><li>...</li></p> → <li>...</li>
+  // 5. <p><li>...</li></p> → <li>...</li>
   html = html.replace(/<p>\s*(<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
+  // 6. <p><ul>...</ul></p> → <ul>...</ul> (ul/ol 블록 언랩)
+  html = html.replace(/<p>\s*(<(ul|ol)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+  // 7. <p><pre>...</pre></p> → <pre>...</pre>
+  html = html.replace(/<p>\s*(<pre[\s\S]*?<\/pre>)\s*<\/p>/gi, '$1');
   return html;
 }
 
