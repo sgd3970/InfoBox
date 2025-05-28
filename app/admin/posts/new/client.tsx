@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -12,6 +12,8 @@ import { Loader2 } from "lucide-react"
 import type { Category } from "@/lib/models"
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card"
 import dynamic from 'next/dynamic'
+import { Editor as ToastEditor } from '@toast-ui/react-editor';
+import '@toast-ui/editor/dist/toastui-editor.css';
 
 // ReactQuill 에디터를 클라이언트 사이드에서만 로드
 const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
@@ -34,29 +36,10 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const editorRef = useRef<ToastEditor>(null);
 
   const router = useRouter()
   const { toast } = useToast()
-
-  // ReactQuill 에디터 설정
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ],
-  }
-
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'color', 'background',
-    'link', 'image'
-  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -132,30 +115,12 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       setIsUploadingImages(false);
     }
 
-    // ReactQuill content에서 불필요한 article 태그 제거
-    let cleanContent = content;
-    if (content.startsWith('<article>') && content.endsWith('</article>')) {
-      cleanContent = content.slice(9, -10); // <article>와 </article> 제거
-    }
-
-    // 1) content 중 <article> 태그 제거
-    let cleanedContent = content.replace(/<\/?article>/g, '');
-    // 2) 혹시 들어있는 HTML 엔티티(&lt;, &gt;, &amp;, &nbsp; 등)도 해제
-    cleanedContent = cleanedContent
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&')
-      .replace(/&quot;/g, '"')
-      .replace(/&#039;/g, "'")
-      .replace(/&nbsp;/g, ' '); // &nbsp; 추가
-    // 3) 앞뒤 공백\u00b7개행 잘라내기
-    cleanedContent = cleanedContent.trim();
-
+    const html = (editorRef.current as any).getInstance().getHTML();
     const postData = {
       title,
       slug,
       description,
-      content: cleanedContent, // 정제된 content 사용
+      content: html,
       category,
       tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
       date: new Date().toISOString(),
@@ -278,16 +243,14 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         </div>
         <div>
           <Label htmlFor="content">내용 (HTML)</Label>
-          <div className="mt-2">
-            <ReactQuill
-              theme="snow"
-              value={content}
-              onChange={setContent}
-              modules={modules}
-              formats={formats}
-              className="h-[400px] mb-12"
-            />
-          </div>
+          <ToastEditor
+            ref={editorRef}
+            initialValue={content || ''}
+            previewStyle="vertical"
+            height="600px"
+            initialEditType="wysiwyg"
+            useCommandShortcut={true}
+          />
         </div>
 
         {/* 이미지 업로드 섹션 */}

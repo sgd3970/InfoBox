@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -10,10 +10,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { toast } from 'react-hot-toast';
 import type { Post, Category } from '@/lib/models';
 import dynamic from 'next/dynamic';
-
-// ReactQuill 에디터를 클라이언트 사이드에서만 로드
-const ReactQuill = dynamic(() => import('react-quill'), { ssr: false })
-import 'react-quill/dist/quill.snow.css'
+import '@toast-ui/editor/dist/toastui-editor.css';
+import { Editor as ToastEditor } from '@toast-ui/react-editor';
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -29,6 +27,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
+  const editorRef = useRef<ToastEditor>(null);
 
   useEffect(() => {
     const fetchCategories = async () => {
@@ -47,6 +46,12 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    if (editorRef.current) {
+      (editorRef.current as any).getInstance().setHTML(initialPost.content || '');
+    }
+  }, [initialPost.content]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -139,15 +144,10 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       setIsUploadingImages(false);
     }
 
-    // ReactQuill content에서 불필요한 article 태그 제거
-    let cleanContent = post.content;
-    if (post.content.startsWith('<article>') && post.content.endsWith('</article>')) {
-      cleanContent = post.content.slice(9, -10); // <article>와 </article> 제거
-    }
-
+    const html = (editorRef.current as any).getInstance().getHTML();
     const postData = {
       ...post,
-      content: cleanContent, // 정제된 content 사용
+      content: html,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),
@@ -177,26 +177,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
   }
 
-  // ReactQuill 에디터 설정
-  const modules = {
-    toolbar: [
-      [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-      ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
-      [{ 'color': [] }, { 'background': [] }],
-      ['link', 'image'],
-      ['clean']
-    ],
-  }
-
-  const formats = [
-    'header',
-    'bold', 'italic', 'underline', 'strike',
-    'list', 'bullet',
-    'color', 'background',
-    'link', 'image'
-  ]
-
   return (
     <div className="container py-8">
       <h1 className="text-2xl font-bold mb-6">포스트 수정</h1>
@@ -215,16 +195,14 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="content" className="block text-sm font-medium text-gray-700">내용 (HTML)</label>
-          <div className="mt-2">
-            <ReactQuill
-              theme="snow"
-              value={post.content}
-              onChange={(content) => setPost({ ...post, content })}
-              modules={modules}
-              formats={formats}
-              className="h-[400px] mb-12"
-            />
-          </div>
+          <ToastEditor
+            ref={editorRef}
+            initialValue={initialPost.content || ''}
+            previewStyle="vertical"
+            height="600px"
+            initialEditType="wysiwyg"
+            useCommandShortcut={true}
+          />
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
@@ -247,6 +225,35 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">이미지 URL</label>
           <Input id="image" name="image" value={post.image || ''} onChange={handleChange} />
         </div>
+
+        {/* 대표 이미지 업로드 섹션 */}
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">대표 이미지</label>
+            <div className="mt-2">
+              {post.featuredImage && (
+                <div className="mb-4">
+                  <p className="text-sm text-gray-500 mb-2">현재 대표 이미지:</p>
+                  <img 
+                    src={post.featuredImage} 
+                    alt="현재 대표 이미지" 
+                    className="max-w-xs rounded-lg shadow-sm"
+                  />
+                </div>
+              )}
+              <Input
+                type="file"
+                accept="image/*"
+                onChange={handleFeaturedImageChange}
+                className="cursor-pointer"
+              />
+              <p className="mt-1 text-sm text-gray-500">
+                새로운 대표 이미지를 선택하세요. 선택하지 않으면 기존 이미지가 유지됩니다.
+              </p>
+            </div>
+          </div>
+        </div>
+
         <div>
           <label htmlFor="date" className="block text-sm font-medium text-gray-700">날짜</label>
           <Input id="date" name="date" type="date" value={post.date ? new Date(post.date).toISOString().split('T')[0] : ''} onChange={handleChange} />
