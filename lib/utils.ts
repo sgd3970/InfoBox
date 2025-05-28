@@ -134,26 +134,18 @@ function unwrapPBlockTags(html: string): string {
   do {
     prev = html;
     
-    // 1. 중첩된 <p> 태그 언랩: <p><p>...</p></p> → <p>...</p>
+    // (A) 중첩된 <p> 풀기
     html = html.replace(/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi, '<p>$1</p>');
     
-    // 2. 제목 태그와 블록 요소 언랩: <p><hN>...</hN></p> → <hN>...</hN>
-    html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    // (B) 모든 주요 블록 태그 언랩
+    html = html.replace(
+      /<p>\s*(<(?:h[1-6]|div|section|article|header|footer|nav|ul|ol|li|blockquote|pre|table)[\s\S]*?<\/(?:h[1-6]|div|section|article|header|footer|nav|ul|ol|li|blockquote|pre|table)>)\s*<\/p>/gi,
+      '$1'
+    );
     
-    // 3. <p>로 감싼 ul/ol/li 반복 언랩
-    html = html.replace(/<p>\s*(<(ul|ol|li)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
-    
-    // 4. <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
-    html = html.replace(/<ul>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ul>/gi, '<ul>$2</ul>');
-    
-    // 5. <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
-    html = html.replace(/<ol>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ol>/gi, '<ol>$2</ol>');
-    
-    // 6. <p><li>...</li></p> → <li>...</li>
+    // (C) 리스트 안의 불필요한 p 제거
     html = html.replace(/<p>\s*(<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
-    
-    // 7. <p><ul>...</ul></p> → <ul>...</ul>
-    html = html.replace(/<p>\s*(<(ul|ol)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    html = html.replace(/<p>\s*(<(?:ul|ol)[\s\S]*?<\/(?:ul|ol)>)\s*<\/p>/gi, '$1');
   } while (html !== prev);
   return html;
 }
@@ -171,17 +163,17 @@ function unwrapPInTable(html: string): string {
 }
 
 export function cleanHtml(input: string): string {
-  // 0) 테이블/블록 태그 앞뒤 <p> 해제
-  let pre = unwrapPTableTags(input);
-  pre = unwrapPBlockTags(pre);
-  console.log('[cleanHtml] after pre-unwrapping:', pre);
+  // 0) 테이블/블록 태그 앞뒤 <p> 해제 (pre)
+  let html = unwrapPTableTags(input);
+  html = unwrapPBlockTags(html);
+  console.log('[cleanHtml] after pre-unwrapping:', html);
 
   // 1) 엔티티 복원
-  const decoded = decodeHtmlEntities(pre);
-  console.log('[cleanHtml] decoded:', decoded);
+  html = decodeHtmlEntities(html);
+  console.log('[cleanHtml] decoded:', html);
 
   // 2) sanitize-html
-  const safe = sanitizeHtml(decoded, {
+  html = sanitizeHtml(html, {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
       '*': ['class','style'],
@@ -195,17 +187,21 @@ export function cleanHtml(input: string): string {
       decodeEntities: false
     }
   });
-  console.log('[cleanHtml] after sanitizeHtml:', safe);
+  console.log('[cleanHtml] after sanitizeHtml:', html);
 
-  // 3-1) 테이블 내부 <p> 언랩
-  const inTableClean = unwrapPInTable(safe);
-  console.log('[cleanHtml] after unwrapPInTable:', inTableClean);
+  // 3) sanitize 이후에도 블록 태그 감싸기 풀기 (post)
+  html = unwrapPBlockTags(html);
+  console.log('[cleanHtml] after post-unwrapping:', html);
 
-  // 3-2) DOM 레벨에서 모든 잘못 감싸인 <p> 언랩
-  const fullyClean = cleanBrokenP(inTableClean);
-  console.log('[cleanHtml] after cleanBrokenP:', fullyClean);
+  // 4) <table> 내부 <p> 언랩
+  html = unwrapPInTable(html);
+  console.log('[cleanHtml] after unwrapPInTable:', html);
 
-  return fullyClean.trim();
+  // 5) DOM 레벨에서 남은 잘못된 <p> 전부 언랩
+  html = cleanBrokenP(html);
+  console.log('[cleanHtml] after cleanBrokenP:', html);
+
+  return html.trim();
 }
 
 export function cleanQuillHtml(html: string) {
