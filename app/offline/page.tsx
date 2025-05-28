@@ -8,10 +8,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "오프라인 - 트렌드 스캐너",
+    title: "오프라인 - InfoBox",
     description: "인터넷 연결이 없습니다. 오프라인 모드로 전환되었습니다.",
     openGraph: {
-      title: "오프라인 - 트렌드 스캐너",
+      title: "오프라인 - InfoBox",
       description: "인터넷 연결이 없습니다. 오프라인 모드로 전환되었습니다.",
       type: "website",
       url: `${BASE_URL}/offline`,

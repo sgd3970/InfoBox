@@ -9,10 +9,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "태그 - 트렌드 스캐너",
+    title: "태그 - InfoBox",
     description: "모든 태그 목록을 확인하세요.",
     openGraph: {
-      title: "태그 - 트렌드 스캐너",
+      title: "태그 - InfoBox",
       description: "모든 태그 목록을 확인하세요.",
       type: "website",
       url: `${BASE_URL}/blog/tags`,

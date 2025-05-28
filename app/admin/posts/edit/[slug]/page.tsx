@@ -66,16 +66,16 @@ export async function generateMetadata({ params }: PostEditPageProps): Promise<M
 
   if (!post) {
     return {
-      title: "포스트 수정 - 트렌드 스캐너",
-      description: "트렌드 스캐너 포스트를 수정하세요.",
+      title: "포스트 수정 - InfoBox",
+      description: "InfoBox 포스트를 수정하세요.",
     }
   }
 
   return {
-    title: `${post.title} 수정 - 트렌드 스캐너`,
+    title: `${post.title} 수정 - InfoBox`,
     description: `${post.title} 포스트를 수정하세요.`,
     openGraph: {
-      title: `${post.title} 수정 - 트렌드 스캐너`,
+      title: `${post.title} 수정 - InfoBox`,
       description: `${post.title} 포스트를 수정하세요.`,
       type: "website",
       url: `${BASE_URL}/admin/posts/edit/${params.slug}`,

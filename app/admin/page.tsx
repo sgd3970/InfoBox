@@ -36,11 +36,11 @@ export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "관리자 - 트렌드 스캐너",
-    description: "트렌드 스캐너 관리자 페이지입니다.",
+    title: "관리자 - InfoBox",
+    description: "InfoBox 관리자 페이지입니다.",
     openGraph: {
-      title: "관리자 - 트렌드 스캐너",
-      description: "트렌드 스캐너 관리자 페이지입니다.",
+      title: "관리자 - InfoBox",
+      description: "InfoBox 관리자 페이지입니다.",
       type: "website",
       url: `${BASE_URL}/admin`,
     },

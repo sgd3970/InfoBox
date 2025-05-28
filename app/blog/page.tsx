@@ -132,10 +132,10 @@ export async function generateMetadata(): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
 
   return {
-    title: "블로그 - 트렌드 스캐너",
+    title: "블로그 - InfoBox",
     description: "최신 트렌드와 기술 소식을 확인하세요.",
     openGraph: {
-      title: "블로그 - 트렌드 스캐너",
+      title: "블로그 - InfoBox",
       description: "최신 트렌드와 기술 소식을 확인하세요.",
       type: "website",
       url: `${BASE_URL}/blog`,

@@ -79,6 +79,7 @@
     "rehype-pretty-code": "latest",
     "rehype-slug": "latest",
     "remark-gfm": "latest",
+    "sanitize-html": "^2.17.0",
     "shiki": "latest",
     "snappy": "latest",
     "socks": "latest",

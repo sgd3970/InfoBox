@@ -12,6 +12,8 @@ import type { Post, Category } from '@/lib/models';
 import dynamic from 'next/dynamic';
 import '@toast-ui/editor/dist/toastui-editor.css';
 import { Editor as ToastEditor } from '@toast-ui/react-editor';
+// @ts-ignore
+import sanitizeHtml from "sanitize-html";
 
 interface PostEditClientProps {
   initialPost: Post;
@@ -145,9 +147,16 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     }
 
     const html = (editorRef.current as any).getInstance().getHTML();
+    const cleaned = html
+      .replace(/<p>\s*(<(h[1-6]|div|table|ul|ol)[^>]*>)/g, '$1')
+      .replace(/(<\/(h[1-6]|div|table|ul|ol)>)\s*<\/p>/g, '$1');
+    const sanitized = sanitizeHtml(cleaned, {
+      allowedTags: false,
+      allowedAttributes: false,
+    });
     const postData = {
       ...post,
-      content: html,
+      content: sanitized,
       images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
       featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
       updatedAt: new Date().toISOString(),

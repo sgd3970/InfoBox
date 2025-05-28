@@ -98,10 +98,10 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   }
 
   return {
-    title: `${categoryInfo.name} - 트렌드 스캐너`,
+    title: `${categoryInfo.name} - InfoBox`,
     description: categoryInfo.description || `${categoryInfo.name} 카테고리의 모든 게시물을 확인하세요.`,
     openGraph: {
-      title: `${categoryInfo.name} - 트렌드 스캐너`,
+      title: `${categoryInfo.name} - InfoBox`,
       description: categoryInfo.description || `${categoryInfo.name} 카테고리의 모든 게시물을 확인하세요.`,
       type: "website",
       url: `${BASE_URL}/blog/${category}`,

@@ -78,10 +78,10 @@ export async function generateMetadata({ params }: TagPageProps): Promise<Metada
   const tagSlug = params.slug
 
   return {
-    title: `#${tagSlug} - 트렌드 스캐너`,
+    title: `#${tagSlug} - InfoBox`,
     description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
     openGraph: {
-      title: `#${tagSlug} - 트렌드 스캐너`,
+      title: `#${tagSlug} - InfoBox`,
       description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
       type: "website",
       url: `${BASE_URL}/blog/tags/${tagSlug}`,
