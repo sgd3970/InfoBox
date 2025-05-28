@@ -47,10 +47,24 @@ function unwrapPTableTags(html: string): string {
   return html;
 }
 
+// <p><hN>...</hN></p> 등 블록 태그와 리스트 구조 언랩
+function unwrapPBlockTags(html: string): string {
+  // <p><hN>...</hN></p> → <hN>...</hN>
+  html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|blockquote|pre)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+  // <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
+  html = html.replace(/<ul>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ul>/gi, '<ul>$2</ul>');
+  // <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
+  html = html.replace(/<ol>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ol>/gi, '<ol>$2</ol>');
+  // <p><li>...</li></p> → <li>...</li>
+  html = html.replace(/<p>\s*(<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
+  return html;
+}
+
 export function cleanHtml(html: string): string {
-  // 0. sanitize-html 전에 <p>로 감싸진 테이블 태그 언랩
+  // 0. sanitize-html 전에 <p>로 감싸진 테이블/블록 태그 언랩
   let preUnwrap = unwrapPTableTags(html);
-  console.log('[cleanHtml] after unwrapPTableTags:', preUnwrap);
+  preUnwrap = unwrapPBlockTags(preUnwrap);
+  console.log('[cleanHtml] after unwrapPTableTags+BlockTags:', preUnwrap);
 
   // 1. 엔티티 복원
   const decoded = decodeHtmlEntities(preUnwrap);
