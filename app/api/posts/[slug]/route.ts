@@ -201,6 +201,7 @@ export async function PUT(
 
   try {
     const postData = await request.json()
+    console.log('[PUT] postData:', postData)
     const db = await getDatabase()
 
     // HTML 정제
@@ -212,6 +213,7 @@ export async function PUT(
     const requiredFields = ["title", "slug", "description", "content", "category"]
     for (const field of requiredFields) {
       if (!postData[field]) {
+        console.log('[PUT] 필수 필드 누락:', field, postData[field])
         return NextResponse.json(
           { error: `${field} 필드는 필수입니다.` },
           { status: 400 }
@@ -219,12 +221,26 @@ export async function PUT(
       }
     }
 
+    // _id 타입 변환
+    let objectId = postData._id
+    if (typeof objectId === 'string') {
+      try {
+        objectId = new ObjectId(objectId)
+      } catch (e) {
+        console.log('[PUT] _id ObjectId 변환 실패:', postData._id)
+        return NextResponse.json({ error: '_id 변환 오류' }, { status: 400 })
+      }
+    }
+    console.log('[PUT] objectId:', objectId)
+
     // 슬러그 중복 검사 (자기 자신 제외)
     const existingPost = await db.collection("posts").findOne({
       slug: postData.slug,
-      _id: { $ne: postData._id },
+      _id: { $ne: objectId },
     })
+    console.log('[PUT] existingPost:', existingPost)
     if (existingPost) {
+      console.log('[PUT] 슬러그 중복:', postData.slug)
       return NextResponse.json(
         { error: `슬러그 '${postData.slug}'는 이미 존재합니다.` },
         { status: 400 }
@@ -237,14 +253,17 @@ export async function PUT(
       updatedAt: new Date(), // 업데이트 시간 (Date 객체)
       tags: Array.isArray(postData.tags) ? postData.tags : [], // tags가 배열인지 확인
     }
+    console.log('[PUT] updatedPost:', updatedPost)
 
     // 데이터베이스에서 포스트 업데이트
     const result = await db.collection("posts").updateOne(
-      { _id: postData._id },
+      { _id: objectId },
       { $set: updatedPost }
     )
+    console.log('[PUT] updateOne result:', result)
 
     if (result.matchedCount === 0) {
+      console.log('[PUT] 포스트를 찾을 수 없습니다:', objectId)
       return NextResponse.json(
         { error: "포스트를 찾을 수 없습니다." },
         { status: 404 }
