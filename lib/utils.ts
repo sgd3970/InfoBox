@@ -26,6 +26,18 @@ function decodeHtmlEntities(html: string) {
     .replace(/&nbsp;/g, ' ');
 }
 
+// <table>...</table> 내부의 <p> 태그를 모두 언랩
+function unwrapPInTable(html: string): string {
+  return html.replace(
+    /(<table[\s\S]*?>)([\s\S]*?)(<\/table>)/gi,
+    (match, open, content, close) => {
+      // 테이블 내부의 <p> 태그 제거
+      const cleaned = content.replace(/<p>([\s\S]*?)<\/p>/gi, '$1');
+      return open + cleaned + close;
+    }
+  );
+}
+
 export function cleanHtml(html: string): string {
   // 1. 엔티티 복원
   const decoded = decodeHtmlEntities(html);
@@ -46,6 +58,10 @@ export function cleanHtml(html: string): string {
     }
   });
   console.log('[cleanHtml] after sanitizeHtml:', safe);
+
+  // 2.5. 테이블 내부의 <p> 태그 언랩
+  safe = unwrapPInTable(safe);
+  console.log('[cleanHtml] after unwrapPInTable:', safe);
 
   // 3. sanitize-html로도 안 지워지는 <p><br></p> 등 후처리
   safe = safe.replace(/<p>(\s|&nbsp;|<br\s*\/?\>)*<\/p>/gi, '');
