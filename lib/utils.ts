@@ -47,7 +47,7 @@ function unwrapPTableTags(html: string): string {
   return html;
 }
 
-// <p><hN>...</hN></p> 등 블록 태그와 리스트 구조 언랩 (반복 적용)
+// <p><hN>...</hN></p> 등 블록 태그와 리스트 구조 언랩 (더 강하게 반복 적용)
 function unwrapPBlockTags(html: string): string {
   let prev;
   do {
@@ -55,21 +55,25 @@ function unwrapPBlockTags(html: string): string {
     // 1. 중첩된 <p> 태그 언랩: <p><p>...</p></p> → <p>...</p>
     html = html.replace(/<p>\s*<p>([\s\S]*?)<\/p>\s*<\/p>/gi, '<p>$1</p>');
     // 2. 제목 태그와 블록 요소 언랩: <p><hN>...</hN></p> → <hN>...</hN>
-    html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|blockquote|pre|table)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
-    // 3. 순서 없는 목록 내부 <p> 태그 언랩: <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
+    html = html.replace(/<p>\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    // 3. <p>로 감싼 ul/ol/li 반복 언랩
+    html = html.replace(/<p>\s*(<(ul|ol|li)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
+    // 4. <ul><p><li>...</li></p></ul> → <ul><li>...</li></ul>
     html = html.replace(/<ul>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ul>/gi, '<ul>$2</ul>');
-    // 4. 순서 있는 목록 내부 <p> 태그 언랩: <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
+    // 5. <ol><p><li>...</li></p></ol> → <ol><li>...</li></ol>
     html = html.replace(/<ol>(\s*<p>(\s*<li[\s\S]*?<\/li>)\s*)<\/p>\s*<\/ol>/gi, '<ol>$2</ol>');
-    // 5. 목록 항목 언랩: <p><li>...</li></p> → <li>...</li>
+    // 6. <p><li>...</li></p> → <li>...</li>
     html = html.replace(/<p>\s*(<li[\s\S]*?<\/li>)\s*<\/p>/gi, '$1');
-    // 6. 목록 블록 언랩: <p><ul>...</ul></p> → <ul>...</ul>
+    // 7. <p><ul>...</ul></p> → <ul>...</ul>
     html = html.replace(/<p>\s*(<(ul|ol)[\s\S]*?<\/\2>)\s*<\/p>/gi, '$1');
-    // 7. 코드 블록 언랩: <p><pre>...</pre></p> → <pre>...</pre>
+    // 8. <p><pre>...</pre></p> → <pre>...</pre>
     html = html.replace(/<p>\s*(<pre[\s\S]*?<\/pre>)\s*<\/p>/gi, '$1');
-    // 8. div 블록 언랩: <p><div>...</div></p> → <div>...</div>
+    // 9. <p><div>...</div></p> → <div>...</div>
     html = html.replace(/<p>\s*(<div[\s\S]*?<\/div>)\s*<\/p>/gi, '$1');
-    // 9. 테이블 블록 언랩: <p><table>...</table></p> → <table>...</table>
+    // 10. <p><table>...</table></p> → <table>...</table>
     html = html.replace(/<p>\s*(<table[\s\S]*?<\/table>)\s*<\/p>/gi, '$1');
+    // 11. <p> 내부에 여러 블록 태그가 있을 때도 언랩
+    html = html.replace(/<p>(\s*(<(h[1-6]|div|ul|ol|li|blockquote|pre|table)[^>]*>[\s\S]*?<\/\3>\s*)+)<\/p>/gi, '$1');
   } while (html !== prev);
   return html;
 }
