@@ -27,8 +27,8 @@ export function cleanHtml(html: string): string {
   // 1. 엔티티 복원
   const decoded = decodeHtmlEntities(html);
 
-  // 2. 기본 sanitize
-  const safe = sanitizeHtml(decoded, {
+  // 2. sanitize-html로 1차 정제
+  let safe = sanitizeHtml(decoded, {
     allowedTags: ALLOWED_TAGS,
     allowedAttributes: {
       '*': ['class','style'],
@@ -36,10 +36,19 @@ export function cleanHtml(html: string): string {
       img: ['src','alt','width','height'],
     },
     exclusiveFilter(frame: { tag: string; text: string }) {
-      // 빈 p 태그는 제거
-      return frame.tag === 'p' && !frame.text.trim();
+      // <p> 내부가 공백, &nbsp;, <br>만 있으면 제거
+      const text = (frame.text || '').replace(/&nbsp;|\s|<br\s*\/?>/gi, '');
+      return frame.tag === 'p' && !text;
     }
   });
+
+  // 3. sanitize-html로도 안 지워지는 <p><br></p> 등 후처리
+  safe = safe.replace(/<p>(\s|&nbsp;|<br\s*\/?>)*<\/p>/gi, '');
+
+  // 4. 블록요소만 단독으로 감싼 <p> 언랩
+  safe = safe
+    .replace(/<p>\s*(<(?:h[1-6]|div|table|ul|ol|blockquote|pre)[\s\S]+?>)\s*<\/p>/g, '$1')
+    .replace(/(<\/(?:h[1-6]|div|table|ul|ol|blockquote|pre)>)\s*<\/p>/g, '$1');
 
   return safe.trim();
 }
