@@ -67,6 +67,7 @@
     "fs": "latest",
     "gcp-metadata": "latest",
     "glob": "latest",
+    "he": "^1.2.0",
     "input-otp": "1.4.1",
     "jsdom": "^26.1.0",
     "kerberos": "latest",
@@ -112,6 +113,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/bcryptjs": "^2.4.6",
+    "@types/he": "^1.2.3",
     "@types/uuid": "^10.0.0"
   }
 }
