@@ -28,6 +28,11 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
 
+  // 태그 관련 상태
+  const [tags, setTags] = useState<{ name: string; slug: string }[]>([]);
+  const [newTagName, setNewTagName] = useState('');
+  const [newTagSlug, setNewTagSlug] = useState('');
+
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -45,6 +50,18 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     };
     fetchCategories();
   }, []);
+
+  useEffect(() => {
+    // 초기 태그 데이터 설정
+    if (initialPost.tags) {
+      setTags(initialPost.tags.map(tag => {
+        if (typeof tag === 'string') {
+          return { name: tag, slug: tag.toLowerCase().replace(/\s+/g, '-') };
+        }
+        return tag;
+      }));
+    }
+  }, [initialPost]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -102,6 +119,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       images: post.images,
       featuredImage: post.featuredImage,
       updatedAt: new Date().toISOString(),
+      tags: tags // 태그 데이터 업데이트
     }
 
     try {
@@ -168,10 +186,6 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           </Select>
         </div>
         <div>
-          <label htmlFor="tags" className="block text-sm font-medium text-gray-700">태그 (쉼표로 구분)</label>
-          <Input id="tags" name="tags" value={post.tags?.join(', ') || ''} onChange={(e) => setPost({ ...post, tags: e.target.value.split(',').map(tag => tag.trim()) })} />
-        </div>
-        <div>
           <label htmlFor="image" className="block text-sm font-medium text-gray-700">이미지 URL</label>
           <Input id="image" name="image" value={post.image || ''} onChange={handleChange} />
         </div>
@@ -212,6 +226,60 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
           <Checkbox id="featured" name="featured" checked={post.featured || false} onCheckedChange={(checked) => handleCheckboxChange('featured', !!checked)} />
           <label htmlFor="featured" className="text-sm font-medium leading-none">추천 포스트</label>
         </div>
+
+        {/* 태그 입력 필드 */}
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">태그</label>
+          <div className="space-y-2">
+            {tags.map((tag, index) => (
+              <div key={index} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-full">
+                <span>{tag.name}</span>
+                <span className="text-muted-foreground">({tag.slug})</span>
+                <button
+                  type="button"
+                  onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <Input
+                placeholder="태그 이름"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTagName) {
+                    e.preventDefault();
+                    const slug = newTagSlug || newTagName.toLowerCase().replace(/\s+/g, '-');
+                    setTags([...tags, { name: newTagName, slug }]);
+                    setNewTagName('');
+                    setNewTagSlug('');
+                  }
+                }}
+              />
+              <Input
+                placeholder="태그 slug (선택사항)"
+                value={newTagSlug}
+                onChange={(e) => setNewTagSlug(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTagName) {
+                    e.preventDefault();
+                    const slug = newTagSlug || newTagName.toLowerCase().replace(/\s+/g, '-');
+                    setTags([...tags, { name: newTagName, slug }]);
+                    setNewTagName('');
+                    setNewTagSlug('');
+                  }
+                }}
+              />
+            </div>
+            <p className="text-sm text-gray-500">
+              태그 이름을 입력하고 Enter를 누르세요. Slug는 선택사항이며, 입력하지 않으면 태그 이름을 기반으로 자동 생성됩니다.
+            </p>
+          </div>
+        </div>
+
         <Button type="submit" disabled={loading}>
           {loading ? '수정 중...' : '포스트 수정'}
         </Button>
