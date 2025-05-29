@@ -1,6 +1,7 @@
 import { Suspense } from "react"
 import TagsClient, { type TagData } from "./client"
-import type { Post } from "@/lib/models"
+import { getDatabase } from "@/lib/mongodb"
+import type { Tag } from "@/lib/models"
 import { Metadata } from "next"
 
 export const dynamic = "force-dynamic"
@@ -24,52 +25,41 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default async function TagsPage() {
-  // 모든 포스트 가져오기
-  let allPosts = [];
-  try {
-    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
-    const url = new URL('/api/search?limit=1000', BASE_URL).toString()
-    const searchRes = await fetch(url, { cache: 'no-store' })
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      allPosts = searchData.results || [];
-      console.log('Fetched posts:', allPosts.length); // 디버깅용
-    } else {
-      console.error("포스트 목록 가져오기 실패", searchRes.status);
-    }
-  } catch (error) {
-    console.error("포스트 목록 가져오는 중 오류 발생:", error);
-    allPosts = [];
-  }
+  // DB에서 모든 태그와 포스트를 불러옴
+  const db = await getDatabase();
+  const allTags = (await db.collection("tags").find({}).toArray()).map((tag: any) => ({
+    name: tag.name,
+    slug: tag.slug,
+    postCount: tag.postCount ?? 0,
+  })) as Tag[];
+  const allPosts = await db.collection("posts").find({}).toArray();
 
-  // 모든 태그 수집 및 카운트
-  const tagCounts: Record<string, number> = {}
+  // 태그별로 posts에서 몇 번 등장하는지 count
+  const tagCounts = allTags.map(tag => {
+    const count = allPosts.filter(post => (post.tags || []).includes(tag.name)).length;
+    return {
+      name: tag.name,
+      slug: tag.slug,
+      count,
+    };
+  });
 
-  allPosts.forEach((post: Post) => {
-    if (post.tags && Array.isArray(post.tags)) {
-      post.tags.forEach((tag) => {
-        if (tag && typeof tag === 'object' && 'name' in tag && typeof tag.name === 'string') {
-          const normalizedTag = tag.name.toLowerCase()
-          tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
-        }
-      })
-    }
-  })
+  // 0개인 태그는 제외
+  const filteredTagCounts = tagCounts.filter(t => t.count > 0);
 
-  // 태그를 알파벳 순으로 정렬
-  const sortedTags = Object.entries(tagCounts).sort((a, b) => a[0].localeCompare(b[0]))
+  // 알파벳 순 정렬
+  const sortedTags = filteredTagCounts.sort((a, b) => a.name.localeCompare(b.name));
 
   // 최대 빈도수 계산
-  const maxCount = Math.max(...sortedTags.map(([_, count]) => count))
+  const maxCount = Math.max(1, ...sortedTags.map(t => t.count));
 
   // 클라이언트 컴포넌트에 전달할 데이터 준비
-  const tagsData: TagData[] = sortedTags.map(([tag, count]) => ({
-    tag,
+  const tagsData: TagData[] = sortedTags.map(({ name, slug, count }) => ({
+    tag: name,
+    slug,
     count,
     maxCount,
-  }))
-
-  console.log('Processed tags:', tagsData.length); // 디버깅용
+  }));
 
   return (
     <div className="container py-10">
