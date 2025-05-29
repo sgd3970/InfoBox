@@ -22,8 +22,8 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   const [post, setPost] = useState<Post>(initialPost);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
-  const [images, setImages] = useState<File[]>([]);
-  const [featuredImage, setFeaturedImage] = useState<File | null>(null);
+  const [images, setImages] = useState<string[]>([]);
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null);
   const [isUploadingImages, setIsUploadingImages] = useState(false);
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([]);
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null);
@@ -59,15 +59,30 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
     setPost({ ...post, [name]: checked });
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
+
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      const base64Images = await Promise.all(files.map(fileToBase64));
+      setImages(base64Images as any);
+      setPost(post => ({ ...post, images: base64Images as any }));
     }
   };
 
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFeaturedImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFeaturedImage(e.target.files[0]);
+      const file = e.target.files[0];
+      const base64 = await fileToBase64(file);
+      setFeaturedImage(base64 as any);
+      setPost(post => ({ ...post, featuredImage: base64 as any }));
     }
   };
 
@@ -81,67 +96,11 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
       return
     }
 
-    setIsUploadingImages(true);
-    let uploadedUrls: string[] = [];
-    let uploadedFeaturedImageUrl: string | null = null;
-
-    try {
-      // 본문 이미지 업로드
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(file => formData.append('file', file));
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { urls: string[], files: any[] } = await uploadRes.json();
-        uploadedUrls = result.urls;
-        setUploadedImageUrls(uploadedUrls);
-      }
-
-      // 대표 이미지 업로드
-      if (featuredImage) {
-        const formData = new FormData();
-        formData.append('file', featuredImage);
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '대표 이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { url: string } = await uploadRes.json();
-        uploadedFeaturedImageUrl = result.url;
-        setFeaturedImageUrl(uploadedFeaturedImageUrl);
-      }
-
-    } catch (error: any) {
-      setIsUploadingImages(false);
-      setLoading(false);
-      toast.error(error.message);
-      return;
-    } finally {
-      setIsUploadingImages(false);
-    }
-
     const postData = {
       ...post,
       content: cleanHtml(he.decode(post.content)),
-      images: uploadedUrls.length > 0 ? uploadedUrls : post.images,
-      featuredImage: uploadedFeaturedImageUrl || post.featuredImage,
+      images: post.images,
+      featuredImage: post.featuredImage,
       updatedAt: new Date().toISOString(),
     }
 

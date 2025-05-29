@@ -24,8 +24,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState("")
-  const [images, setImages] = useState<File[]>([])
-  const [featuredImage, setFeaturedImage] = useState<File | null>(null)
+  const [images, setImages] = useState<string[]>([])
+  const [featuredImage, setFeaturedImage] = useState<string | null>(null)
   const [isUploadingImages, setIsUploadingImages] = useState(false)
   const [uploadedImageUrls, setUploadedImageUrls] = useState<string[]>([])
   const [featuredImageUrl, setFeaturedImageUrl] = useState<string | null>(null)
@@ -35,6 +35,15 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
 
   const router = useRouter()
   const { toast } = useToast()
+
+  const fileToBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -50,66 +59,6 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       return
     }
 
-    setIsUploadingImages(true);
-    let uploadedUrls: string[] = [];
-    let uploadedFeaturedImageUrl: string | null = null;
-
-    try {
-      // 본문 이미지 업로드
-      if (images.length > 0) {
-        const formData = new FormData();
-        images.forEach(file => formData.append('file', file));
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { urls: string[], files: any[] } = await uploadRes.json();
-        uploadedUrls = result.urls;
-        setUploadedImageUrls(uploadedUrls);
-      }
-
-      // 대표 이미지 업로드
-      if (featuredImage) {
-        const formData = new FormData();
-        formData.append('file', featuredImage);
-
-        const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-        const uploadRes = await fetch(`${BASE_URL}/api/upload`, {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (!uploadRes.ok) {
-          const errorData = await uploadRes.json();
-          throw new Error(errorData.error || '대표 이미지 업로드에 실패했습니다.');
-        }
-
-        const result: { url: string } = await uploadRes.json();
-        uploadedFeaturedImageUrl = result.url;
-        setFeaturedImageUrl(uploadedFeaturedImageUrl);
-      }
-
-    } catch (error: any) {
-      setIsUploadingImages(false);
-      setLoading(false);
-      toast({
-        title: "업로드 오류",
-        description: error.message,
-        variant: "destructive",
-      });
-      return;
-    } finally {
-      setIsUploadingImages(false);
-    }
-
     // 저장 직전
     const decoded = he.decode(content);
     const cleanedHtml = cleanHtml(decoded);
@@ -123,8 +72,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       date: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       featured: false,
-      images: uploadedUrls,
-      featuredImage: uploadedFeaturedImageUrl,
+      images: images,
+      featuredImage: featuredImage,
     }
 
     try {
@@ -165,15 +114,19 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     setSlug(newTitle.toLowerCase().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, ""));
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files) {
-      setImages(Array.from(e.target.files));
+      const files = Array.from(e.target.files);
+      const base64Images = await Promise.all(files.map(fileToBase64));
+      setImages(base64Images as any); // images를 string[]로 사용
     }
   };
 
-  const handleFeaturedImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFeaturedImageChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
-      setFeaturedImage(e.target.files[0]);
+      const file = e.target.files[0];
+      const base64 = await fileToBase64(file);
+      setFeaturedImage(base64 as any); // featuredImage를 string으로 사용
     }
   };
 
@@ -269,10 +222,10 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
               <div>
                 <h4 className="text-md font-medium mb-2">선택된 본문 이미지 ({images.length}개)</h4>
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((file, index) => (
+                  {images.map((url, index) => (
                     <div key={index} className="border rounded-md p-2 flex flex-col items-center">
-                      <img src={URL.createObjectURL(file)} alt={`Preview ${index}`} className="w-full h-auto object-cover mb-2 rounded-md" />
-                      <Button variant="outline" size="sm" onClick={() => handleInsertImage(URL.createObjectURL(file))} className="w-full">
+                      <img src={url} alt={`Preview ${index}`} className="w-full h-auto object-cover mb-2 rounded-md" />
+                      <Button variant="outline" size="sm" onClick={() => handleInsertImage(url)} className="w-full">
                         본문에 삽입
                       </Button>
                     </div>
@@ -293,7 +246,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
               <div>
                 <h4 className="text-md font-medium mb-2">선택된 대표 이미지</h4>
                 <div className="border rounded-md p-2 flex flex-col items-center max-w-[300px]">
-                  <img src={URL.createObjectURL(featuredImage)} alt="Featured Image Preview" className="w-full h-auto object-cover mb-2 rounded-md" />
+                  <img src={featuredImage} alt="Featured Image Preview" className="w-full h-auto object-cover mb-2 rounded-md" />
                 </div>
               </div>
             )}
