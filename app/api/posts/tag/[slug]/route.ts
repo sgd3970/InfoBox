@@ -109,7 +109,8 @@ export async function GET(
     } else {
       console.log('[API] 필터링된 포스트가 없습니다.')
       console.log('[API] 모든 포스트의 태그 정보 확인:')
-      const allPosts = await db.collection("posts").find({ published: true }).toArray()
+      const allPosts = await db.collection("posts").find({}).toArray()
+      
       allPosts.forEach((post: WithId<Document>, idx) => {
         console.log(`[API] 포스트[${idx}] 태그 정보:`)
         console.log('원본 태그:', post.tags)
