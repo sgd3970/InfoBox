@@ -32,6 +32,18 @@ export async function GET(
     const allTags = await db.collection("tags").find({}).toArray()
     console.log(allTags.map((t: any) => ({ name: t.name, slug: t.slug })))
 
+    // 모든 포스트 가져오기 (조건 없이)
+    console.log('[API] 모든 포스트 가져오기 시도:')
+    const allPostsNoCondition = await db.collection("posts").find({}).toArray();
+    console.log('[API] 조건 없이 가져온 posts 개수:', allPostsNoCondition.length);
+    allPostsNoCondition.forEach((post, idx) => {
+      console.log(`[API] 포스트[${idx}] 정보:`);
+      console.log('title:', post.title);
+      console.log('published:', post.published);
+      console.log('tags:', post.tags);
+      console.log('---');
+    });
+
     // 전체 posts의 tags 배열 로그 (10개까지만)
     const postsData = await db.collection("posts").find({ published: true }).toArray();
     console.log('[API] 전체 posts 개수:', postsData.length);
