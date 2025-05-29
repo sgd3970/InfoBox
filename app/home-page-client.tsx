@@ -107,25 +107,23 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group w-full min-w-0">
-                <div className="space-y-3 md:space-y-4 w-full">
-                  <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <PostThumbnail
-                      src={post.featuredImage || post.image}
-                      alt={post.title}
-                      width={400}
-                      height={200}
-                      className="object-cover transition-all duration-300 group-hover:scale-110"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                      {post.category}
-                    </span>
-                    <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2 text-base md:text-lg">{post.title}</h3>
-                  </div>
+              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col min-w-0">
+                <div className="relative aspect-video w-full overflow-hidden">
+                  <PostThumbnail
+                    src={post.featuredImage || post.image}
+                    alt={post.title}
+                    width={400}
+                    height={200}
+                    className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                  />
+                </div>
+                <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                  <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2 text-base md:text-lg">{post.title}</h3>
                   <p className="text-muted-foreground text-sm line-clamp-2 break-words min-w-0">{post.description}</p>
+                  <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                    <time dateTime={new Date(post.date).toISOString()}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
+                  </div>
                 </div>
               </Link>
             </>

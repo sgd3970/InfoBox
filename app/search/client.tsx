@@ -200,49 +200,24 @@ export function SearchClient() {
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
                     {searchResults.map((post) => (
-                      <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                        <div className="relative aspect-video overflow-hidden">
+                      <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                        <div className="relative aspect-video w-full overflow-hidden">
                           <PostThumbnail
                             src={post.featuredImage || post.image}
                             alt={post.title}
                             width={300}
                             height={150}
-                            className="object-cover transition-transform group-hover:scale-105"
+                            className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                           />
                         </div>
-                        <div className="space-y-2">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                              {post.category}
-                            </span>
-                            {post.tags && post.tags.length > 0 && (
-                              <div className="flex gap-1 flex-wrap">
-                                {post.tags.slice(0, 3).map((tag) => (
-                                  <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                                    {tag}
-                                  </span>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                          <h3
-                            className="text-xl font-bold group-hover:text-primary transition-colors"
-                            dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                          />
-                          <p
-                            className="text-muted-foreground line-clamp-2"
-                            dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                          />
-                          <div className="flex items-center text-xs text-muted-foreground">
-                            <time dateTime={post.date}>
-                              {new Date(post.date).toLocaleDateString("ko-KR", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
-                            </time>
+                        <div className="flex-1 flex flex-col p-4 gap-2">
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                          <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                          <p className="text-muted-foreground line-clamp-2">{post.description}</p>
+                          <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                            <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
                             <span className="mx-2">•</span>
-                            <span>{post.views.toLocaleString()} 조회</span>
+                            <span>{post.views?.toLocaleString() || 0} 조회</span>
                           </div>
                         </div>
                       </Link>
@@ -254,47 +229,22 @@ export function SearchClient() {
                   <TabsContent key={cat} value={cat} className="mt-6">
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
-                        <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                          <div className="relative aspect-video overflow-hidden">
+                        <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                          <div className="relative aspect-video w-full overflow-hidden">
                             <PostThumbnail
                               src={post.featuredImage || post.image}
                               alt={post.title}
                               width={300}
                               height={150}
-                              className="object-cover transition-transform group-hover:scale-105"
+                              className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                             />
                           </div>
-                          <div className="space-y-2 p-4">
-                            <div className="flex items-center gap-2">
-                              <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                                {post.category}
-                              </span>
-                              {post.tags && post.tags.length > 0 && (
-                                <div className="flex gap-1 flex-wrap">
-                                  {post.tags.slice(0, 3).map((tag) => (
-                                    <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                                      {tag}
-                                    </span>
-                                  ))}
-                                </div>
-                              )}
-                            </div>
-                            <h3
-                              className="text-xl font-bold group-hover:text-primary transition-colors"
-                              dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                            />
-                            <p
-                              className="text-muted-foreground line-clamp-2"
-                              dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                            />
-                            <div className="flex items-center text-xs text-muted-foreground">
-                              <time dateTime={post.date}>
-                                {new Date(post.date).toLocaleDateString("ko-KR", {
-                                  year: "numeric",
-                                  month: "long",
-                                  day: "numeric",
-                                })}
-                              </time>
+                          <div className="flex-1 flex flex-col p-4 gap-2">
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                            <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                            <p className="text-muted-foreground line-clamp-2">{post.description}</p>
+                            <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                              <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
                               <span className="mx-2">•</span>
                               <span>{post.views?.toLocaleString() || 0} 조회</span>
                             </div>
@@ -310,49 +260,24 @@ export function SearchClient() {
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
                 {searchResults.map((post) => (
-                  <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                    <div className="relative aspect-video overflow-hidden">
+                  <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                    <div className="relative aspect-video w-full overflow-hidden">
                       <PostThumbnail
                         src={post.featuredImage || post.image}
                         alt={post.title}
                         width={300}
                         height={150}
-                        className="object-cover transition-transform group-hover:scale-105"
+                        className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
-                    <div className="space-y-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary">
-                          {post.category}
-                        </span>
-                        {post.tags && post.tags.length > 0 && (
-                          <div className="flex gap-1 flex-wrap">
-                            {post.tags.slice(0, 3).map((tag) => (
-                              <span key={tag} className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground">
-                                {tag}
-                              </span>
-                            ))}
-                          </div>
-                        )}
-                      </div>
-                      <h3
-                        className="text-xl font-bold group-hover:text-primary transition-colors"
-                        dangerouslySetInnerHTML={{ __html: highlightText(post.title) }}
-                      />
-                      <p
-                        className="text-muted-foreground line-clamp-2"
-                        dangerouslySetInnerHTML={{ __html: highlightText(post.description) }}
-                      />
-                      <div className="flex items-center text-xs text-muted-foreground">
-                        <time dateTime={post.date}>
-                          {new Date(post.date).toLocaleDateString("ko-KR", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </time>
+                    <div className="flex-1 flex flex-col p-4 gap-2">
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                      <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
+                      <p className="text-muted-foreground line-clamp-2">{post.description}</p>
+                      <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                        <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
                         <span className="mx-2">•</span>
-                        <span>{post.views.toLocaleString()} 조회</span>
+                        <span>{post.views?.toLocaleString() || 0} 조회</span>
                       </div>
                     </div>
                   </Link>

@@ -51,30 +51,29 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <h1 className="text-2xl font-bold mb-6">카테고리: {params.category}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
-            <div className="rounded-lg border shadow-sm overflow-hidden">
+          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+            <div className="relative aspect-video w-full overflow-hidden">
               <PostThumbnail
                 src={post.featuredImage || post.image}
                 alt={post.title}
                 width={800}
                 height={400}
-                className="w-full h-48 object-cover"
+                className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
               />
-              <div className="p-4">
-                <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
-                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{post.description}</p>
-                <div className="text-xs text-gray-500 dark:text-gray-400">
-                  <span>{new Date(post.date).toLocaleDateString()}</span>
-                  <span className="mx-2">•</span>
-                  <span>{post.category}</span>
-                  {/* 태그 표시 추가 */}
-                  {post.tags && post.tags.length > 0 && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{post.tags.join(', ')}</span>
-                      </>
-                  )}
-                </div>
+            </div>
+            <div className="flex-1 flex flex-col p-4 gap-2">
+              <h2 className="text-xl font-semibold mb-1 line-clamp-2">{post.title}</h2>
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 line-clamp-2">{post.description}</p>
+              <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-auto">
+                <span>{new Date(post.date).toLocaleDateString()}</span>
+                <span className="mx-2">•</span>
+                <span>{post.category}</span>
+                {post.tags && post.tags.length > 0 && (
+                  <>
+                    <span className="mx-2">•</span>
+                    <span>{post.tags.join(', ')}</span>
+                  </>
+                )}
               </div>
             </div>
           </Link>
