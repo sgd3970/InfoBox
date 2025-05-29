@@ -14,6 +14,7 @@ import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/com
 import { cleanHtml } from '@/lib/utils';
 import Editor from '@/components/Editor';
 import he from 'he';
+import { toast } from 'sonner';
 
 interface AdminNewPostClientProps {}
 
@@ -24,7 +25,8 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
   const [tags, setTags] = useState<string[]>([])
-  const [newTagName, setNewTagName] = useState('')
+  const [tagSlugs, setTagSlugs] = useState<string[]>([])
+  const [newTag, setNewTag] = useState('')
   const [newTagSlug, setNewTagSlug] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [featuredImage, setFeaturedImage] = useState<string | null>(null)
@@ -34,9 +36,10 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [loading, setLoading] = useState(false)
   const [categories, setCategories] = useState<Category[]>([])
   const [categoriesLoading, setCategoriesLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
 
   const router = useRouter()
-  const { toast } = useToast()
+  const { toast: useToastToast } = useToast()
 
   const fileToBase64 = (file: File): Promise<string> => {
     return new Promise((resolve, reject) => {
@@ -47,29 +50,23 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
     });
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
-    setLoading(true)
+    setSaving(true)
 
-    if (!category) {
-      toast({
-        title: "포스트 생성 오류",
-        description: "카테고리를 선택해주세요.",
-        variant: "destructive",
-      })
-      setLoading(false)
-      return
-    }
-
+    const formData = new FormData(e.currentTarget)
     const postData = {
-      title,
-      slug,
-      description,
-      content: cleanHtml(he.decode(content)),
-      category,
-      tags,
+      title: formData.get('title'),
+      slug: formData.get('slug'),
+      description: formData.get('description'),
+      content: formData.get('content'),
+      category: formData.get('category'),
+      published: formData.get('published') === 'on',
       date: new Date().toISOString(),
-      updatedAt: new Date().toISOString(),
+      tags: tags.map((name, index) => ({
+        name,
+        slug: tagSlugs[index] || name.toLowerCase().replace(/\s+/g, '-')
+      })),
       featured: false,
       images: images,
       featuredImage: featuredImage,
@@ -90,19 +87,13 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         throw new Error(errorData.error || "포스트 생성에 실패했습니다.")
       }
 
-      toast({
-        title: "포스트 생성 성공",
-        description: "새 포스트가 성공적으로 생성되었습니다.",
-      })
+      toast.success("포스트가 성공적으로 생성되었습니다.")
       router.push(`/admin/posts`)
     } catch (error: any) {
-      toast({
-        title: "포스트 생성 오류",
-        description: error.message,
-        variant: "destructive",
-      })
+      console.error('포스트 생성 오류:', error)
+      toast.error("포스트 생성에 실패했습니다.")
     } finally {
-      setLoading(false)
+      setSaving(false)
     }
   }
 
@@ -154,7 +145,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         setCategories(data);
       } catch (error) {
         console.error('카테고리 가져오기 오류:', error);
-        toast({
+        useToastToast({
           title: "오류",
           description: "카테고리를 불러오는데 실패했습니다.",
           variant: "destructive",
@@ -167,30 +158,47 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   }, []);
 
   return (
-    <div className="space-y-6">
-      <h2 className="text-2xl font-bold">새 포스트 작성</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div>
+    <div className="container py-10">
+      <h1 className="text-3xl font-bold mb-8">새 포스트 작성</h1>
+      
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-2">
           <Label htmlFor="title">제목</Label>
-          <Input id="title" value={title} onChange={handleTitleChange} required />
-        </div>
-        <div>
-          <Label htmlFor="slug">슬러그 (영문 소문자, 하이픈)</Label>
-          <Input 
-            id="slug" 
-            value={slug} 
-            onChange={(e) => setSlug(e.target.value)} 
-            required 
-            pattern="[a-zA-Z0-9-]+"
-            title="슬러그는 영문 소문자, 숫자, 하이픈만 포함해야 합니다." 
+          <Input
+            id="title"
+            name="title"
+            value={title}
+            onChange={handleTitleChange}
+            required
           />
         </div>
-        <div>
-          <Label htmlFor="description">요약</Label>
-          <Textarea id="description" value={description} onChange={(e) => setDescription(e.target.value)} required />
+
+        <div className="space-y-2">
+          <Label htmlFor="slug">Slug</Label>
+          <Input
+            id="slug"
+            name="slug"
+            value={slug}
+            onChange={(e) => setSlug(e.target.value)}
+            required
+            pattern="[a-zA-Z0-9-]+"
+            title="슬러그는 영문 소문자, 숫자, 하이픈만 포함해야 합니다."
+          />
         </div>
-        <div>
-          <Label htmlFor="content">내용 (HTML)</Label>
+
+        <div className="space-y-2">
+          <Label htmlFor="description">설명</Label>
+          <Textarea
+            id="description"
+            name="description"
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="content">내용</Label>
           <Editor
             value={content}
             onChange={(newContent) => {
@@ -201,57 +209,7 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
           />
         </div>
 
-        {/* 이미지 업로드 섹션 */}
-        <Card>
-          <CardHeader>
-            <CardTitle>이미지 관리</CardTitle>
-            <CardDescription>포스트에 사용할 이미지를 업로드하고 본문에 삽입하세요.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {/* 본문 이미지 업로드 */}
-            <div>
-              <Label htmlFor="images">본문 이미지</Label>
-              <Input id="images" type="file" multiple onChange={handleImageChange} accept="image/*" />
-              <p className="text-sm text-muted-foreground mt-1">여러 개의 이미지를 선택할 수 있습니다.</p>
-            </div>
-
-            {/* 본문 이미지 미리보기 */}
-            {images.length > 0 && (
-              <div>
-                <h4 className="text-md font-medium mb-2">선택된 본문 이미지 ({images.length}개)</h4>
-                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                  {images.map((url, index) => (
-                    <div key={index} className="border rounded-md p-2 flex flex-col items-center">
-                      <img src={url} alt={`Preview ${index}`} className="w-full h-auto object-cover mb-2 rounded-md" />
-                      <Button variant="outline" size="sm" onClick={() => handleInsertImage(url)} className="w-full">
-                        본문에 삽입
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* 대표 이미지 업로드 */}
-            <div>
-              <Label htmlFor="featuredImage">대표 이미지</Label>
-              <Input id="featuredImage" type="file" onChange={handleFeaturedImageChange} accept="image/*" />
-              <p className="text-sm text-muted-foreground mt-1">포스트 카드에 사용될 대표 이미지를 선택하세요 (선택 사항).</p>
-            </div>
-
-            {/* 대표 이미지 미리보기 */}
-            {featuredImage && (
-              <div>
-                <h4 className="text-md font-medium mb-2">선택된 대표 이미지</h4>
-                <div className="border rounded-md p-2 flex flex-col items-center max-w-[300px]">
-                  <img src={featuredImage} alt="Featured Image Preview" className="w-full h-auto object-cover mb-2 rounded-md" />
-                </div>
-              </div>
-            )}
-          </CardContent>
-        </Card>
-
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="category">카테고리</Label>
           <Select value={category} onValueChange={setCategory} disabled={categoriesLoading || loading}>
             <SelectTrigger id="category">
@@ -266,44 +224,138 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
             </SelectContent>
           </Select>
         </div>
-        <div className="space-y-4">
-          <label className="block text-sm font-medium text-gray-700">태그</label>
-          <div className="space-y-2">
+
+        <div className="space-y-2">
+          <Label htmlFor="tags">태그</Label>
+          <div className="flex flex-wrap gap-2">
             {tags.map((tag, index) => (
               <div key={index} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-full">
                 <span>{tag}</span>
                 <button
                   type="button"
-                  onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                  onClick={() => {
+                    setTags(tags.filter((_, i) => i !== index));
+                    setTagSlugs(tagSlugs.filter((_, i) => i !== index));
+                  }}
                   className="text-muted-foreground hover:text-foreground"
                 >
                   ×
                 </button>
               </div>
             ))}
-            <div className="flex gap-2">
-              <Input
-                placeholder="태그 이름"
-                value={newTagName}
-                onChange={(e) => setNewTagName(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && newTagName) {
-                    e.preventDefault();
-                    setTags([...tags, newTagName]);
-                    setNewTagName('');
-                  }
-                }}
-              />
-            </div>
-            <p className="text-sm text-gray-500">
-              태그 이름을 입력하고 Enter를 누르세요.
-            </p>
+            <input
+              type="text"
+              id="tags"
+              value={newTag}
+              onChange={(e) => setNewTag(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newTag) {
+                  e.preventDefault();
+                  setTags([...tags, newTag]);
+                  setNewTag('');
+                }
+              }}
+              placeholder="태그 입력 후 Enter"
+              className="flex-1 min-w-[200px] bg-transparent border-none focus:outline-none"
+            />
           </div>
         </div>
-        <Button type="submit" disabled={loading || categoriesLoading || !category || isUploadingImages}>
-          {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-          {isUploadingImages ? "이미지 업로드 중..." : "포스트 생성"}
-        </Button>
+
+        <div className="space-y-2">
+          <Label htmlFor="tagSlugs">태그 Slug</Label>
+          <div className="flex flex-wrap gap-2">
+            {tagSlugs.map((slug, index) => (
+              <div key={index} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-full">
+                <span>{slug}</span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setTagSlugs(tagSlugs.filter((_, i) => i !== index));
+                    setTags(tags.filter((_, i) => i !== index));
+                  }}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <input
+              type="text"
+              id="tagSlugs"
+              value={newTagSlug}
+              onChange={(e) => setNewTagSlug(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && newTagSlug) {
+                  e.preventDefault();
+                  setTagSlugs([...tagSlugs, newTagSlug]);
+                  setNewTagSlug('');
+                }
+              }}
+              placeholder="태그 slug 입력 후 Enter"
+              className="flex-1 min-w-[200px] bg-transparent border-none focus:outline-none"
+            />
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="images">본문 이미지</Label>
+          <Input id="images" type="file" multiple onChange={handleImageChange} accept="image/*" />
+          <p className="text-sm text-muted-foreground mt-1">여러 개의 이미지를 선택할 수 있습니다.</p>
+        </div>
+
+        {images.length > 0 && (
+          <div>
+            <h4 className="text-md font-medium mb-2">선택된 본문 이미지 ({images.length}개)</h4>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+              {images.map((url, index) => (
+                <div key={index} className="border rounded-md p-2 flex flex-col items-center">
+                  <img src={url} alt={`Preview ${index}`} className="w-full h-auto object-cover mb-2 rounded-md" />
+                  <Button variant="outline" size="sm" onClick={() => handleInsertImage(url)} className="w-full">
+                    본문에 삽입
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="featuredImage">대표 이미지</Label>
+          <Input id="featuredImage" type="file" onChange={handleFeaturedImageChange} accept="image/*" />
+          <p className="text-sm text-muted-foreground mt-1">포스트 카드에 사용될 대표 이미지를 선택하세요 (선택 사항).</p>
+        </div>
+
+        {featuredImage && (
+          <div>
+            <h4 className="text-md font-medium mb-2">선택된 대표 이미지</h4>
+            <div className="border rounded-md p-2 flex flex-col items-center max-w-[300px]">
+              <img src={featuredImage} alt="Featured Image Preview" className="w-full h-auto object-cover mb-2 rounded-md" />
+            </div>
+          </div>
+        )}
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="published"
+            name="published"
+          />
+          <Label htmlFor="published">발행</Label>
+        </div>
+
+        <div className="flex gap-4">
+          <Button type="submit" disabled={saving || categoriesLoading || !category || isUploadingImages}>
+            {saving || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
+            {isUploadingImages ? "이미지 업로드 중..." : "저장"}
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => router.push('/admin/posts')}
+          >
+            취소
+          </Button>
+        </div>
       </form>
     </div>
   )
