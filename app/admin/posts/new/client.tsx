@@ -23,7 +23,9 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
   const [description, setDescription] = useState("")
   const [content, setContent] = useState("")
   const [category, setCategory] = useState("")
-  const [tags, setTags] = useState("")
+  const [tags, setTags] = useState<string[]>([])
+  const [newTagName, setNewTagName] = useState('')
+  const [newTagSlug, setNewTagSlug] = useState('')
   const [images, setImages] = useState<string[]>([])
   const [featuredImage, setFeaturedImage] = useState<string | null>(null)
   const [isUploadingImages, setIsUploadingImages] = useState(false)
@@ -59,16 +61,13 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
       return
     }
 
-    // 저장 직전
-    const decoded = he.decode(content);
-    const cleanedHtml = cleanHtml(decoded);
     const postData = {
       title,
       slug,
       description,
-      content: cleanedHtml,
+      content: cleanHtml(he.decode(content)),
       category,
-      tags: tags.split(",").map(tag => tag.trim()).filter(tag => tag !== ""),
+      tags,
       date: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       featured: false,
@@ -91,7 +90,6 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
         throw new Error(errorData.error || "포스트 생성에 실패했습니다.")
       }
 
-      const result = await res.json()
       toast({
         title: "포스트 생성 성공",
         description: "새 포스트가 성공적으로 생성되었습니다.",
@@ -268,9 +266,39 @@ export default function AdminNewPostClient({}: AdminNewPostClientProps) {
             </SelectContent>
           </Select>
         </div>
-        <div>
-          <Label htmlFor="tags">태그 (쉼표로 구분)</Label>
-          <Input id="tags" value={tags} onChange={(e) => setTags(e.target.value)} placeholder="예: react, nextjs, 개발" />
+        <div className="space-y-4">
+          <label className="block text-sm font-medium text-gray-700">태그</label>
+          <div className="space-y-2">
+            {tags.map((tag, index) => (
+              <div key={index} className="flex items-center gap-2 bg-secondary px-3 py-1 rounded-full">
+                <span>{tag}</span>
+                <button
+                  type="button"
+                  onClick={() => setTags(tags.filter((_, i) => i !== index))}
+                  className="text-muted-foreground hover:text-foreground"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            <div className="flex gap-2">
+              <Input
+                placeholder="태그 이름"
+                value={newTagName}
+                onChange={(e) => setNewTagName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newTagName) {
+                    e.preventDefault();
+                    setTags([...tags, newTagName]);
+                    setNewTagName('');
+                  }
+                }}
+              />
+            </div>
+            <p className="text-sm text-gray-500">
+              태그 이름을 입력하고 Enter를 누르세요.
+            </p>
+          </div>
         </div>
         <Button type="submit" disabled={loading || categoriesLoading || !category || isUploadingImages}>
           {loading || isUploadingImages ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
