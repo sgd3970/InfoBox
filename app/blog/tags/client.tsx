@@ -44,7 +44,7 @@ export default function TagsClient({ tags }: { tags: TagData[] }) {
             return (
               <Link
                 key={tag}
-                href={`/blog/tag/${encodeURIComponent(tag)}`}
+                href={`/blog/tags/${encodeURIComponent(tag)}`}
                 className={cn(
                   "px-6 py-3 rounded-full transition-all duration-300 transform hover:scale-105",
                   "bg-card hover:bg-accent/5",
