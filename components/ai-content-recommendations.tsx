@@ -16,7 +16,7 @@ interface Recommendation {
 interface AIContentRecommendationsProps {
   currentPostSlug: string
   currentPostCategory: string
-  currentPostTags?: string[]
+  currentPostTags?: { name: string; slug: string }[]
 }
 
 interface PostWithScore {
@@ -38,34 +38,16 @@ export function AIContentRecommendations({
     setError(null)
 
     try {
-      // 실제 환경에서는 API 호출을 통해 AI 추천을 생성합니다.
-      // 여기서는 시뮬레이션을 위해 setTimeout을 사용합니다.
-      //const searchRes = await fetch("/api/search?limit=50") // 임시로 최대 50개의 포스트를 가져옴
-      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || ''; // 환경 변수 사용 또는 기본 URL 설정
-      const searchRes = await fetch(`${BASE_URL}/api/search?limit=50`); // 임시로 최대 50개의 포스트를 가져옴
+      const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
+      const searchRes = await fetch(`${BASE_URL}/api/search?limit=50`);
 
       if (!searchRes.ok) {
         throw new Error("포스트 목록을 가져오는데 실패했습니다.")
       }
 
       const searchData = await searchRes.json()
-      const allPosts = (searchData.results || []) as Post[]; // results 배열 사용
+      const allPosts = (searchData.results || []) as Post[];
 
-      // 실제 API 호출 예시:
-      // const response = await fetch('/api/ai/recommend', {
-      //   method: 'POST',
-      //   headers: { 'Content-Type': 'application/json' },
-      //   body: JSON.stringify({
-      //     slug: currentPostSlug,
-      //     category: currentPostCategory,
-      //     tags: currentPostTags
-      //   }),
-      // });
-      // const data = await response.json();
-      // if (!response.ok) throw new Error(data.message || '추천 생성에 실패했습니다.');
-      // setRecommendations(data.recommendations);
-
-      // 시뮬레이션된 추천 (태그와 카테고리 기반)
       const otherPosts = allPosts.filter((post: Post) => post.slug !== currentPostSlug)
 
       // 태그 기반 점수 계산
@@ -80,7 +62,7 @@ export function AIContentRecommendations({
         // 태그가 일치할 때마다 점수 추가
         const postTags = post.tags || []
         currentPostTags.forEach((tag) => {
-          if (postTags.some((t: string) => t.toLowerCase() === tag.toLowerCase())) {
+          if (postTags.some((t) => t.slug.toLowerCase() === tag.slug.toLowerCase())) {
             score += 2
           }
         })
