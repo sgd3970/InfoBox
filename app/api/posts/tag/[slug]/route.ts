@@ -27,6 +27,12 @@ export async function GET(
     const tagNameNormalized = tagName.trim().toLowerCase()
     console.log('[API] tagNameNormalized:', tagNameNormalized)
 
+    // 전체 posts의 tags 배열 로그
+    const allPosts = await db.collection("posts").find({ published: true }).toArray();
+    allPosts.forEach((post, idx) => {
+      console.log(`[API] 전체 post[${idx}].tags:`, post.tags);
+    });
+
     // 2. posts.tags(string[])에 name이 포함된 포스트 찾기 (공백/대소문자 무시)
     const posts = await db.collection("posts").aggregate([
       { $match: { published: true } },
@@ -43,22 +49,22 @@ export async function GET(
       { $match: { tagsNormalized: tagNameNormalized } },
       { $sort: { date: -1 } }
     ]).toArray() as any[];
-    console.log('[API] posts.length:', posts.length)
+    console.log('[API] posts.length:', posts.length);
     posts.forEach((post, idx) => {
-      console.log(`[API] post[${idx}].tags:`, post.tags)
-      console.log(`[API] post[${idx}].tagsNormalized:`, post.tagsNormalized)
-      console.log(`[API] 비교결과:`, post.tagsNormalized?.includes(tagNameNormalized))
-    })
+      console.log(`[API] post[${idx}].tags:`, post.tags);
+      console.log(`[API] post[${idx}].tagsNormalized:`, post.tagsNormalized);
+      console.log(`[API] 비교결과:`, post.tagsNormalized?.includes(tagNameNormalized));
+    });
     if (posts.length > 0) {
-      console.log('[API] posts[0] 예시:', posts[0])
+      console.log('[API] posts[0] 예시:', posts[0]);
     }
 
     // ObjectId를 문자열로 변환
     const formattedPosts = posts.map((post: any) => ({
       ...post,
       _id: post._id?.toString?.() ?? post._id
-    }))
-    console.log('[API] formattedPosts.length:', formattedPosts.length)
+    }));
+    console.log('[API] formattedPosts.length:', formattedPosts.length);
 
     return NextResponse.json(formattedPosts)
   } catch (error) {
