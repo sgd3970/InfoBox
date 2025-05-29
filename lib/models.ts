@@ -18,7 +18,7 @@ export interface Post {
   date: string
   category: string
   slug: string
-  tags?: string[]
+  tags?: { name: string; slug: string }[]
   image?: string
   images?: string[]  // 추가: 본문 이미지 배열
   featuredImage?: string | null
