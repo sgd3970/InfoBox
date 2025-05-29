@@ -25,7 +25,6 @@ const navItems = [
   { label: "홈", href: "/" },
   { label: "블로그", href: "/blog" },
   { label: "카테고리", href: "/blog/categories" },
-  { label: "태그", href: "/blog/tags" },
   { label: "검색", href: "/search" },
   { label: "소개", href: "/about" },
 ]

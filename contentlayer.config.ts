@@ -12,10 +12,16 @@ export const Post = defineDocumentType(() => ({
     description: { type: "string", required: true },
     date: { type: "date", required: true },
     category: { type: "string", required: true },
-    tags: { type: "list", of: { type: "string" }, required: false },
+    slug: { type: "string", required: true },
     image: { type: "string", required: false },
+    images: { type: "list", of: { type: "string" }, required: false },
+    featuredImage: { type: "string", required: false },
     author: { type: "string", required: false },
+    authorId: { type: "string", required: false },
     featured: { type: "boolean", default: false },
+    views: { type: "number", required: false },
+    readingTime: { type: "number", required: false },
+    content: { type: "mdx", required: true },
   },
   computedFields: {
     slug: {
@@ -30,6 +36,7 @@ export const Post = defineDocumentType(() => ({
         return `/blog/${category}/${slug}`
       },
     },
+
   },
 }))
 

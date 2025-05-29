@@ -185,16 +185,13 @@ export function cleanHtml(input: string): string {
     /<p>[ \t\r\n]*(<\/(?:div|table|thead|tbody|tfoot|tr|th|td|ul|ol|li|blockquote|pre)>)/gi,
     '$1'
   );
-  console.log('[cleanHtml] after removing incorrect p tags:', html);
 
   // 0) 테이블/블록 태그 앞뒤 <p> 해제 (pre)
   html = unwrapPTableTags(html);
   html = unwrapPBlockTags(html);
-  console.log('[cleanHtml] after pre-unwrapping:', html);
 
   // 1) 엔티티 복원
   html = decodeHtmlEntities(html);
-  console.log('[cleanHtml] decoded:', html);
 
   // 2) sanitize-html
   html = sanitizeHtml(html, {
@@ -211,7 +208,6 @@ export function cleanHtml(input: string): string {
       decodeEntities: true
     }
   });
-  console.log('[cleanHtml] after sanitizeHtml:', html);
 
   // 3) sanitize 이후에도 블록 태그 감싸기 풀기 (post)
   html = unwrapPBlockTags(html);

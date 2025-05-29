@@ -49,7 +49,7 @@ export function SearchClient() {
   // 검색 실행
   useEffect(() => {
     const fetchSearchResults = async () => {
-      console.log("Fetching search results...", { query, category, tags, dateFrom, dateTo, sortBy, sortOrder, page, limit })
+
       setLoading(true)
 
       try {

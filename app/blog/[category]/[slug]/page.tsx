@@ -118,102 +118,35 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound()
   }
 
-  const postUrl = `${BASE_URL}/blog/${params.category}/${params.slug}`
-
-  // 관련 포스트 찾기 (같은 카테고리의 다른 포스트)
-  const relatedPosts = await getRelatedPosts(params.slug, post.category)
-
   return (
-    <>
-      <SEOSchema
-        type="article"
-        title={post.title}
-        description={post.description}
-        url={postUrl}
-        imageUrl={post.image}
-        publishedTime={post.date}
-        authorName={post.author}
-        keywords={post.tags?.map(tag => tag.name) || []}
+    <div className="container py-8">
+      <AIContentRecommendations
+        currentPostSlug={post.slug}
+        currentPostCategory={post.category}
       />
-
-      <div className="container py-10">
-        <article className="max-w-3xl mx-auto">
-          <div className="space-y-4 mb-8">
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Link
-                  href={`/blog/category/${encodeURIComponent(post.category.toLowerCase())}`}
-                  className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
-                >
-                  {post.category}
-                </Link>
-                {post.tags && post.tags.length > 0 && (
-                  <div className="flex gap-1 flex-wrap">
-                    {post.tags.map((tag) => (
-                      <Link
-                        key={tag.slug}
-                        href={`/blog/tags/${encodeURIComponent(tag.slug)}`}
-                        className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
-                      >
-                        {tag.name}
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
-              <h1 className="text-4xl font-bold">{post.title}</h1>
+      <article className="max-w-3xl mx-auto">
+        <div className="space-y-4 mb-8">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2">
+              <Link
+                href={`/blog/category/${encodeURIComponent(post.category.toLowerCase())}`}
+                className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
+              >
+                {post.category}
+              </Link>
             </div>
-            <div className="flex items-center space-x-2 text-muted-foreground">
-              <time dateTime={post.date}>
-                {new Date(post.date).toLocaleDateString("ko-KR", {
-                  year: "numeric",
-                  month: "long",
-                  day: "numeric",
-                })}
-              </time>
-              {post.author && (
-                <>
-                  <span>•</span>
-                  <span>{post.author}</span>
-                </>
-              )}
-              <span>•</span>
-              <span>{post.views.toLocaleString()} 조회</span>
-            </div>
-            {/* 본문 썸네일 */}
-            {(post.featuredImage || post.image) && (
-              <div className="relative aspect-video overflow-hidden rounded-lg">
-                <PostThumbnail
-                  src={post.featuredImage || post.image}
-                  alt={post.title}
-                  width={800}
-                  height={400}
-                  className="object-cover w-full"
-                  priority
-                />
-              </div>
-            )}
-
-            {/* 소셜 공유 버튼 */}
-            <div className="pt-4">
-              <SocialShare url={postUrl} title={post.title} description={post.description} />
-            </div>
+            <h1 className="text-4xl font-bold">{post.title}</h1>
           </div>
-
-          {/* 광고 영역 추가 */}
-          <GoogleAd slot="4632464247" className="h-auto max-h-[150px] max-w-[90%] lg:h-[150px] mx-auto" />
-
-          {/* AI 콘텐츠 요약 */}
-          {/* <AIContentSummary content={post.description} /> */}
-
-          {/* 본문 내용 */}
-          <div className="prose prose-lg dark:prose-invert max-w-none mt-8 [&_table]:w-full [&_table]:border-collapse [&_th]:bg-muted [&_th]:p-4 [&_th]:text-left [&_td]:p-4 [&_td]:border [&_th]:border [&_img]:my-8 [&_img]:rounded-lg [&_img]:shadow-md [&_h1]:text-4xl [&_h1]:font-bold [&_h1]:mb-6 [&_h2]:text-2xl [&_h2]:font-semibold [&_h2]:mt-8 [&_h2]:mb-4 [&_p]:my-4 [&_ul]:my-4 [&_ol]:my-4 [&_li]:my-2 [&_a]:text-primary [&_a]:underline [&_a]:hover:text-primary/80" dangerouslySetInnerHTML={{ __html: post.content }} />
+          <div className="flex items-center space-x-2 text-muted-foreground">
+            <div className="flex items-center gap-1">
+              <CalendarIcon className="w-4 h-4" />
+              <time dateTime={post.date}>{format(new Date(post.date), 'MMMM d, yyyy')}</time>
 
           {/* AI 추천 콘텐츠 */}
           <AIContentRecommendations
             currentPostSlug={post.slug}
             currentPostCategory={post.category}
-            currentPostTags={post.tags || []}
+
           />
 
           {/* 댓글 시스템 */}

@@ -25,7 +25,6 @@ export const searchPosts = async (searchTerm: string): Promise<Post[]> => {
 export interface SearchOptions {
   query?: string
   category?: string
-  tags?: string[]
   dateFrom?: string
   dateTo?: string
   sortBy?: string
@@ -43,10 +42,6 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     if (options.category && options.category !== "all") {
       query.category = options.category;
     }
-    // 태그 필터
-    if (options.tags && options.tags.length > 0) {
-      query.tags = { $in: options.tags };
-    }
     // 날짜 필터
     if (options.dateFrom || options.dateTo) {
       query.date = {};
@@ -54,40 +49,44 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
       if (options.dateTo) query.date.$lte = options.dateTo;
     }
     // 검색어(제목/설명/내용 텍스트 검색)
-    if (options.query && options.query.trim() !== "") {
-      query.$or = [
-        { title: { $regex: options.query, $options: "i" } },
-        { description: { $regex: options.query, $options: "i" } },
-        { content: { $regex: options.query, $options: "i" } },
-      ];
+    if (options.query) {
+      query.$text = {
+        $search: options.query,
+        $caseSensitive: false,
+        $diacriticSensitive: false,
+      };
     }
 
     // 정렬
-    let sort: any = {};
+    const sort: any = {};
     if (options.sortBy === "date") {
       sort.date = options.sortOrder === "asc" ? 1 : -1;
     } else if (options.sortBy === "views") {
       sort.views = options.sortOrder === "asc" ? 1 : -1;
     } else {
-      // 기본: 최신순
-      sort.date = -1;
+      sort.date = -1; // 기본 정렬
     }
 
     // 페이지네이션
-    const page = options.page && options.page > 0 ? options.page : 1;
-    const limit = options.limit && options.limit > 0 ? options.limit : 10;
+    const page = options.page || 1;
+    const limit = options.limit || 10;
     const skip = (page - 1) * limit;
 
-    // 총 개수
-    const total = await db.collection("posts").countDocuments(query);
-    // 결과
-    const rawResults = await db.collection("posts")
-      .find(query)
-      .sort(sort)
-      .skip(skip)
-      .limit(limit)
-      .toArray();
-    const results: Post[] = rawResults.map((doc: any) => ({
+    // 검색 실행
+    const [results, total] = await Promise.all([
+      db
+        .collection("posts")
+        .find(query)
+        .sort(sort)
+        .skip(skip)
+        .limit(limit)
+        .toArray(),
+      db.collection("posts").countDocuments(query),
+    ]);
+
+    const totalPages = Math.ceil(total / limit);
+
+    const resultsData = results.map((doc: any) => ({
       _id: doc._id?.toString(),
       title: doc.title,
       description: doc.description,
@@ -95,24 +94,27 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
       date: doc.date,
       category: doc.category,
       slug: doc.slug,
-      tags: doc.tags || [],
       image: doc.image,
       images: doc.images,
       featuredImage: doc.featuredImage,
       author: doc.author,
       authorId: doc.authorId,
       featured: doc.featured,
-      views: doc.views || 0,
+      views: doc.views,
       createdAt: doc.createdAt,
       updatedAt: doc.updatedAt,
-    }));
-    const pages = Math.ceil(total / limit);
+    })) as Post[];
 
-    return { results, total, pages };
+    return {
+      results: resultsData,
+      total,
+      pages: totalPages,
+    };
   } catch (error) {
-    console.error("고급 검색 DB 오류:", error);
+    console.error('Error in advanced search:', error);
     return { results: [], total: 0, pages: 0 };
   }
+};
 };
 
 // 검색 제안 함수 - API 라우트 사용

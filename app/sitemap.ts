@@ -84,12 +84,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.7,
   }))
 
-  // 태그 페이지
-  const tags = [...new Set(posts.flatMap((post) => post.tags || []).map((tag) => tag.slug.toLowerCase()))]
-  const tagPages = tags.map((tag) => ({
-    url: `${BASE_URL}/blog/tags/${tag}`,
-    lastModified: new Date(),
-  }))
-
-  return [...staticPages, ...postEntries, ...categoryPages, ...tagPages]
+  return [...staticPages, ...postEntries, ...categoryPages]
 }

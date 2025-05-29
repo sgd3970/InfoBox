@@ -12,7 +12,6 @@ const indexDefinitions: Record<string, IndexDescription[]> = {
       default_language: "none",
     },
     { key: { category: 1, date: -1 }, name: "category_date" },
-    { key: { tags: 1, date: -1 }, name: "tags_date" },
     { key: { featured: 1, date: -1 }, name: "featured_date" },
     { key: { views: -1 }, name: "views_desc" },
   ],

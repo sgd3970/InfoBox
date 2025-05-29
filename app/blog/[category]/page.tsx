@@ -68,12 +68,6 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
                 <span>{new Date(post.date).toLocaleDateString()}</span>
                 <span className="mx-2">•</span>
                 <span>{post.category}</span>
-                {post.tags && post.tags.length > 0 && (
-                  <>
-                    <span className="mx-2">•</span>
-                    <span>{post.tags.join(', ')}</span>
-                  </>
-                )}
               </div>
             </div>
           </Link>

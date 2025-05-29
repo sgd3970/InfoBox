@@ -10,15 +10,14 @@ export async function GET(request: NextRequest) {
 
     // 검색 옵션 구성
     const options: SearchOptions = {
-      query: searchParams.get("q") || "",
-      category: searchParams.get("category") || undefined,
-      tags: searchParams.get("tags")?.split(",") || undefined,
+      query: searchParams.get("query") || "",
+      category: searchParams.get("category") || "",
       dateFrom: searchParams.get("dateFrom") || undefined,
       dateTo: searchParams.get("dateTo") || undefined,
-      sortBy: (searchParams.get("sortBy") as SearchOptions["sortBy"]) || "relevance",
-      sortOrder: (searchParams.get("sortOrder") as SearchOptions["sortOrder"]) || "desc",
-      page: Number.parseInt(searchParams.get("page") || "1", 10),
-      limit: Number.parseInt(searchParams.get("limit") || "10", 10),
+      sortBy: searchParams.get("sortBy") || "date",
+      sortOrder: (searchParams.get("sortOrder") as "asc" | "desc") || "desc",
+      page: parseInt(searchParams.get("page") || "1"),
+      limit: parseInt(searchParams.get("limit") || "10"),
     }
 
     // 고급 검색 실행 (advancedSearch 함수 내부에서 getDatabase 사용)
