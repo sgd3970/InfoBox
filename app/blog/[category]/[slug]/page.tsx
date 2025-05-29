@@ -133,7 +133,7 @@ export default async function PostPage({ params }: PostPageProps) {
         imageUrl={post.image}
         publishedTime={post.date}
         authorName={post.author}
-        keywords={post.tags || []}
+        keywords={post.tags?.map(tag => tag.name) || []}
       />
 
       <div className="container py-10">
@@ -151,11 +151,11 @@ export default async function PostPage({ params }: PostPageProps) {
                   <div className="flex gap-1 flex-wrap">
                     {post.tags.map((tag) => (
                       <Link
-                        key={tag}
-                        href={`/blog/tag/${encodeURIComponent(tag)}`}
+                        key={tag.slug}
+                        href={`/blog/tags/${encodeURIComponent(tag.slug)}`}
                         className="text-xs px-2 py-1 bg-muted rounded-full text-muted-foreground hover:bg-primary/10 hover:text-primary transition-colors cursor-pointer"
                       >
-                        {tag}
+                        {tag.name}
                       </Link>
                     ))}
                   </div>

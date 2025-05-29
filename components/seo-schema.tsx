@@ -1,5 +1,10 @@
 import Head from "next/head"
 
+interface Tag {
+  name: string;
+  slug: string;
+}
+
 interface SEOSchemaProps {
   title: string
   description: string
@@ -10,7 +15,11 @@ interface SEOSchemaProps {
   modifiedTime?: string
   authorName?: string
   siteName?: string
-  keywords?: string[]
+  keywords?: string[] | Tag[]
+}
+
+function isTag(obj: any): obj is Tag {
+  return obj && typeof obj === 'object' && 'name' in obj && 'slug' in obj;
 }
 
 export function SEOSchema({
@@ -48,7 +57,9 @@ export function SEOSchema({
         url: `${url.split("/").slice(0, 3).join("/")}/logo.png`,
       },
     },
-    ...(keywords.length > 0 && { keywords: keywords.join(", ") }),
+    ...(keywords.length > 0 && { 
+      keywords: keywords.map(k => isTag(k) ? k.name : k).join(", ")
+    }),
   }
 
   return (
