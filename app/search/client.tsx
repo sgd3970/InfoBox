@@ -10,6 +10,7 @@ import { Loader2 } from "lucide-react"
 import { AdvancedSearch } from "@/components/advanced-search"
 import type { Post } from "@/lib/models"
 import { useRouter } from "next/navigation"
+import { PostThumbnail } from "@/components/PostThumbnail"
 
 export function SearchClient() {
   const searchParams = useSearchParams()
@@ -201,8 +202,8 @@ export function SearchClient() {
                     {searchResults.map((post) => (
                       <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                         <div className="relative aspect-video overflow-hidden">
-                          <Image
-                            src={post.image || "/placeholder.svg"}
+                          <PostThumbnail
+                            src={post.featuredImage || post.image}
                             alt={post.title}
                             width={300}
                             height={150}
@@ -255,8 +256,8 @@ export function SearchClient() {
                       {filterByCategory(cat).map((post) => (
                         <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                           <div className="relative aspect-video overflow-hidden">
-                            <Image
-                              src={post.image || "/placeholder.svg"}
+                            <PostThumbnail
+                              src={post.featuredImage || post.image}
                               alt={post.title}
                               width={300}
                               height={150}
@@ -311,8 +312,8 @@ export function SearchClient() {
                 {searchResults.map((post) => (
                   <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group border rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                     <div className="relative aspect-video overflow-hidden">
-                      <Image
-                        src={post.image || "/placeholder.svg"}
+                      <PostThumbnail
+                        src={post.featuredImage || post.image}
                         alt={post.title}
                         width={300}
                         height={150}

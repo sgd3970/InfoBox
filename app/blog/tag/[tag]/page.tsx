@@ -5,6 +5,7 @@ import Image from "next/image"
 import { notFound } from "next/navigation"
 // import clientPromise from "@/lib/mongodb"; // 필요시 주석 해제
 import type { Post } from "@/lib/models"
+import { PostThumbnail } from "@/components/PostThumbnail";
 
 interface TagPageProps {
   params: {
@@ -63,10 +64,11 @@ export default async function TagPage({ params }: TagPageProps) {
             <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg">
-                  <Image
-                    src={post.image || "/placeholder.svg?height=200&width=400"}
+                  <PostThumbnail
+                    src={post.featuredImage || post.image}
                     alt={post.title}
-                    fill
+                    width={400}
+                    height={200}
                     className="object-cover transition-transform group-hover:scale-105"
                   />
                 </div>

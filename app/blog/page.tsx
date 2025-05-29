@@ -2,6 +2,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
 import { Metadata } from "next"
+import { PostThumbnail } from "@/components/PostThumbnail"
 
 export const dynamic = "force-dynamic"
 
@@ -49,8 +50,8 @@ export default async function BlogPage() {
             <div className="grid md:grid-cols-2 gap-6 items-center">
               <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                <Image
-                  src={featuredPost.featuredImage || featuredPost.image || "/placeholder.svg?height=400&width=800"}
+                <PostThumbnail
+                  src={featuredPost.featuredImage || featuredPost.image}
                   alt={featuredPost.title}
                   width={800}
                   height={400}
@@ -95,8 +96,8 @@ export default async function BlogPage() {
               <div className="space-y-4">
                 <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                   <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <Image
-                    src={post.featuredImage || post.image || "/placeholder.svg?height=200&width=400"}
+                  <PostThumbnail
+                    src={post.featuredImage || post.image}
                     alt={post.title}
                     width={400}
                     height={200}

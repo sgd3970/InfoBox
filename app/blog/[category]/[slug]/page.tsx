@@ -12,6 +12,7 @@ import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
 import { GoogleAd } from "@/components/GoogleAd"
 import { ViewTracker } from "@/components/view-tracker"
+import { PostThumbnail } from "@/components/PostThumbnail"
 
 interface PostPageProps {
   params: {
@@ -179,10 +180,11 @@ export default async function PostPage({ params }: PostPageProps) {
               <span>•</span>
               <span>{post.views.toLocaleString()} 조회</span>
             </div>
-            {post.image && (
+            {/* 본문 썸네일 */}
+            {(post.featuredImage || post.image) && (
               <div className="relative aspect-video overflow-hidden rounded-lg">
-                <Image
-                  src={post.image || "/placeholder.svg"}
+                <PostThumbnail
+                  src={post.featuredImage || post.image}
                   alt={post.title}
                   width={800}
                   height={400}
@@ -236,8 +238,8 @@ export default async function PostPage({ params }: PostPageProps) {
                 >
                   <div className="space-y-2">
                     <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <Image
-                        src={relatedPost.image || "/placeholder.svg?height=150&width=300"}
+                      <PostThumbnail
+                        src={relatedPost.featuredImage || relatedPost.image}
                         alt={relatedPost.title}
                         width={300}
                         height={150}

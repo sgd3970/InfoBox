@@ -6,6 +6,7 @@ import { useTheme } from "next-themes"
 // import { AdBanner } from "@/components/ad-banner"
 import { GoogleAd } from "@/components/GoogleAd"
 import type { Post, Category } from "@/lib/models"
+import { PostThumbnail } from "@/components/PostThumbnail"
 
 interface HomePageClientProps {
   latestPosts: Post[]
@@ -110,8 +111,8 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                 <div className="space-y-3 md:space-y-4 w-full">
                   <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                     <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <Image
-                      src={post.image || "/placeholder.svg"}
+                    <PostThumbnail
+                      src={post.featuredImage || post.image}
                       alt={post.title}
                       width={400}
                       height={200}

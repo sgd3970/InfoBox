@@ -4,6 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
 import { Metadata } from "next"
+import { PostThumbnail } from "@/components/PostThumbnail";
 
 interface CategoryPageProps {
   params: {
@@ -52,15 +53,13 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
         {posts.map(post => (
           <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
             <div className="rounded-lg border shadow-sm overflow-hidden">
-              {post.image && (
-                <Image
-                  src={post.image}
-                  alt={post.title}
-                  width={800}
-                  height={400}
-                  className="w-full h-48 object-cover"
-                />
-              )}
+              <PostThumbnail
+                src={post.featuredImage || post.image}
+                alt={post.title}
+                width={800}
+                height={400}
+                className="w-full h-48 object-cover"
+              />
               <div className="p-4">
                 <h2 className="text-xl font-semibold mb-2">{post.title}</h2>
                 <p className="text-gray-600 dark:text-gray-400 text-sm mb-4">{post.description}</p>
