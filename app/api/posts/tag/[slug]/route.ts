@@ -17,7 +17,7 @@ export async function GET(
     const posts = await db.collection<Post>("posts")
       .find({
         published: true,
-        tags: tag // 단순 문자열 배열에서 태그 검색
+        "tags.slug": tag // 태그 객체의 slug 필드 검색
       })
       .sort({ date: -1 })
       .toArray()
