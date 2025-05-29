@@ -9,15 +9,15 @@ import { PostThumbnail } from "@/components/PostThumbnail";
 
 interface TagPageProps {
   params: {
-    tag: string
+    slug: string
   }
 }
 
 // TODO: 특정 태그에 해당하는 포스트를 가져오는 함수 구현 필요
-async function getPostsByTag(tag: string): Promise<Post[]> {
+async function getPostsByTag(slug: string): Promise<Post[]> {
   try {
     const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
-    const res = await fetch(`${BASE_URL}/api/posts/tag/${encodeURIComponent(tag)}`, {
+    const res = await fetch(`${BASE_URL}/api/posts/tag/${encodeURIComponent(slug)}`, {
       cache: 'no-store'
     });
     
@@ -35,17 +35,17 @@ async function getPostsByTag(tag: string): Promise<Post[]> {
 }
 
 export async function generateMetadata({ params }: TagPageProps) {
-  const tag = decodeURIComponent(params.tag)
+  const slug = decodeURIComponent(params.slug)
 
   return {
-    title: `${tag} | 태그`,
-    description: `${tag} 태그의 모든 게시물을 확인하세요.`,
+    title: `${slug} | 태그`,
+    description: `${slug} 태그의 모든 게시물을 확인하세요.`,
   }
 }
 
 export default async function TagPage({ params }: TagPageProps) {
-  const tag = decodeURIComponent(params.tag);
-  const posts = await getPostsByTag(tag);
+  const slug = decodeURIComponent(params.slug);
+  const posts = await getPostsByTag(slug);
 
   // 특정 태그에 해당하는 게시물이 없을 경우 404 처리 (선택 사항)
   // if (posts.length === 0) {
@@ -55,7 +55,7 @@ export default async function TagPage({ params }: TagPageProps) {
   return (
     <div className="container py-10">
       <div className="mb-8">
-        <h1 className="text-4xl font-bold">#{tag}</h1>
+        <h1 className="text-4xl font-bold">#{slug}</h1>
         <p className="text-muted-foreground mt-2">{posts.length}개의 게시물이 있습니다.</p>
       </div>
 

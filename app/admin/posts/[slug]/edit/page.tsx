@@ -1,36 +1,29 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Metadata } from "next"
 
-export const dynamic = "force-dynamic"
-
-export async function generateMetadata(): Promise<Metadata> {
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
-
-  return {
-    title: "새 포스트 작성 - InfoBox",
-    description: "InfoBox에 새 포스트를 작성하세요.",
-    openGraph: {
-      title: "새 포스트 작성 - InfoBox",
-      description: "InfoBox에 새 포스트를 작성하세요.",
-      type: "website",
-      url: `${BASE_URL}/admin/posts/new`,
-    },
-    alternates: {
-      canonical: `${BASE_URL}/admin/posts/new`,
-    },
-  }
+interface Post {
+  _id: string;
+  title: string;
+  slug: string;
+  description: string;
+  content: string;
+  category: string;
+  tags: { name: string; slug: string }[];
+  published: boolean;
+  date: string;
 }
 
-export default function NewPostPage() {
+export default function EditPostPage({ params }: { params: { slug: string } }) {
   const router = useRouter();
+  const [post, setPost] = useState<Post | null>(null);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   
   // 태그 관련 상태
@@ -39,54 +32,72 @@ export default function NewPostPage() {
   const [newTag, setNewTag] = useState('');
   const [newTagSlug, setNewTagSlug] = useState('');
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    setSaving(true);
-
-    const formData = new FormData(e.currentTarget);
-    const postData = {
-      title: formData.get('title'),
-      slug: formData.get('slug'),
-      description: formData.get('description'),
-      content: formData.get('content'),
-      category: formData.get('category'),
-      published: formData.get('published') === 'on',
-      date: new Date().toISOString(),
-      tags: tags.map((name, index) => ({
-        name,
-        slug: tagSlugs[index] || name.toLowerCase().replace(/\s+/g, '-')
-      }))
+  useEffect(() => {
+    const fetchPost = async () => {
+      try {
+        const res = await fetch(`/api/posts/${params.slug}`);
+        if (!res.ok) throw new Error('포스트를 불러오는데 실패했습니다.');
+        const data = await res.json();
+        setPost(data);
+        setTags(data.tags.map((tag: { name: string }) => tag.name));
+        setTagSlugs(data.tags.map((tag: { slug: string }) => tag.slug));
+      } catch (error) {
+        console.error('포스트 불러오기 오류:', error);
+        toast.error('포스트를 불러오는데 실패했습니다.');
+      } finally {
+        setLoading(false);
+      }
     };
 
+    fetchPost();
+  }, [params.slug]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!post) return;
+
+    setSaving(true);
     try {
-      const res = await fetch('/api/posts', {
-        method: 'POST',
+      const formData = {
+        ...post,
+        tags: tags.map((name, index) => ({
+          name,
+          slug: tagSlugs[index] || name.toLowerCase().replace(/\s+/g, '-')
+        }))
+      };
+
+      const res = await fetch(`/api/posts/${params.slug}`, {
+        method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData)
+        body: JSON.stringify(formData)
       });
 
-      if (!res.ok) throw new Error('포스트 생성에 실패했습니다.');
+      if (!res.ok) throw new Error('포스트 수정에 실패했습니다.');
 
-      toast.success('포스트가 성공적으로 생성되었습니다.');
+      toast.success('포스트가 성공적으로 수정되었습니다.');
       router.push('/admin/posts');
     } catch (error) {
-      console.error('포스트 생성 오류:', error);
-      toast.error('포스트 생성에 실패했습니다.');
+      console.error('포스트 수정 오류:', error);
+      toast.error('포스트 수정에 실패했습니다.');
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) return <div>로딩 중...</div>;
+  if (!post) return <div>포스트를 찾을 수 없습니다.</div>;
+
   return (
     <div className="container py-10">
-      <h1 className="text-3xl font-bold mb-8">새 포스트 작성</h1>
+      <h1 className="text-3xl font-bold mb-8">포스트 수정</h1>
       
       <form onSubmit={handleSubmit} className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="title">제목</Label>
           <Input
             id="title"
-            name="title"
+            value={post.title}
+            onChange={(e) => setPost({ ...post, title: e.target.value })}
             required
           />
         </div>
@@ -95,7 +106,8 @@ export default function NewPostPage() {
           <Label htmlFor="slug">Slug</Label>
           <Input
             id="slug"
-            name="slug"
+            value={post.slug}
+            onChange={(e) => setPost({ ...post, slug: e.target.value })}
             required
           />
         </div>
@@ -104,7 +116,8 @@ export default function NewPostPage() {
           <Label htmlFor="description">설명</Label>
           <Textarea
             id="description"
-            name="description"
+            value={post.description}
+            onChange={(e) => setPost({ ...post, description: e.target.value })}
             required
           />
         </div>
@@ -113,7 +126,8 @@ export default function NewPostPage() {
           <Label htmlFor="content">내용</Label>
           <Textarea
             id="content"
-            name="content"
+            value={post.content}
+            onChange={(e) => setPost({ ...post, content: e.target.value })}
             required
             className="min-h-[300px]"
           />
@@ -123,7 +137,8 @@ export default function NewPostPage() {
           <Label htmlFor="category">카테고리</Label>
           <Input
             id="category"
-            name="category"
+            value={post.category}
+            onChange={(e) => setPost({ ...post, category: e.target.value })}
             required
           />
         </div>
@@ -206,7 +221,8 @@ export default function NewPostPage() {
           <input
             type="checkbox"
             id="published"
-            name="published"
+            checked={post.published}
+            onChange={(e) => setPost({ ...post, published: e.target.checked })}
           />
           <Label htmlFor="published">발행</Label>
         </div>
