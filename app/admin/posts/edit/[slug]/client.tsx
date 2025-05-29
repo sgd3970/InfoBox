@@ -54,7 +54,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
   useEffect(() => {
     // 초기 태그 데이터 설정
     if (initialPost.tags) {
-      setTags(initialPost.tags.map(tag => {
+      setTags(initialPost.tags.map((tag: string | { name: string; slug: string }) => {
         if (typeof tag === 'string') {
           return { name: tag, slug: tag.toLowerCase().replace(/\s+/g, '-') };
         }
