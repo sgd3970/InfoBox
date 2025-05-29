@@ -11,13 +11,20 @@ export async function GET(
 ) {
   try {
     const db = await getDatabase()
-    const tag = decodeURIComponent(params.slug)
+    const tagSlug = decodeURIComponent(params.slug)
 
-    // 태그로 게시물 검색
+    // 1. slug로 name 찾기
+    const tagDoc = await db.collection("tags").findOne({ slug: tagSlug })
+    if (!tagDoc) {
+      return NextResponse.json([])
+    }
+    const tagName = tagDoc.name
+
+    // 2. posts.tags(string[])에 name이 포함된 포스트 찾기
     const posts = await db.collection<Post>("posts")
       .find({
         published: true,
-        "tags.slug": tag // 태그 객체의 slug 필드 검색
+        tags: tagName
       })
       .sort({ date: -1 })
       .toArray()
