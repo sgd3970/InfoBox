@@ -174,25 +174,21 @@ export default async function PostPage({ params }: PostPageProps) {
                       height={150}
                       className="object-cover transition-transform group-hover:scale-105"
                     />
-                        alt={relatedPost.title}
-                        width={300}
-                        height={150}
-                        className="object-cover transition-transform group-hover:scale-105"
-                      />
-                    </div>
-                    <h3 className="font-medium group-hover:text-primary transition-colors line-clamp-2">
-                      {relatedPost.title}
-                    </h3>
                   </div>
-                </Link>
-              ))}
-            </div>
+                  <h3 className="text-lg font-semibold text-gray-900">
+                    {relatedPost.title}
+                  </h3>
+                  <p className="text-sm text-gray-500">
+                    {relatedPost.description}
+                  </p>
+                </div>
+              </Link>
+            ))}
           </div>
-        )}
-
-        {/* 조회수 추적 컴포넌트 추가 */}
-        <ViewTracker slug={params.slug} />
-      </div>
-    </>
+        </div>
+      )}
+      <ViewTracker slug={params.slug} />
+    </div>
   )
+}
 }
