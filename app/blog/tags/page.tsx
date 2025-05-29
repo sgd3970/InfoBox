@@ -33,6 +33,7 @@ export default async function TagsPage() {
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       allPosts = searchData.results || [];
+      console.log('Fetched posts:', allPosts.length); // 디버깅용
     } else {
       console.error("포스트 목록 가져오기 실패", searchRes.status);
     }
@@ -45,10 +46,12 @@ export default async function TagsPage() {
   const tagCounts: Record<string, number> = {}
 
   allPosts.forEach((post: Post) => {
-    if (post.tags) {
+    if (post.tags && Array.isArray(post.tags)) {
       post.tags.forEach((tag) => {
-        const normalizedTag = tag.name.toLowerCase()
-        tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
+        if (tag && typeof tag === 'object' && 'name' in tag && typeof tag.name === 'string') {
+          const normalizedTag = tag.name.toLowerCase()
+          tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
+        }
       })
     }
   })
@@ -65,6 +68,8 @@ export default async function TagsPage() {
     count,
     maxCount,
   }))
+
+  console.log('Processed tags:', tagsData.length); // 디버깅용
 
   return (
     <div className="container py-10">
