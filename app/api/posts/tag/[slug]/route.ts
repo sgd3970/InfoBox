@@ -9,6 +9,7 @@ export async function GET(
   request: Request,
   { params }: { params: { slug: string } }
 ) {
+  console.log('[API] 라우트 진입:', params.slug)
   try {
     const db = await getDatabase()
     const tagSlug = decodeURIComponent(params.slug)
