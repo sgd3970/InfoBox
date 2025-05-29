@@ -114,8 +114,7 @@ export const advancedSearch = async (options: SearchOptions): Promise<{ results:
     console.error('Error in advanced search:', error);
     return { results: [], total: 0, pages: 0 };
   }
-};
-};
+}
 
 // 검색 제안 함수 - API 라우트 사용
 export const getSearchSuggestions = async (query: string): Promise<string[]> => {

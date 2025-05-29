@@ -3,16 +3,17 @@ export const dynamic = 'force-dynamic';
 import { notFound } from "next/navigation"
 import Image from "next/image"
 import type { Metadata } from "next"
+import { format } from "date-fns"
+import { CalendarIcon } from "lucide-react"
+import AIContentRecommendations from "@/components/ai-content-recommendations"
 import Link from "next/link"
 import { Comments } from "@/components/comments"
-// import { AIContentSummary } from "@/components/ai-content-summary"
-import { AIContentRecommendations } from "@/components/ai-content-recommendations"
+import { PostThumbnail } from "@/components/post-thumbnail"
+import GoogleAd from "@/components/google-ad"
 import { SocialShare } from "@/components/social-share"
 import { SEOSchema } from "@/components/seo-schema"
 import type { Post } from "@/lib/models"
-import { GoogleAd } from "@/components/GoogleAd"
 import { ViewTracker } from "@/components/view-tracker"
-import { PostThumbnail } from "@/components/PostThumbnail"
 
 interface PostPageProps {
   params: {
@@ -111,8 +112,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 }
 
 export default async function PostPage({ params }: PostPageProps) {
-  const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
   const post = await getPost(params.slug)
+  const relatedPosts = await getRelatedPosts(params.slug, params.category)
 
   if (!post) {
     notFound()
@@ -125,54 +126,54 @@ export default async function PostPage({ params }: PostPageProps) {
         currentPostCategory={post.category}
       />
       <article className="max-w-3xl mx-auto">
-        <div className="space-y-4 mb-8">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <Link
-                href={`/blog/category/${encodeURIComponent(post.category.toLowerCase())}`}
-                className="text-sm font-medium px-2 py-1 bg-primary/10 text-primary rounded-full hover:bg-primary/20 transition-colors cursor-pointer"
-              >
-                {post.category}
-              </Link>
+        {post && (
+          <div className="space-y-4 mb-8">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2">
+                <CalendarIcon className="w-4 h-4 text-gray-500" />
+                <span className="text-sm text-gray-500">
+                  {format(new Date(post.date), "yyyy.MM.dd")}
+                </span>
+              </div>
+              <h1 className="text-3xl font-bold tracking-tight">
+                {post.title}
+              </h1>
+              <p className="text-gray-600">
+                {post.description}
+              </p>
             </div>
-            <h1 className="text-4xl font-bold">{post.title}</h1>
           </div>
-          <div className="flex items-center space-x-2 text-muted-foreground">
-            <div className="flex items-center gap-1">
-              <CalendarIcon className="w-4 h-4" />
-              <time dateTime={post.date}>{format(new Date(post.date), 'MMMM d, yyyy')}</time>
-
-          {/* AI 추천 콘텐츠 */}
-          <AIContentRecommendations
-            currentPostSlug={post.slug}
-            currentPostCategory={post.category}
-
-          />
-
-          {/* 댓글 시스템 */}
-          {post._id && (
-            <Comments category={params.category} postId={post._id.toString()} />
-          )}
-
-          {/* 인라인 광고 */}
-          <GoogleAd slot="4632464247" className="h-auto max-h-[150px] max-w-[90%] lg:h-[150px] mx-auto" />
-        </article>
-
-        {/* 관련 포스트 */}
-        {relatedPosts.length > 0 && (
-          <div className="max-w-3xl mx-auto mt-16">
-            <h2 className="text-2xl font-bold mb-6">관련 포스트</h2>
-            <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {relatedPosts.map((relatedPost) => (
-                <Link
-                  key={relatedPost._id}
-                  href={`/blog/${relatedPost.category.toLowerCase()}/${relatedPost.slug}`}
-                  className="group"
-                >
-                  <div className="space-y-2">
-                    <div className="relative aspect-video overflow-hidden rounded-lg">
-                      <PostThumbnail
-                        src={relatedPost.featuredImage || relatedPost.image}
+        )}
+        <Link
+          href={`/blog/${post.category.toLowerCase()}`}
+          className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
+        >
+          {post.category}
+        </Link>
+      </article>
+      {post._id && (
+        <Comments category={params.category} postId={post._id.toString()} />
+      )}
+      <GoogleAd slot="4632464247" className="h-auto max-h-[150px] max-w-[90%] lg:h-[150px] mx-auto" />
+      {relatedPosts.length > 0 && (
+        <div className="max-w-3xl mx-auto mt-16">
+          <h2 className="text-2xl font-bold mb-6">관련 포스트</h2>
+          <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
+            {relatedPosts.map((relatedPost) => (
+              <Link
+                key={relatedPost._id}
+                href={`/blog/${relatedPost.category.toLowerCase()}/${relatedPost.slug}`}
+                className="group"
+              >
+                <div className="space-y-2">
+                  <div className="relative aspect-video overflow-hidden rounded-lg">
+                    <PostThumbnail
+                      src={relatedPost.featuredImage || relatedPost.image}
+                      alt={relatedPost.title}
+                      width={300}
+                      height={150}
+                      className="object-cover transition-transform group-hover:scale-105"
+                    />
                         alt={relatedPost.title}
                         width={300}
                         height={150}
