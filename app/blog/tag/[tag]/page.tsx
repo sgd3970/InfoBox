@@ -15,18 +15,19 @@ interface TagPageProps {
 
 // TODO: 특정 태그에 해당하는 포스트를 가져오는 함수 구현 필요
 async function getPostsByTag(tag: string): Promise<Post[]> {
-  // 임시 데이터 반환 또는 API 호출 로직 구현
-  console.log(`Fetching posts for tag: ${tag}`);
-  // 예시: /api/search 엔드포인트를 사용하여 태그로 필터링
   try {
-    const searchRes = await fetch(`${process.env.NEXT_PUBLIC_APP_URL}/api/search?tags=${encodeURIComponent(tag)}&limit=100`, {});
-    if (searchRes.ok) {
-      const searchData = await searchRes.json();
-      return searchData.posts || [];
-    } else {
-      console.error("태그별 포스트 목록 가져오기 실패", searchRes.status);
+    const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
+    const res = await fetch(`${BASE_URL}/api/posts/tag/${encodeURIComponent(tag)}`, {
+      cache: 'no-store'
+    });
+    
+    if (!res.ok) {
+      console.error("태그별 포스트 목록 가져오기 실패:", res.status);
       return [];
     }
+
+    const posts = await res.json();
+    return posts as Post[];
   } catch (error) {
     console.error("태그별 포스트 목록 가져오는 중 오류 발생:", error);
     return [];
@@ -61,29 +62,21 @@ export default async function TagPage({ params }: TagPageProps) {
       {posts.length > 0 ? (
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {posts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group">
-              <div className="space-y-4">
-                <div className="relative aspect-video overflow-hidden rounded-lg">
-                  <PostThumbnail
-                    src={post.featuredImage || post.image}
-                    alt={post.title}
-                    width={400}
-                    height={200}
-                    className="object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
-                </div>
+            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+              <div className="relative aspect-video w-full overflow-hidden">
+                <PostThumbnail
+                  src={post.featuredImage || post.image}
+                  alt={post.title}
+                  width={400}
+                  height={200}
+                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
+                />
+              </div>
+              <div className="flex-1 flex flex-col p-4 gap-2">
+                <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                 <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
-                <div className="flex items-center text-xs text-muted-foreground">
-                  <time dateTime={post.date}>
-                    {new Date(post.date).toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
+                <div className="flex items-center text-xs text-muted-foreground mt-auto">
+                  <time dateTime={post.date}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
                 </div>
               </div>
             </Link>
