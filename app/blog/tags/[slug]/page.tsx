@@ -15,33 +15,40 @@ interface TagPageProps {
 
 async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   try {
+    console.log('[TagPage] getPostsByTag 호출:', tagSlug)
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
     const res = await fetch(`${BASE_URL}/api/posts/tag/${tagSlug}`, {
       cache: 'no-store'
     })
 
     if (!res.ok) {
-      console.error(`태그 ${tagSlug} 포스트 API 호출 실패:`, res.status)
+      console.error(`[TagPage] 태그 ${tagSlug} 포스트 API 호출 실패:`, res.status)
       return []
     }
 
     const posts = await res.json()
+    console.log('[TagPage] getPostsByTag posts:', posts.length, (posts as any[]).map((p: any) => p.tags))
     return posts as Post[]
   } catch (error) {
-    console.error(`태그 ${tagSlug} 포스트 fetch 오류:`, error)
+    console.error(`[TagPage] 태그 ${tagSlug} 포스트 fetch 오류:`, error)
     return []
   }
 }
 
 async function getTagNameBySlug(slug: string): Promise<string> {
+  console.log('[TagPage] getTagNameBySlug 호출:', slug)
   const db = await getDatabase();
   const tag = await db.collection("tags").findOne({ slug });
+  console.log('[TagPage] getTagNameBySlug 결과:', tag)
   return tag?.name || slug;
 }
 
 export default async function TagPage({ params }: TagPageProps) {
+  console.log('[TagPage] TagPage 진입:', params.slug)
   const posts = await getPostsByTag(params.slug)
   const tagName = await getTagNameBySlug(params.slug)
+  console.log('[TagPage] posts:', posts.length, (posts as any[]).map((p: any) => p.tags))
+  console.log('[TagPage] tagName:', tagName)
 
   return (
     <div className="container py-8">      
