@@ -37,10 +37,13 @@ export async function GET(
     const allPostsNoCondition = await db.collection("posts").find({}).toArray();
     console.log('[API] 조건 없이 가져온 posts 개수:', allPostsNoCondition.length);
     allPostsNoCondition.forEach((post, idx) => {
-      console.log(`[API] 포스트[${idx}] 정보:`);
+      console.log(`[API] 포스트[${idx}] 상세 정보:`);
       console.log('title:', post.title);
       console.log('published:', post.published);
+      console.log('published 타입:', typeof post.published);
       console.log('tags:', post.tags);
+      console.log('date:', post.date);
+      console.log('category:', post.category);
       console.log('---');
     });
 
@@ -67,8 +70,12 @@ export async function GET(
       console.log('정규화된 태그:', post.tags?.map((t: string) => t.trim().toLowerCase()) || [])
     })
 
+    // published 필드가 없거나 true인 포스트만 가져오기
     const posts = await db.collection("posts").aggregate([
-      { $match: { published: true } },
+      { $match: { $or: [
+        { published: { $exists: false } },
+        { published: true }
+      ] } },
       { 
         $addFields: {
           // 태그 배열의 각 요소를 소문자로 변환하고 공백 제거
