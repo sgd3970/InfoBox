@@ -40,7 +40,9 @@ export async function GET(
     // 2. posts.tags(string[])에 name이 포함된 포스트 찾기 (공백/대소문자 무시)
     const posts = await db.collection("posts").aggregate([
       { $match: { published: true } },
-      { $addFields: {
+      { 
+        $addFields: {
+          // 태그 배열의 각 요소를 소문자로 변환하고 공백 제거
           tagsNormalized: {
             $map: {
               input: "$tags",
@@ -50,7 +52,12 @@ export async function GET(
           }
         }
       },
-      { $match: { tagsNormalized: tagNameNormalized } },
+      // tagsNormalized 배열에 tagNameNormalized가 포함되어 있는지 확인
+      { 
+        $match: { 
+          tagsNormalized: { $elemMatch: { $eq: tagNameNormalized } } 
+        } 
+      },
       { $sort: { date: -1 } }
     ]).toArray() as any[];
     console.log('[API] posts.length:', posts.length);
