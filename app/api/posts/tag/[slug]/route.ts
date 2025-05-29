@@ -43,6 +43,11 @@ export async function GET(
       { $sort: { date: -1 } }
     ]).toArray() as any[];
     console.log('[API] posts.length:', posts.length)
+    posts.forEach((post, idx) => {
+      console.log(`[API] post[${idx}].tags:`, post.tags)
+      console.log(`[API] post[${idx}].tagsNormalized:`, post.tagsNormalized)
+      console.log(`[API] 비교결과:`, post.tagsNormalized?.includes(tagNameNormalized))
+    })
     if (posts.length > 0) {
       console.log('[API] posts[0] 예시:', posts[0])
     }
