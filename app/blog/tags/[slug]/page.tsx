@@ -14,7 +14,9 @@ interface TagPageProps {
 async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   try {
     const BASE_URL = process.env.NEXT_PUBLIC_API_URL || '';
-    const res = await fetch(`${BASE_URL}/api/posts/tag/${tagSlug}`, {})
+    const res = await fetch(`${BASE_URL}/api/posts/tag/${tagSlug}`, {
+      cache: 'no-store'
+    })
 
     if (!res.ok) {
       console.error(`태그 ${tagSlug} 포스트 API 호출 실패:`, res.status)
@@ -31,9 +33,11 @@ async function getPostsByTag(tagSlug: string): Promise<Post[]> {
 
 export default async function TagPage({ params }: TagPageProps) {
   const posts = await getPostsByTag(params.slug)
+  const tagName = posts[0]?.tags?.find(tag => tag.slug === params.slug)?.name || params.slug
 
   return (
     <div className="container py-8">      
+      <h1 className="text-3xl font-bold mb-8">#{tagName}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
           <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
@@ -57,7 +61,7 @@ export default async function TagPage({ params }: TagPageProps) {
                   {post.tags && post.tags.length > 0 && (
                       <>
                         <span className="mx-2">•</span>
-                        <span>{post.tags.join(', ')}</span>
+                        <span>{post.tags.map(tag => tag.name).join(', ')}</span>
                       </>
                   )}
                 </div>
@@ -76,13 +80,15 @@ export default async function TagPage({ params }: TagPageProps) {
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
   const tagSlug = params.slug
+  const posts = await getPostsByTag(tagSlug)
+  const tagName = posts[0]?.tags?.find(tag => tag.slug === tagSlug)?.name || tagSlug
 
   return {
-    title: `#${tagSlug} - InfoBox`,
-    description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
+    title: `#${tagName} - InfoBox`,
+    description: `${tagName} 태그와 관련된 모든 게시물을 확인하세요.`,
     openGraph: {
-      title: `#${tagSlug} - InfoBox`,
-      description: `${tagSlug} 태그와 관련된 모든 게시물을 확인하세요.`,
+      title: `#${tagName} - InfoBox`,
+      description: `${tagName} 태그와 관련된 모든 게시물을 확인하세요.`,
       type: "website",
       url: `${BASE_URL}/blog/tags/${tagSlug}`,
     },
