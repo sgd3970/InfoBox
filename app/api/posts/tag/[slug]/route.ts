@@ -23,24 +23,34 @@ export async function GET(
     }
     const tagName = tagDoc.name
     console.log('[API] tagName:', tagName)
+    const tagNameNormalized = tagName.trim().toLowerCase()
+    console.log('[API] tagNameNormalized:', tagNameNormalized)
 
-    // 2. posts.tags(string[])에 name이 포함된 포스트 찾기
-    const posts = await db.collection<Post>("posts")
-      .find({
-        published: true,
-        tags: tagName
-      })
-      .sort({ date: -1 })
-      .toArray()
+    // 2. posts.tags(string[])에 name이 포함된 포스트 찾기 (공백/대소문자 무시)
+    const posts = await db.collection("posts").aggregate([
+      { $match: { published: true } },
+      { $addFields: {
+          tagsNormalized: {
+            $map: {
+              input: "$tags",
+              as: "t",
+              in: { $trim: { input: { $toLower: "$$t" } } }
+            }
+          }
+        }
+      },
+      { $match: { tagsNormalized: tagNameNormalized } },
+      { $sort: { date: -1 } }
+    ]).toArray() as any[];
     console.log('[API] posts.length:', posts.length)
     if (posts.length > 0) {
       console.log('[API] posts[0] 예시:', posts[0])
     }
 
     // ObjectId를 문자열로 변환
-    const formattedPosts = posts.map((post: WithId<Post>) => ({
+    const formattedPosts = posts.map((post: any) => ({
       ...post,
-      _id: post._id.toString()
+      _id: post._id?.toString?.() ?? post._id
     }))
     console.log('[API] formattedPosts.length:', formattedPosts.length)
 
