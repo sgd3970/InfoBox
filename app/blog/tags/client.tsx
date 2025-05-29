@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation"
 
 export interface TagData {
   tag: string
+  slug: string
   count: number
   maxCount: number
 }
@@ -30,7 +31,7 @@ export default function TagsClient({ tags }: { tags: TagData[] }) {
         </div>
 
         <div className="flex flex-wrap gap-4 justify-center">
-          {filteredTags.map(({ tag, count, maxCount }, index) => {
+          {filteredTags.map(({ tag, slug, count, maxCount }, index) => {
             // 태그 빈도수에 따라 크기 조정 (1-5 사이의 값)
             const size = Math.max(1, Math.ceil((count / maxCount) * 5))
             const fontSize = {
@@ -43,8 +44,8 @@ export default function TagsClient({ tags }: { tags: TagData[] }) {
 
             return (
               <Link
-                key={tag}
-                href={`/blog/tags/${encodeURIComponent(tag)}`}
+                key={slug}
+                href={`/blog/tags/${encodeURIComponent(slug)}`}
                 className={cn(
                   "px-6 py-3 rounded-full transition-all duration-300 transform hover:scale-105",
                   "bg-card hover:bg-accent/5",

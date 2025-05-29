@@ -4,6 +4,8 @@ import Link from "next/link"
 import Image from "next/image"
 import type { Post } from "@/lib/models"
 import { Metadata } from "next"
+import { getDatabase } from "@/lib/mongodb"
+import type { Tag } from "@/lib/models"
 
 interface TagPageProps {
   params: {
@@ -31,9 +33,15 @@ async function getPostsByTag(tagSlug: string): Promise<Post[]> {
   }
 }
 
+async function getTagNameBySlug(slug: string): Promise<string> {
+  const db = await getDatabase();
+  const tag = await db.collection("tags").findOne({ slug });
+  return tag?.name || slug;
+}
+
 export default async function TagPage({ params }: TagPageProps) {
   const posts = await getPostsByTag(params.slug)
-  const tagName = posts[0]?.tags?.find(tag => tag.slug === params.slug)?.name || params.slug
+  const tagName = await getTagNameBySlug(params.slug)
 
   return (
     <div className="container py-8">      
@@ -80,8 +88,7 @@ export default async function TagPage({ params }: TagPageProps) {
 export async function generateMetadata({ params }: TagPageProps): Promise<Metadata> {
   const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
   const tagSlug = params.slug
-  const posts = await getPostsByTag(tagSlug)
-  const tagName = posts[0]?.tags?.find(tag => tag.slug === tagSlug)?.name || tagSlug
+  const tagName = await getTagNameBySlug(tagSlug)
 
   return {
     title: `#${tagName} - InfoBox`,
