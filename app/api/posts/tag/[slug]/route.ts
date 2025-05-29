@@ -27,11 +27,15 @@ export async function GET(
     const tagNameNormalized = tagName.trim().toLowerCase()
     console.log('[API] tagNameNormalized:', tagNameNormalized)
 
-    // 전체 posts의 tags 배열 로그
+    // 전체 posts의 tags 배열 로그 (10개까지만)
     const allPosts = await db.collection("posts").find({ published: true }).toArray();
-    allPosts.forEach((post, idx) => {
+    console.log('[API] 전체 posts 개수:', allPosts.length);
+    allPosts.slice(0, 10).forEach((post, idx) => {
       console.log(`[API] 전체 post[${idx}].tags:`, post.tags);
     });
+    if (allPosts.length > 10) {
+      console.log(`[API] ...이하 생략 (총 ${allPosts.length}개)`);
+    }
 
     // 2. posts.tags(string[])에 name이 포함된 포스트 찾기 (공백/대소문자 무시)
     const posts = await db.collection("posts").aggregate([
