@@ -29,7 +29,7 @@ export default async function TagsPage() {
   try {
     const BASE_URL = process.env.NEXT_PUBLIC_APP_URL || 'https://example.com'
     const url = new URL('/api/search?limit=1000', BASE_URL).toString()
-    const searchRes = await fetch(url, {})
+    const searchRes = await fetch(url, { cache: 'no-store' })
     if (searchRes.ok) {
       const searchData = await searchRes.json();
       allPosts = searchData.results || [];
@@ -47,10 +47,8 @@ export default async function TagsPage() {
   allPosts.forEach((post: Post) => {
     if (post.tags) {
       post.tags.forEach((tag) => {
-        if (tag && typeof tag === 'object' && 'name' in tag) {
-          const normalizedTag = tag.name.toLowerCase()
-          tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
-        }
+        const normalizedTag = tag.name.toLowerCase()
+        tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
       })
     }
   })
