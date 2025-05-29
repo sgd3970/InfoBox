@@ -46,8 +46,8 @@ export default async function TagsPage() {
 
   allPosts.forEach((post: Post) => {
     if (post.tags) {
-      post.tags.forEach((tag: string) => {
-        const normalizedTag = tag.toLowerCase()
+      post.tags.forEach((tag) => {
+        const normalizedTag = tag.name.toLowerCase()
         tagCounts[normalizedTag] = (tagCounts[normalizedTag] || 0) + 1
       })
     }
