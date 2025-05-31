@@ -80,7 +80,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const ogUrl = new URL(`/api/og`, BASE_URL)
   ogUrl.searchParams.set("title", post.title)
-  ogUrl.searchParams.set("category", post.category)
+  ogUrl.searchParams.set("category", typeof post.category === 'string' ? post.category : post.category?.slug)
 
   return {
     title: post.title,
@@ -123,7 +123,7 @@ export default async function PostPage({ params }: PostPageProps) {
     <div className="container py-8">
       <AIContentRecommendations
         currentPostSlug={post.slug}
-        currentPostCategory={post.category}
+        currentPostCategory={typeof post.category === 'string' ? post.category : post.category?.slug}
       />
       <article className="max-w-3xl mx-auto">
         {post && (
@@ -145,10 +145,10 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         )}
         <Link
-          href={`/blog/${post.category.toLowerCase()}`}
+          href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}`}
           className="text-sm text-gray-500 hover:text-gray-900 transition-colors"
         >
-          {post.category}
+          {typeof post.category === 'string' ? post.category : post.category?.name}
         </Link>
       </article>
       {post._id && (
@@ -162,7 +162,7 @@ export default async function PostPage({ params }: PostPageProps) {
             {relatedPosts.map((relatedPost) => (
               <Link
                 key={relatedPost._id}
-                href={`/blog/${relatedPost.category.toLowerCase()}/${relatedPost.slug}`}
+                href={`/blog/${typeof relatedPost.category === 'string' ? relatedPost.category.toLowerCase() : relatedPost.category?.slug.toLowerCase()}/${relatedPost.slug}`}
                 className="group"
               >
                 <div className="space-y-2">

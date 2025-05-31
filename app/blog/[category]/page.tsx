@@ -51,10 +51,10 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <h1 className="text-2xl font-bold mb-6">카테고리: {params.category}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+          <Link key={post.slug} href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
             <div className="relative aspect-video w-full overflow-hidden">
               <PostThumbnail
-                src={post.featuredImage || post.image}
+                src={post.featuredImage || post.image || ''}
                 alt={post.title}
                 width={800}
                 height={400}
@@ -67,7 +67,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
               <div className="flex items-center text-xs text-gray-500 dark:text-gray-400 mt-auto">
                 <span>{new Date(post.date).toLocaleDateString()}</span>
                 <span className="mx-2">•</span>
-                <span>{post.category}</span>
+                <span>{typeof post.category === 'string' ? post.category : post.category?.name}</span>
               </div>
             </div>
           </Link>
