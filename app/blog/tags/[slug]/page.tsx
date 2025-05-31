@@ -5,7 +5,6 @@ import Image from "next/image"
 import type { Post } from "@/lib/models"
 import { Metadata } from "next"
 import { getDatabase } from "@/lib/mongodb"
-import type { Tag } from "@/lib/models"
 
 interface TagPageProps {
   params: {
@@ -72,12 +71,18 @@ export default async function TagPage({ params }: TagPageProps) {
                 <div className="text-xs text-gray-500 dark:text-gray-400">
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
-                  <span>{post.category}</span>
-                  {post.tags && post.tags.length > 0 && (
-                      <>
-                        <span className="mx-2">•</span>
-                        <span>{post.tags.map(tag => tag.name).join(', ')}</span>
-                      </>
+                  <span>{
+                    typeof post.category === 'object' && post.category !== null ? post.category.name : post.category
+                  }</span>
+                  {Array.isArray(post.tags) && post.tags.length > 0 && (
+                    <>
+                      <span className="mx-2">•</span>
+                      <span>{
+                        post.tags.map(tag => 
+                          typeof tag === 'object' && tag !== null ? tag.name : tag
+                        ).join(', ')
+                      }</span>
+                    </>
                   )}
                 </div>
               </div>

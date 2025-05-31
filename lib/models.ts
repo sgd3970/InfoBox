@@ -16,7 +16,7 @@ export interface Post {
   description: string
   content: string
   date: string
-  category: string
+  category: string | { name: string; slug: string }
   slug: string
   image?: string
   images?: string[]  // 추가: 본문 이미지 배열
@@ -27,6 +27,7 @@ export interface Post {
   views: number
   createdAt: Date
   updatedAt: Date
+  tags?: Array<string | { name: string; slug: string }>
 }
 
 export interface Category {
