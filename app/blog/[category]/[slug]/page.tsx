@@ -168,7 +168,7 @@ export default async function PostPage({ params }: PostPageProps) {
                 <div className="space-y-2">
                   <div className="relative aspect-video overflow-hidden rounded-lg">
                     <PostThumbnail
-                      src={relatedPost.featuredImage || relatedPost.image}
+                      src={relatedPost.featuredImage || relatedPost.image || ''}
                       alt={relatedPost.title}
                       width={300}
                       height={150}
