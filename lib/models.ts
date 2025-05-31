@@ -72,3 +72,8 @@ export interface DeviceStats {
   count: number
   date: string
 }
+
+export interface Tag {
+  name: string;
+  slug: string;
+}
