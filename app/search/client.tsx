@@ -239,7 +239,11 @@ export function SearchClient() {
                 </TabsContent>
 
                 {categories.map((cat) => (
-                  <TabsContent key={cat} value={cat} className="mt-6">
+                  <TabsContent 
+                    key={typeof cat === 'string' ? cat : cat.slug} 
+                    value={typeof cat === 'string' ? cat : cat.slug} 
+                    className="mt-6"
+                  >
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
                         <Link
