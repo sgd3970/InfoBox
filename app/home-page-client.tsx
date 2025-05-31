@@ -107,7 +107,7 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col min-w-0">
+              <Link key={post.slug} href={`/blog/${typeof post.category === 'object' && post.category !== null && 'slug' in post.category ? post.category.slug : post.category?.toLowerCase() || 'uncategorized'}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col min-w-0">
                 <div className="relative aspect-video w-full overflow-hidden">
                   <PostThumbnail
                     src={post.featuredImage || post.image}
@@ -118,7 +118,13 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   />
                 </div>
                 <div className="flex-1 flex flex-col p-4 gap-2 min-w-0">
-                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                  <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{
+                    typeof post.category === 'object' && post.category !== null && 'name' in post.category 
+                      ? post.category.name 
+                      : typeof post.category === 'string' 
+                      ? post.category 
+                      : JSON.stringify(post.category)
+                  }</span>
                   <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2 text-base md:text-lg">{post.title}</h3>
                   <p className="text-muted-foreground text-sm line-clamp-2 break-words min-w-0">{post.description}</p>
                   <div className="flex items-center text-xs text-muted-foreground mt-auto">

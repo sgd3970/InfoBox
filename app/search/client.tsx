@@ -32,7 +32,7 @@ export function SearchClient() {
   const [pages, setPages] = useState(0)
   const [loading, setLoading] = useState(false)
   const [activeTab, setActiveTab] = useState("all")
-  const [categories, setCategories] = useState<string[]>([])
+  const [categories, setCategories] = useState<(string | { name: string; slug: string })[]>([])
 
   // Effect to update state when search params change
   useEffect(() => {
@@ -84,7 +84,11 @@ export function SearchClient() {
         // Calculate and set categories here
         const uniqueCategories = Array.from(
           new Set(
-            (data.results || []).map((post: Post) => post.category.toLowerCase())
+            (data.results || []).map((post: Post) => 
+              typeof post.category === 'object' && post.category !== null && 'slug' in post.category 
+                ? post.category.slug 
+                : post.category?.toLowerCase() || 'uncategorized'
+            )
           )
         ) as string[];
         setCategories(uniqueCategories);
@@ -102,11 +106,12 @@ export function SearchClient() {
   }, [query, category, tags, dateFrom, dateTo, sortBy, sortOrder, page, limit])
 
   // 카테고리별 결과 필터링
-  const filterByCategory = (categorySlug: string) => {
-    if (categorySlug === "all") {
-      return searchResults
-    }
-    return searchResults.filter((post) => post.category.toLowerCase() === categorySlug.toLowerCase())
+  const filterByCategory = (cat: string | { name: string; slug: string }) => {
+    return searchResults.filter(post => 
+      typeof post.category === 'object' && post.category !== null && 'slug' in post.category 
+        ? post.category.slug === (typeof cat === 'object' && cat !== null && 'slug' in cat ? cat.slug : cat)
+        : post.category === cat
+    )
   }
 
   // 검색어 하이라이트 함수
@@ -191,8 +196,10 @@ export function SearchClient() {
                 <TabsList>
                   <TabsTrigger value="all">전체 ({searchResults.length})</TabsTrigger>
                   {categories.map((cat) => (
-                    <TabsTrigger key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)} ({filterByCategory(cat).length})
+                    <TabsTrigger key={typeof cat === 'object' && cat !== null && 'name' in cat ? cat.name : cat} value={typeof cat === 'object' && cat !== null && 'slug' in cat ? cat.slug : cat}>
+                      {typeof cat === 'object' && cat !== null && 'name' in cat 
+                        ? cat.name.charAt(0).toUpperCase() + cat.name.slice(1)
+                        : cat.charAt(0).toUpperCase() + cat.slice(1)} ({filterByCategory(cat).length})
                     </TabsTrigger>
                   ))}
                 </TabsList>
@@ -229,7 +236,7 @@ export function SearchClient() {
                   <TabsContent key={cat} value={cat} className="mt-6">
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
-                        <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                        <Link key={post.slug} href={`/blog/${typeof post.category === 'object' && post.category !== null && 'slug' in post.category ? post.category.slug : post.category?.toLowerCase() || 'uncategorized'}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
                           <div className="relative aspect-video w-full overflow-hidden">
                             <PostThumbnail
                               src={post.featuredImage || post.image}
@@ -240,7 +247,13 @@ export function SearchClient() {
                             />
                           </div>
                           <div className="flex-1 flex flex-col p-4 gap-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{
+                              typeof post.category === 'object' && post.category !== null && 'name' in post.category 
+                                ? post.category.name 
+                                : typeof post.category === 'string' 
+                                ? post.category 
+                                : JSON.stringify(post.category)
+                            }</span>
                             <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                             <p className="text-muted-foreground line-clamp-2">{post.description}</p>
                             <div className="flex items-center text-xs text-muted-foreground mt-auto">

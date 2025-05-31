@@ -72,7 +72,11 @@ export default async function TagPage({ params }: TagPageProps) {
                   <span>{new Date(post.date).toLocaleDateString()}</span>
                   <span className="mx-2">•</span>
                   <span>{
-                    typeof post.category === 'object' && post.category !== null ? post.category.name : post.category
+                    typeof post.category === 'object' && post.category !== null && 'name' in post.category 
+                      ? post.category.name 
+                      : typeof post.category === 'string' 
+                      ? post.category 
+                      : JSON.stringify(post.category)
                   }</span>
                   {Array.isArray(post.tags) && post.tags.length > 0 && (
                     <>

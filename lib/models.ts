@@ -1,3 +1,5 @@
+import React from 'react';
+
 // MongoDB 컬렉션에 대한 타입 정의
 export interface User {
   _id?: string

@@ -122,7 +122,13 @@ export default function AdminPostsClient() {
             {filteredPosts.map((post) => (
               <TableRow key={post._id}>
                 <TableCell className="font-medium">{post.title}</TableCell>
-                <TableCell>{post.category}</TableCell>
+                <TableCell>{
+                  typeof post.category === 'object' && post.category !== null && 'name' in post.category 
+                    ? post.category.name 
+                    : typeof post.category === 'string' 
+                    ? post.category 
+                    : JSON.stringify(post.category)
+                }</TableCell>
                 <TableCell>
                   {new Date(post.date).toLocaleDateString("ko-KR", {
                     year: "numeric",
@@ -136,8 +142,8 @@ export default function AdminPostsClient() {
                   <div className="flex justify-end gap-2">
                     <Button variant="ghost" size="icon" asChild>
                       <Link
-                        href={`/blog/${post.category.toLowerCase()}/${post.slug}`}
-                        target="_blank"
+                        href={`/blog/${typeof post.category === 'object' && post.category !== null && 'slug' in post.category ? post.category.slug : post.category?.toLowerCase() || 'uncategorized'}/${post.slug}`}
+                        className="block"
                         rel="noopener noreferrer"
                       >
                         <Eye className="h-4 w-4" />
