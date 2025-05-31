@@ -46,37 +46,37 @@ export default async function BlogPage() {
             주요 게시물
             <span className="absolute -bottom-1 left-0 w-1/4 h-0.5 bg-primary/20 rounded-full" />
           </h2>
-          <Link href={`/blog/${featuredPost.category.toLowerCase()}/${featuredPost.slug}`} className="group">
+          <Link href={`/blog/${typeof featuredPost.category === 'string' ? featuredPost.category.toLowerCase() : featuredPost.category?.slug.toLowerCase()}/${featuredPost.slug}`} className="group">
             <div className="grid md:grid-cols-2 gap-6 items-center">
               <div className="relative aspect-video overflow-hidden rounded-lg bg-muted">
                 <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
                 <PostThumbnail
-                  src={featuredPost.featuredImage || featuredPost.image}
+                  src={featuredPost.featuredImage || featuredPost.image || ''}
                   alt={featuredPost.title}
                   width={800}
                   height={400}
-                  className="object-cover transition-all duration-300 group-hover:scale-110"
-                  priority
+                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
                 />
               </div>
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <span className="text-sm font-medium px-2 py-1 rounded-full bg-primary/10 text-primary transition-colors group-hover:bg-primary/20">
-                    {featuredPost.category}
-                  </span>
-                  <h3 className="text-3xl font-bold group-hover:text-primary transition-colors">
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-muted-foreground">
+                      {typeof featuredPost.category === 'string' ? featuredPost.category : featuredPost.category?.name}
+                    </span>
+                    <span className="text-sm text-muted-foreground">•</span>
+                    <time dateTime={featuredPost.date} className="text-sm text-muted-foreground">
+                      {new Date(featuredPost.date).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </div>
+                  <h3 className="text-2xl font-bold tracking-tight group-hover:text-primary transition-colors">
                     {featuredPost.title}
                   </h3>
-                </div>
-                <p className="text-muted-foreground line-clamp-3">{featuredPost.description}</p>
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <time dateTime={new Date(featuredPost.date).toISOString()}>
-                    {new Date(featuredPost.date).toLocaleDateString("ko-KR", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </time>
+                  <p className="text-muted-foreground line-clamp-2">{featuredPost.description}</p>
                 </div>
               </div>
             </div>
@@ -92,22 +92,39 @@ export default async function BlogPage() {
         </h2>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {recentPosts.map((post) => (
-            <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
-              <div className="relative aspect-video w-full overflow-hidden">
-                <PostThumbnail
-                  src={post.featuredImage || post.image}
-                  alt={post.title}
-                  width={400}
-                  height={200}
-                  className="object-cover w-full h-full transition-transform duration-300 group-hover:scale-105"
-                />
-              </div>
-              <div className="flex-1 flex flex-col p-4 gap-2">
-                <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
-                <h3 className="font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
-                <p className="text-muted-foreground text-sm line-clamp-2">{post.description}</p>
-                <div className="flex items-center text-xs text-muted-foreground mt-auto">
-                  <time dateTime={new Date(post.date).toISOString()}>{new Date(post.date).toLocaleDateString("ko-KR", { year: "numeric", month: "long", day: "numeric" })}</time>
+            <Link
+              key={post.slug}
+              href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+              className="group"
+            >
+              <div className="space-y-2">
+                <div className="relative aspect-video overflow-hidden rounded-lg">
+                  <PostThumbnail
+                    src={post.featuredImage || post.image || ''}
+                    alt={post.title}
+                    width={300}
+                    height={150}
+                    className="object-cover transition-transform group-hover:scale-105"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-muted-foreground">
+                      {typeof post.category === 'string' ? post.category : post.category?.name}
+                    </span>
+                    <span className="text-xs text-muted-foreground">•</span>
+                    <time dateTime={post.date} className="text-xs text-muted-foreground">
+                      {new Date(post.date).toLocaleDateString("ko-KR", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </time>
+                  </div>
+                  <h3 className="font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm text-muted-foreground line-clamp-2">{post.description}</p>
                 </div>
               </div>
             </Link>
