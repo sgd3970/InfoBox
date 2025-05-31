@@ -207,10 +207,14 @@ export function SearchClient() {
                 <TabsContent value="all" className="mt-6">
                   <div className="space-y-6">
                     {searchResults.map((post) => (
-                      <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                      <Link
+                        key={post.slug}
+                        href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                        className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col"
+                      >
                         <div className="relative aspect-video w-full overflow-hidden">
                           <PostThumbnail
-                            src={post.featuredImage || post.image}
+                            src={post.featuredImage || post.image || ''}
                             alt={post.title}
                             width={300}
                             height={150}
@@ -218,7 +222,9 @@ export function SearchClient() {
                           />
                         </div>
                         <div className="flex-1 flex flex-col p-4 gap-2">
-                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                          <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">
+                            {typeof post.category === 'string' ? post.category : post.category?.name}
+                          </span>
                           <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                           <p className="text-muted-foreground line-clamp-2">{post.description}</p>
                           <div className="flex items-center text-xs text-muted-foreground mt-auto">
@@ -236,10 +242,14 @@ export function SearchClient() {
                   <TabsContent key={cat} value={cat} className="mt-6">
                     <div className="space-y-6">
                       {filterByCategory(cat).map((post) => (
-                        <Link key={post.slug} href={`/blog/${typeof post.category === 'object' && post.category !== null && 'slug' in post.category ? post.category.slug : post.category?.toLowerCase() || 'uncategorized'}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                        <Link
+                          key={post.slug}
+                          href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                          className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col"
+                        >
                           <div className="relative aspect-video w-full overflow-hidden">
                             <PostThumbnail
-                              src={post.featuredImage || post.image}
+                              src={post.featuredImage || post.image || ''}
                               alt={post.title}
                               width={300}
                               height={150}
@@ -247,13 +257,9 @@ export function SearchClient() {
                             />
                           </div>
                           <div className="flex-1 flex flex-col p-4 gap-2">
-                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{
-                              typeof post.category === 'object' && post.category !== null && 'name' in post.category 
-                                ? post.category.name 
-                                : typeof post.category === 'string' 
-                                ? post.category 
-                                : JSON.stringify(post.category)
-                            }</span>
+                            <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">
+                              {typeof post.category === 'string' ? post.category : post.category?.name}
+                            </span>
                             <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                             <p className="text-muted-foreground line-clamp-2">{post.description}</p>
                             <div className="flex items-center text-xs text-muted-foreground mt-auto">
@@ -273,10 +279,14 @@ export function SearchClient() {
             {categories.length <= 1 && (
               <div className="space-y-6 mb-8">
                 {searchResults.map((post) => (
-                  <Link key={post.slug} href={`/blog/${post.category.toLowerCase()}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col">
+                  <Link
+                    key={post.slug}
+                    href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                    className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col"
+                  >
                     <div className="relative aspect-video w-full overflow-hidden">
                       <PostThumbnail
-                        src={post.featuredImage || post.image}
+                        src={post.featuredImage || post.image || ''}
                         alt={post.title}
                         width={300}
                         height={150}
@@ -284,7 +294,9 @@ export function SearchClient() {
                       />
                     </div>
                     <div className="flex-1 flex flex-col p-4 gap-2">
-                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">{post.category}</span>
+                      <span className="text-xs font-medium px-2 py-1 rounded-full bg-primary/10 text-primary w-fit">
+                        {typeof post.category === 'string' ? post.category : post.category?.name}
+                      </span>
                       <h3 className="text-xl font-bold group-hover:text-primary transition-colors line-clamp-2">{post.title}</h3>
                       <p className="text-muted-foreground line-clamp-2">{post.description}</p>
                       <div className="flex items-center text-xs text-muted-foreground mt-auto">

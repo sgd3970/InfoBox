@@ -107,10 +107,14 @@ export function HomePageClient({ latestPosts, categories }: HomePageClientProps)
                   </div>
                 </div>
               )}
-              <Link key={post.slug} href={`/blog/${typeof post.category === 'object' && post.category !== null && 'slug' in post.category ? post.category.slug : post.category?.toLowerCase() || 'uncategorized'}/${post.slug}`} className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col min-w-0">
+              <Link
+                key={post.slug}
+                href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                className="group rounded-lg bg-white dark:bg-zinc-900 shadow-sm hover:shadow-md transition-shadow border overflow-hidden flex flex-col min-w-0"
+              >
                 <div className="relative aspect-video w-full overflow-hidden">
                   <PostThumbnail
-                    src={post.featuredImage || post.image}
+                    src={post.featuredImage || post.image || ''}
                     alt={post.title}
                     width={400}
                     height={200}
