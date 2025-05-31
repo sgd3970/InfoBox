@@ -53,7 +53,11 @@ export default function AIContentRecommendations({
         let score = 0
 
         // 같은 카테고리면 점수 추가
-        if (post.category?.toLowerCase() === currentPostCategory.toLowerCase()) {
+        const postCategorySlug = typeof post.category === 'string' 
+          ? post.category.toLowerCase() 
+          : post.category?.slug.toLowerCase();
+        
+        if (postCategorySlug === currentPostCategory.toLowerCase()) {
           score += 3
         }
 
