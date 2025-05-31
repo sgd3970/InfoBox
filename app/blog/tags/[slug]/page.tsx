@@ -54,7 +54,11 @@ export default async function TagPage({ params }: TagPageProps) {
       <h1 className="text-3xl font-bold mb-8">#{tagName}</h1>
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {posts.map(post => (
-          <Link key={post.slug} href={`/blog/${post.category}/${post.slug}`} className="block">
+          <Link 
+            key={post.slug} 
+            href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`} 
+            className="block"
+          >
             <div className="rounded-lg border shadow-sm overflow-hidden">
               {post.image && (
                 <Image

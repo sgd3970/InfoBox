@@ -23,7 +23,10 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
           <Card key={post.slug} className="overflow-hidden">
             <CardHeader className="p-4">
               <CardTitle className="line-clamp-1 text-lg">
-                <Link href={`/blog/${post.category}/${post.slug}`} className="hover:underline">
+                <Link 
+                  href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`} 
+                  className="hover:underline"
+                >
                   {post.title}
                 </Link>
               </CardTitle>
@@ -31,8 +34,8 @@ export function RelatedPosts({ posts }: RelatedPostsProps) {
             </CardHeader>
             <CardContent className="p-4 pt-0">
               <Link
-                href={`/blog/${post.category}/${post.slug}`}
-                className="text-sm font-medium text-primary hover:underline"
+                href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                className="block"
               >
                 자세히 보기
               </Link>
