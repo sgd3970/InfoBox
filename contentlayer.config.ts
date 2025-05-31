@@ -31,7 +31,7 @@ export const Post = defineDocumentType(() => ({
     url: {
       type: "string",
       resolve: (post) => {
-        const category = post.category.toLowerCase()
+        const category = typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()
         const slug = post._raw.flattenedPath.replace("posts/", "")
         return `/blog/${category}/${slug}`
       },

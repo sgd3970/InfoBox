@@ -135,10 +135,9 @@ export default function AdminDashboardClient({ siteStats }: AdminDashboardClient
                 </div>
                 <div className="flex gap-2">
                   <Link
-                    href={`/blog/${post.category.toLowerCase()}/${post.slug}`}
+                    href={`/blog/${typeof post.category === 'string' ? post.category.toLowerCase() : post.category?.slug.toLowerCase()}/${post.slug}`}
+                    className="text-primary hover:underline"
                     target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-sm text-primary hover:underline"
                   >
                     보기
                   </Link>

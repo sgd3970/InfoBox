@@ -70,7 +70,7 @@ export default function AIContentRecommendations({
         .map((item: PostWithScore) => ({
           title: item.post.title,
           description: item.post.description || "",
-          url: `/blog/${item.post.category.toLowerCase()}/${item.post.slug}`,
+          url: `/blog/${typeof item.post.category === 'string' ? item.post.category.toLowerCase() : item.post.category?.slug.toLowerCase()}/${item.post.slug}`,
         }))
 
       setRecommendations(recommendedPosts)
@@ -127,7 +127,10 @@ export default function AIContentRecommendations({
             <ul className="space-y-2">
               {recommendations.map((recommendation, index) => (
                 <li key={index} className="text-sm">
-                  <Link href={recommendation.url} className="font-medium hover:underline">
+                  <Link
+                    href={recommendation.url}
+                    className="font-medium hover:underline"
+                  >
                     {recommendation.title}
                   </Link>
                   <p className="text-muted-foreground">{recommendation.description}</p>
