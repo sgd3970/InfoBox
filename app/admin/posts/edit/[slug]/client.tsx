@@ -174,7 +174,7 @@ export default function PostEditClient({ initialPost }: PostEditClientProps) {
         </div>
         <div>
           <label htmlFor="category" className="block text-sm font-medium text-gray-700">카테고리</label>
-          <Select name="category" value={post.category} onValueChange={(value) => handleSelectChange('category', value)}>
+          <Select name="category" value={typeof post.category === 'string' ? post.category : post.category?.slug} onValueChange={(value) => handleSelectChange('category', value)}>
             <SelectTrigger className="w-[200px]">
               <SelectValue placeholder="카테고리 선택" />
             </SelectTrigger>
